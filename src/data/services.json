@@ -1,0 +1,12 @@
+{
+  "appliances": [
+    { "appliance": "Air Conditioner", "image": "/img/ac.jpg" },
+    { "appliance": "Fan", "image": "/img/fan.jpg" },
+    { "appliance": "TV", "image": "/img/tv.jpg" },
+    { "appliance": "Socket", "image": "/img/socket.jpg" },
+    { "appliance": "Wiring", "image": "/img/wiring.jpg" },
+    { "appliance": "Refrigerator", "image": "/img/fridge.jpg" },
+    { "appliance": "Water Purifier", "image": "/img/purifier.jpg" },
+    { "appliance": "Pest Control", "image": "/img/pest.jpg" }
+  ]
+}
