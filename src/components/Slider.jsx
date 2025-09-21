@@ -15,19 +15,32 @@ export default function Slider() {
     "/image/six.jpg",
   ]
 
-  const visibleCount = 3
+  // responsive visible count
+  const getVisibleCount = () => {
+    if (window.innerWidth < 640) return 1 // mobile
+    if (window.innerWidth < 1024) return 2 // tablet
+    return 3 // desktop
+  }
+
+  const [visibleCount, setVisibleCount] = useState(getVisibleCount())
   const total = sliderImages.length
 
-  // ✅ Clone: first 3 images ko last me add kiya for infinite loop
+  // clone images for infinite loop
   const imagesWithClones = [...sliderImages, ...sliderImages.slice(0, visibleCount)]
 
   useEffect(() => {
+    const handleResize = () => setVisibleCount(getVisibleCount())
+    window.addEventListener("resize", handleResize)
+
     const interval = setInterval(() => {
       slideNext()
-    }, 3000) // har 3 sec me move hoga
+    }, 3000)
 
-    return () => clearInterval(interval)
-  }, [currentIndex])
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener("resize", handleResize)
+    }
+  }, [currentIndex, visibleCount])
 
   const slideNext = () => {
     const nextIndex = currentIndex + 1
@@ -37,7 +50,6 @@ export default function Slider() {
       setCurrentIndex(nextIndex)
     } else {
       animateSlide(nextIndex, () => {
-        // ✅ Reset bina jhatke
         gsap.set(sliderRef.current, { xPercent: 0 })
         setCurrentIndex(0)
       })
@@ -45,7 +57,7 @@ export default function Slider() {
   }
 
   const animateSlide = (index, onComplete) => {
-    const percentage = -(index * (100 / visibleCount)) // ek card = 100/3 %
+    const percentage = -(index * (100 / visibleCount))
     gsap.to(sliderRef.current, {
       xPercent: percentage,
       duration: 1.5,
@@ -55,17 +67,19 @@ export default function Slider() {
   }
 
   return (
-    <div className="overflow-hidden w-full bg-gray-50 py-8">
+    <div className="overflow-hidden w-full bg-gray-50 py-6 sm:py-8">
       <div ref={sliderRef} className="flex">
         {imagesWithClones.map((img, i) => (
           <div
             key={i}
-            className="w-1/3 flex-shrink-0 px-4 cursor-pointer"
+            className={`px-2 sm:px-3 lg:px-4 flex-shrink-0 ${
+              visibleCount === 1 ? "w-full" : visibleCount === 2 ? "w-1/2" : "w-1/3"
+            }`}
           >
             <img
               src={img}
               alt={`slide-${i}`}
-              className="h-60 w-full object-contain rounded-xl shadow-md bg-white"
+              className="w-full h-40 sm:h-56 lg:h-72 object-contain rounded-xl shadow-md bg-white"
             />
           </div>
         ))}

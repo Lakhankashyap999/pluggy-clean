@@ -76,15 +76,27 @@ export default function FilterDrawer({ open, onClose, onApply }) {
   ]
 
   const resetFilters = () => {
-    setFilters({ category: "", issue: "", price: "", availability: "", rating: "" })
+    setFilters({
+      category: "",
+      issue: "",
+      price: "",
+      availability: "",
+      rating: "",
+    })
   }
 
   const handleApply = () => {
-    if (!filters.category && !filters.issue && !filters.price && !filters.availability && !filters.rating) {
+    if (
+      !filters.category &&
+      !filters.issue &&
+      !filters.price &&
+      !filters.availability &&
+      !filters.rating
+    ) {
       alert("Please select at least one filter before applying")
       return
     }
-    onApply(filters) // send filters back to Dashboard
+    onApply(filters)
     onClose()
   }
 
@@ -107,7 +119,7 @@ export default function FilterDrawer({ open, onClose, onApply }) {
             animate={{ x: 0 }}
             exit={{ x: -350 }}
             transition={{ type: "spring", stiffness: 100, damping: 20 }}
-            className="fixed top-0 left-0 h-full w-[320px] bg-white shadow-xl z-50 flex flex-col"
+            className="fixed top-0 left-0 h-full w-full sm:w-[360px] bg-white shadow-xl z-50 flex flex-col rounded-t-2xl sm:rounded-none"
           >
             {/* Header */}
             <div className="flex justify-between items-center px-6 py-4 border-b sticky top-0 bg-white z-10">
@@ -121,20 +133,31 @@ export default function FilterDrawer({ open, onClose, onApply }) {
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
               {/* Category + Issues */}
               <div>
-                <h3 className="font-semibold mb-3 text-[#1A2A49]">Service Category</h3>
+                <h3 className="font-semibold mb-3 text-[#1A2A49]">
+                  Service Category
+                </h3>
                 {menus.map((menu) => (
                   <div key={menu.label} className="mb-4">
-                    <p className="text-sm font-medium text-gray-700">{menu.label}</p>
+                    <p className="text-sm font-medium text-gray-700">
+                      {menu.label}
+                    </p>
                     <div className="ml-3 mt-1 space-y-2 text-sm text-gray-600">
                       {menu.items.map((item) => (
-                        <label key={item} className="flex items-center gap-2 cursor-pointer">
+                        <label
+                          key={item}
+                          className="flex items-center gap-2 cursor-pointer"
+                        >
                           <input
                             type="radio"
                             name="issue"
                             className="accent-[#1A2A49]"
                             checked={filters.issue === item}
                             onChange={() =>
-                              setFilters({ ...filters, category: menu.label, issue: item })
+                              setFilters({
+                                ...filters,
+                                category: menu.label,
+                                issue: item,
+                              })
                             }
                           />
                           {item}
@@ -178,7 +201,9 @@ export default function FilterDrawer({ open, onClose, onApply }) {
                       name="availability"
                       className="accent-[#1A2A49]"
                       checked={filters.availability === a}
-                      onChange={() => setFilters({ ...filters, availability: a })}
+                      onChange={() =>
+                        setFilters({ ...filters, availability: a })
+                      }
                     />
                     {a}
                   </label>
