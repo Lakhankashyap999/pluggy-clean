@@ -15,7 +15,7 @@ export default function Slider() {
     "/image/six.jpg",
   ]
 
-  // responsive visible count
+  // ✅ responsive visible count
   const getVisibleCount = () => {
     if (window.innerWidth < 640) return 1 // mobile
     if (window.innerWidth < 1024) return 2 // tablet
@@ -25,7 +25,7 @@ export default function Slider() {
   const [visibleCount, setVisibleCount] = useState(getVisibleCount())
   const total = sliderImages.length
 
-  // clone images for infinite loop
+  // ✅ clone images for infinite loop
   const imagesWithClones = [...sliderImages, ...sliderImages.slice(0, visibleCount)]
 
   useEffect(() => {
@@ -76,11 +76,13 @@ export default function Slider() {
               visibleCount === 1 ? "w-full" : visibleCount === 2 ? "w-1/2" : "w-1/3"
             }`}
           >
-            <img
-              src={img}
-              alt={`slide-${i}`}
-              className="w-full h-40 sm:h-56 lg:h-72 object-contain rounded-xl shadow-md bg-white"
-            />
+            <div className="rounded-2xl overflow-hidden shadow-lg h-48 sm:h-64 lg:h-80">
+              <img
+                src={img}
+                alt={`slide-${i}`}
+                className="w-full h-full object-cover"
+              />
+            </div>
           </div>
         ))}
       </div>

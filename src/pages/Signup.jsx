@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import toast from "react-hot-toast"
 
 export default function Signup({ setUser }) {
@@ -38,33 +38,38 @@ export default function Signup({ setUser }) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 shadow-lg rounded-xl w-full max-w-md">
-        <h2 className="text-2xl font-bold text-[#1A2A49] mb-6">Sign Up</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="bg-white p-6 sm:p-8 shadow-lg rounded-2xl w-full max-w-md">
+        {/* Heading */}
+        <h2 className="text-xl sm:text-2xl font-bold text-[#1A2A49] mb-6 text-center">
+          Create Your Account
+        </h2>
+
+        {/* Form */}
         <form className="space-y-4" onSubmit={handleSubmit}>
           <input
             name="name"
             placeholder="Full Name"
             value={form.name}
             onChange={handleChange}
-            className="w-full border rounded-md px-3 py-2"
+            className="w-full border rounded-lg px-4 py-3 text-sm focus:outline-[#1A2A49]"
             required
           />
           <input
             type="email"
             name="email"
-            placeholder="Email"
+            placeholder="Email Address"
             value={form.email}
             onChange={handleChange}
-            className="w-full border rounded-md px-3 py-2"
+            className="w-full border rounded-lg px-4 py-3 text-sm focus:outline-[#1A2A49]"
             required
           />
           <input
             name="phone"
-            placeholder="Phone"
+            placeholder="Phone Number"
             value={form.phone}
             onChange={handleChange}
-            className="w-full border rounded-md px-3 py-2"
+            className="w-full border rounded-lg px-4 py-3 text-sm focus:outline-[#1A2A49]"
             required
           />
           <input
@@ -73,7 +78,7 @@ export default function Signup({ setUser }) {
             placeholder="Password"
             value={form.password}
             onChange={handleChange}
-            className="w-full border rounded-md px-3 py-2"
+            className="w-full border rounded-lg px-4 py-3 text-sm focus:outline-[#1A2A49]"
             required
           />
           <input
@@ -82,16 +87,26 @@ export default function Signup({ setUser }) {
             placeholder="Confirm Password"
             value={form.confirmPassword}
             onChange={handleChange}
-            className="w-full border rounded-md px-3 py-2"
+            className="w-full border rounded-lg px-4 py-3 text-sm focus:outline-[#1A2A49]"
             required
           />
+
+          {/* Button */}
           <button
             type="submit"
-            className="w-full bg-[#1A2A49] text-white py-2 rounded-md hover:bg-[#223a61]"
+            className="w-full bg-[#1A2A49] text-white py-3 rounded-lg font-medium hover:bg-[#223a61] transition"
           >
-            Create Account
+            Sign Up
           </button>
         </form>
+
+        {/* Bottom Link */}
+        <p className="mt-4 text-sm text-gray-600 text-center">
+          Already have an account?{" "}
+          <Link to="/login" className="text-[#1A2A49] font-medium hover:underline">
+            Log in
+          </Link>
+        </p>
       </div>
     </div>
   )

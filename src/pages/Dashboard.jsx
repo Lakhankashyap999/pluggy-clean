@@ -89,7 +89,7 @@ export default function Dashboard() {
           {/* Hero Section */}
           <section
             data-scroll-section
-            className="bg-gray-50 px-4 sm:px-6 lg:px-12 py-8 flex flex-col lg:flex-row items-center justify-between gap-6"
+            className="bg-gray-50 px-4 sm:px-6 lg:px-12 py-8 flex flex-col lg:flex-row items-center justify-between gap-8"
           >
             {/* Left */}
             <motion.div
@@ -98,8 +98,8 @@ export default function Dashboard() {
               transition={{ duration: 0.8 }}
               className="flex flex-col items-center lg:items-start text-center lg:text-left flex-1 space-y-4"
             >
-              <h2 className="text-3xl sm:text-4xl font-bold text-[#1A2A49] leading-snug">
-                Reliable Home Services, <br /> Anytime, Anywhere 🚀
+              <h2 className="text-2xl sm:text-4xl font-bold text-[#1A2A49] leading-snug">
+                Reliable Home Services, <br className="hidden sm:block" /> Anytime, Anywhere 🚀
               </h2>
 
               <div className="flex flex-col gap-2 text-gray-700 text-sm">
@@ -108,16 +108,16 @@ export default function Dashboard() {
                 <p>👨‍🔧 <span className="font-semibold">500+</span> Verified Technicians</p>
               </div>
 
-              <div className="flex gap-3 mt-2">
+              <div className="flex flex-col sm:flex-row gap-3 mt-2 w-full sm:w-auto">
                 <button
                   onClick={() => navigate("/request/ac-repair")}
-                  className="px-5 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61]"
+                  className="w-full sm:w-auto px-5 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61]"
                 >
                   Book Now
                 </button>
                 <button
                   onClick={() => (window.location.href = 'tel:+911234567890')}
-                  className="px-5 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61]"
+                  className="w-full sm:w-auto px-5 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61]"
                 >
                   Call Us
                 </button>
@@ -129,9 +129,9 @@ export default function Dashboard() {
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="flex flex-col gap-4 items-center flex-1"
+              className="flex flex-col gap-4 items-center flex-1 w-full"
             >
-              <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white px-6 py-4 rounded-xl shadow-lg w-full sm:w-[380px]">
+              <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white px-6 py-4 rounded-xl shadow-lg w-full max-w-sm">
                 <p className="text-lg font-bold">🎉 Special Offer</p>
                 <p className="text-sm mt-1">
                   Get <span className="font-semibold">20% OFF</span> on your first booking! <br />
@@ -142,41 +142,43 @@ export default function Dashboard() {
               <img
                 src="/image/Electrician-rafiki.png"
                 alt="Technician"
-                className="max-w-[280px] sm:max-w-[340px] lg:max-w-[420px] object-contain"
+                className="w-full max-w-[280px] sm:max-w-[340px] lg:max-w-[420px] object-contain"
               />
             </motion.div>
           </section>
 
           {/* Why Choose Us */}
-          <section data-scroll-section className="bg-gray-50 py-10">
+          <section data-scroll-section className="bg-gray-50 py-10 px-4">
             <WhyChooseUs />
           </section>
 
           {/* Services */}
-          <section data-scroll-section className="bg-white py-10">
+          <section data-scroll-section className="bg-white py-10 px-4">
             <OurServices />
           </section>
 
           {/* Reviews */}
-          <section data-scroll-section className="bg-gray-50 py-10">
+          <section data-scroll-section className="bg-gray-50 py-10 px-4">
             <CustomerReviews />
           </section>
 
           {/* Brands */}
-          <section data-scroll-section className="bg-white py-10">
+          <section data-scroll-section className="bg-white py-10 px-4">
             <div className="max-w-6xl mx-auto text-center">
-              <h2 className="text-2xl font-bold text-[#1A2A49] mb-4">Trusted By Leading Brands</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-[#1A2A49] mb-4">
+                Trusted By Leading Brands
+              </h2>
               <div className="flex flex-wrap justify-center gap-6">
-                <img src="../image/philips.png" alt="Philips" className="h-10" />
-                <img src="../image/crompton.png" alt="Crompton" className="h-10" />
-                <img src="../image/syska.png" alt="Syska" className="h-10" />
-                <img src="../image/havells.jpg" alt="Havells" className="h-10" />
+                <img src="../image/philips.png" alt="Philips" className="h-8 sm:h-10" />
+                <img src="../image/crompton.png" alt="Crompton" className="h-8 sm:h-10" />
+                <img src="../image/syska.png" alt="Syska" className="h-8 sm:h-10" />
+                <img src="../image/havells.jpg" alt="Havells" className="h-8 sm:h-10" />
               </div>
             </div>
           </section>
 
           {/* Extra Sections */}
-          <section data-scroll-section className="bg-gray-50 py-10">
+          <section data-scroll-section className="bg-gray-50 py-10 px-4">
             <ExtraSections />
           </section>
         </>

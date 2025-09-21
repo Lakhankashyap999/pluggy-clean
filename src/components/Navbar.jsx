@@ -13,12 +13,13 @@ import { Link, useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
 import toast from "react-hot-toast"
 import Cart from "./Cart"
+import { motion, AnimatePresence } from "framer-motion"
 
 export default function Navbar({ user, setUser }) {
   const navigate = useNavigate()
   const [cartOpen, setCartOpen] = useState(false)
   const [cartItems, setCartItems] = useState([])
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   // ✅ Load + Sync cart
   useEffect(() => {
@@ -43,15 +44,16 @@ export default function Navbar({ user, setUser }) {
 
   return (
     <>
-      <nav className="bg-[#1A2A49] shadow-sm sticky top-0 z-40">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3 flex items-center justify-between text-white">
-          {/* Logo */}
+      {/* ✅ Top Navbar */}
+      <nav className="bg-[#1A2A49] shadow-sm sticky top-0 z-50">
+        <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between text-white">
+          {/* Left: Logo */}
           <Link to="/" className="flex items-center gap-2">
             <img src="/image/logos.png" alt="Pluggy" className="h-10 w-10 rounded-md" />
             <span className="text-xl font-extrabold">Pluggy</span>
           </Link>
 
-          {/* Desktop Menu */}
+          {/* Right: Desktop Menu */}
           <div className="hidden md:flex items-center gap-6">
             <button
               onClick={() => navigate("/account", { state: { tab: "track" } })}
@@ -59,25 +61,21 @@ export default function Navbar({ user, setUser }) {
             >
               <ListChecks size={18} /> My Requests
             </button>
-
             <button
               onClick={() => setCartOpen(true)}
               className="flex items-center gap-2 hover:text-gray-300"
             >
               <ShoppingCart size={18} /> My Cart ({cartItems.length})
             </button>
-
             <button
               onClick={() => navigate("/account", { state: { tab: "notifications" } })}
               className="flex items-center gap-2 hover:text-gray-300"
             >
               <Bell size={18} /> Notifications
             </button>
-
             <button className="flex items-center gap-2 px-4 py-2 bg-white text-[#1A2A49] rounded-lg shadow hover:bg-gray-100">
               <Phone size={16} /> Call us
             </button>
-
             {!user ? (
               <LoginPopup
                 onLogin={(u) => {
@@ -111,86 +109,97 @@ export default function Navbar({ user, setUser }) {
             )}
           </div>
 
-          {/* Mobile Hamburger */}
+          {/* Right: Mobile Menu Button */}
           <button
             className="md:hidden flex items-center"
-            onClick={() => setMobileOpen(!mobileOpen)}
+            onClick={() => setMenuOpen(true)}
           >
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+            <Menu size={28} />
           </button>
         </div>
-
-        {/* Mobile Menu Drawer */}
-        {mobileOpen && (
-          <div className="md:hidden bg-[#1A2A49] text-white px-6 py-4 space-y-4">
-            <button
-              onClick={() => navigate("/account", { state: { tab: "track" } })}
-              className="flex items-center gap-2 w-full text-left hover:text-gray-300"
-            >
-              <ListChecks size={18} /> My Requests
-            </button>
-
-            <button
-              onClick={() => setCartOpen(true)}
-              className="flex items-center gap-2 w-full text-left hover:text-gray-300"
-            >
-              <ShoppingCart size={18} /> My Cart ({cartItems.length})
-            </button>
-
-            <button
-              onClick={() => navigate("/account", { state: { tab: "notifications" } })}
-              className="flex items-center gap-2 w-full text-left hover:text-gray-300"
-            >
-              <Bell size={18} /> Notifications
-            </button>
-
-            <button className="flex items-center gap-2 w-full text-left px-4 py-2 bg-white text-[#1A2A49] rounded-lg shadow hover:bg-gray-100">
-              <Phone size={16} /> Call us
-            </button>
-
-            {!user ? (
-              <LoginPopup
-                onLogin={(u) => {
-                  setUser(u)
-                  toast.success("Logged in successfully 🎉")
-                  setMobileOpen(false)
-                }}
-              />
-            ) : (
-              <div>
-                <Link
-                  to="/account"
-                  className="block px-4 py-2 hover:bg-gray-100 bg-white text-black rounded"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  My Profile
-                </Link>
-                <button
-                  onClick={() => {
-                    localStorage.removeItem("pluggy_user")
-                    setUser(null)
-                    toast.success("Logged out successfully ✅")
-                    navigate("/")
-                    setMobileOpen(false)
-                  }}
-                  className="mt-2 px-4 py-2 w-full bg-red-600 text-white rounded"
-                >
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
-        )}
       </nav>
 
-      {/* Cart Popup */}
+      {/* ✅ Animated Mobile Drawer */}
+      <AnimatePresence>
+        {menuOpen && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black z-40"
+              onClick={() => setMenuOpen(false)}
+            />
+
+            {/* Drawer */}
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", stiffness: 80, damping: 20 }}
+              className="fixed top-0 right-0 h-full w-3/4 sm:w-1/2 bg-white text-[#1A2A49] shadow-lg z-50 flex flex-col"
+            >
+              {/* Header */}
+              <div className="flex justify-between items-center px-6 py-4 border-b">
+                <h2 className="text-lg font-bold">Menu</h2>
+                <button onClick={() => setMenuOpen(false)}>
+                  <X size={24} />
+                </button>
+              </div>
+
+              {/* Links */}
+              <div className="flex-1 px-6 py-4 space-y-4 text-lg font-medium">
+                <button
+                  onClick={() => {
+                    navigate("/account", { state: { tab: "track" } })
+                    setMenuOpen(false)
+                  }}
+                  className="w-full text-left hover:text-[#223a61]"
+                >
+                  📋 My Requests
+                </button>
+                <button
+                  onClick={() => {
+                    setCartOpen(true)
+                    setMenuOpen(false)
+                  }}
+                  className="w-full text-left hover:text-[#223a61]"
+                >
+                  🛒 My Cart ({cartItems.length})
+                </button>
+                <button
+                  onClick={() => {
+                    navigate("/account", { state: { tab: "notifications" } })
+                    setMenuOpen(false)
+                  }}
+                  className="w-full text-left hover:text-[#223a61]"
+                >
+                  🔔 Notifications
+                </button>
+                <button
+                  onClick={() => (window.location.href = "tel:+911234567890")}
+                  className="w-full text-left hover:text-[#223a61]"
+                >
+                  📞 Call Us
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ✅ Cart Popup */}
       <Cart
         open={cartOpen}
         onClose={() => setCartOpen(false)}
         items={cartItems}
         labourCharge={50}
         discount={0}
-        finalTotal={cartItems.reduce((sum, i) => sum + i.price, 0) + (cartItems.length > 0 ? 50 : 0)}
+        finalTotal={
+          cartItems.reduce((sum, i) => sum + i.price, 0) +
+          (cartItems.length > 0 ? 50 : 0)
+        }
         onRemove={handleRemove}
         onProceed={() => navigate("/checkout")}
       />

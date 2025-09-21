@@ -11,7 +11,7 @@ import {
   Wrench,
 } from "lucide-react"
 import toast from "react-hot-toast"
-import LocationPopup from "../components/LocationPopup"  // ✅ FIXED PATH
+import LocationPopup from "../components/LocationPopup" // ✅ FIXED PATH
 
 export default function Account({ user, setUser }) {
   const location = useLocation()
@@ -35,85 +35,42 @@ export default function Account({ user, setUser }) {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-[70vh] text-gray-600">
+      <div className="flex items-center justify-center min-h-[70vh] text-gray-600 text-center px-4">
         Please log in to view your account
       </div>
     )
   }
 
-  // ✅ Services Menu (same as Navbar)
   const menus = [
     {
       label: "AC Services",
-      items: [
-        "Cooling Issue",
-        "Water Leakage",
-        "Gas Refill",
-        "Installation / Uninstallation",
-        "Remote Not Working",
-        "Unusual Noise",
-      ],
+      items: ["Cooling Issue", "Water Leakage", "Gas Refill", "Installation / Uninstallation", "Remote Not Working", "Unusual Noise"],
     },
     {
       label: "Fan & Motor",
-      items: [
-        "Slow Speed",
-        "Noise Issue",
-        "Regulator Problem",
-        "Exhaust Fan Repair",
-        "Motor Overheating",
-        "Motor Winding",
-      ],
+      items: ["Slow Speed", "Noise Issue", "Regulator Problem", "Exhaust Fan Repair", "Motor Overheating", "Motor Winding"],
     },
     {
       label: "Wiring & Switchboards",
-      items: [
-        "Switch Burnt",
-        "Plug Point Not Working",
-        "MCB Tripping",
-        "Short Circuit",
-        "Socket Loose",
-        "Sparking Issue",
-      ],
+      items: ["Switch Burnt", "Plug Point Not Working", "MCB Tripping", "Short Circuit", "Socket Loose", "Sparking Issue"],
     },
     {
       label: "Appliances",
-      items: [
-        "Geyser Not Heating",
-        "Geyser Leakage",
-        "Refrigerator Cooling Issue",
-        "Washing Machine Leakage",
-        "Microwave Not Heating",
-        "Induction Cooktop Issue",
-        "Mixer / Grinder Problem",
-      ],
+      items: ["Geyser Not Heating", "Geyser Leakage", "Refrigerator Cooling Issue", "Washing Machine Leakage", "Microwave Not Heating", "Induction Cooktop Issue", "Mixer / Grinder Problem"],
     },
     {
       label: "Others",
-      items: [
-        "Tube Light Fuse",
-        "LED Flickering",
-        "Fancy Light Setup",
-        "Bulb Holder Issue",
-        "Emergency Light Problem",
-        "Inverter Battery Issue",
-        "Inverter Charging Problem",
-        "Doorbell Not Working",
-        "CCTV Connection",
-        "Wi-Fi Power Point",
-        "Smart Device Setup",
-      ],
+      items: ["Tube Light Fuse", "LED Flickering", "Fancy Light Setup", "Bulb Holder Issue", "Emergency Light Problem", "Inverter Battery Issue", "Inverter Charging Problem", "Doorbell Not Working", "CCTV Connection", "Wi-Fi Power Point", "Smart Device Setup"],
     },
   ]
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 min-h-screen px-2 sm:px-4 py-4">
       <div className="max-w-5xl mx-auto bg-white shadow rounded-xl">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 border-b">
+        <div className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 border-b gap-3 sm:gap-0">
           <h2 className="text-lg font-bold text-[#1A2A49]">My Account</h2>
-          <div className="flex gap-3">
-            {/* Location Button */}
+          <div className="flex flex-wrap sm:flex-nowrap gap-3">
             <button
               onClick={() => setOpenLocation(true)}
               className="flex items-center gap-1 text-gray-700 hover:text-[#1A2A49]"
@@ -130,32 +87,32 @@ export default function Account({ user, setUser }) {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b">
+        <div className="flex flex-wrap sm:flex-nowrap border-b text-sm sm:text-base">
           {[
-            { id: "profile", label: "My Profile", icon: <User size={18} /> },
-            { id: "track", label: "Track Request", icon: <PackageSearch size={18} /> },
-            { id: "coupons", label: "Coupons", icon: <TicketPercent size={18} /> },
-            { id: "notifications", label: "Notifications", icon: <Bell size={18} /> },
-            { id: "services", label: "Services", icon: <Wrench size={18} /> }, // ✅ New Tab
+            { id: "profile", label: "My Profile", icon: <User size={16} /> },
+            { id: "track", label: "Track", icon: <PackageSearch size={16} /> },
+            { id: "coupons", label: "Coupons", icon: <TicketPercent size={16} /> },
+            { id: "notifications", label: "Notify", icon: <Bell size={16} /> },
+            { id: "services", label: "Services", icon: <Wrench size={16} /> },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-3 text-center font-medium ${
+              className={`flex-1 py-2 sm:py-3 text-center font-medium flex justify-center items-center gap-1 ${
                 activeTab === tab.id
                   ? "text-[#1A2A49] border-b-2 border-[#1A2A49]"
                   : "text-gray-500"
               }`}
             >
-              {tab.icon} {tab.label}
+              {tab.icon} <span className="hidden sm:inline">{tab.label}</span>
             </button>
           ))}
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6 text-sm sm:text-base">
           {activeTab === "profile" && (
-            <div>
+            <div className="space-y-1">
               <h2 className="text-xl font-bold text-[#1A2A49] mb-4">My Profile</h2>
               <p><span className="font-medium">Name:</span> {user.name}</p>
               <p><span className="font-medium">Email:</span> {user.email}</p>
@@ -171,8 +128,8 @@ export default function Account({ user, setUser }) {
               ) : (
                 <ul className="space-y-3">
                   {requests.map((r) => (
-                    <li key={r.id} className="border rounded-md p-3 flex justify-between items-center">
-                      <div>
+                    <li key={r.id} className="border rounded-md p-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                      <div className="space-y-1">
                         <p className="font-medium">{r.service}</p>
                         <p className="text-sm text-gray-600">{r.issue}</p>
                         {r.amount !== null && (
@@ -189,7 +146,7 @@ export default function Account({ user, setUser }) {
                       </div>
                       <button
                         onClick={() => handleCancel(r.id)}
-                        className="ml-4 text-gray-400 hover:text-red-600 transition"
+                        className="self-end sm:self-center text-gray-400 hover:text-red-600 transition"
                         title="Cancel Request"
                       >
                         ✕
@@ -215,7 +172,6 @@ export default function Account({ user, setUser }) {
             </div>
           )}
 
-          {/* ✅ Services Tab Content */}
           {activeTab === "services" && (
             <div>
               <h2 className="text-xl font-bold text-[#1A2A49] mb-6">Our Services</h2>
@@ -231,7 +187,7 @@ export default function Account({ user, setUser }) {
                       {menu.label}
                     </button>
                     {hovered === i && (
-                      <div className="mt-3 bg-white shadow-lg rounded-lg border p-3 grid grid-cols-2 gap-2">
+                      <div className="mt-3 bg-white shadow-lg rounded-lg border p-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {menu.items.map((item, idx) => (
                           <button
                             key={idx}
@@ -253,7 +209,7 @@ export default function Account({ user, setUser }) {
         </div>
 
         {/* Logout */}
-        <div className="border-t px-6 py-4">
+        <div className="border-t px-4 sm:px-6 py-4">
           <button
             onClick={() => {
               localStorage.removeItem("pluggy_user")
@@ -268,7 +224,6 @@ export default function Account({ user, setUser }) {
         </div>
       </div>
 
-      {/* Location Popup */}
       {openLocation && (
         <LocationPopup
           onClose={() => setOpenLocation(false)}

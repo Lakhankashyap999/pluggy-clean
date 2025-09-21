@@ -39,7 +39,7 @@ export default function RequestForm() {
       email: form.email,
       phone: form.phone,
       issue: form.issue,
-      amount: location.state?.finalAmount || null,
+      amount: location.state?.finalTotal || 0,
       status: "Confirmed",
       created_at,
     }
@@ -80,14 +80,15 @@ export default function RequestForm() {
     }, 800)
   }
 
+  // ✅ Success Page
   if (submitted) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="bg-white w-full max-w-2xl rounded-2xl shadow-lg p-8 text-center">
-          <div className="w-40 h-40 mx-auto">
+        <div className="bg-white w-full max-w-2xl rounded-2xl shadow-lg p-6 sm:p-8 text-center">
+          <div className="w-32 sm:w-40 h-32 sm:h-40 mx-auto">
             <DotLottieReact src={successAnim} loop={false} autoplay />
           </div>
-          <h2 className="text-2xl font-bold text-[#1A2A49] mt-4">Request Submitted</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#1A2A49] mt-4">Request Submitted</h2>
           <p className="text-gray-600 mt-2">
             Your request for <span className="font-semibold">{cleanService}</span> has been received.
           </p>
@@ -111,17 +112,24 @@ export default function RequestForm() {
     )
   }
 
+  // ✅ If user not logged in
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="bg-white p-8 rounded-2xl shadow-lg text-center w-full max-w-md">
-          <h2 className="text-xl font-bold text-[#1A2A49] mb-4">Please log in first</h2>
+        <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg text-center w-full max-w-md">
+          <h2 className="text-lg sm:text-xl font-bold text-[#1A2A49] mb-4">Please log in first</h2>
           <p className="text-gray-600 mb-6">You need to log in or sign up before raising a request.</p>
           <div className="flex gap-3 justify-center">
-            <button onClick={() => navigate("/login")} className="px-5 py-2 bg-[#1A2A49] text-white rounded-lg hover:bg-[#223a61]">
+            <button
+              onClick={() => navigate("/login")}
+              className="px-5 py-2 bg-[#1A2A49] text-white rounded-lg hover:bg-[#223a61]"
+            >
               Log In
             </button>
-            <button onClick={() => navigate("/signup")} className="px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+            <button
+              onClick={() => navigate("/signup")}
+              className="px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+            >
               Sign Up
             </button>
           </div>
@@ -130,6 +138,7 @@ export default function RequestForm() {
     )
   }
 
+  // ✅ Main Form
   return (
     <div className="min-h-screen bg-gray-50 font-inter">
       {/* Header */}
@@ -146,10 +155,10 @@ export default function RequestForm() {
         </div>
       </div>
 
-      {/* Form */}
-      <div className="max-w-6xl mx-auto px-4 py-8 grid md:grid-cols-2 gap-8">
-        {/* Info */}
-        <div className="bg-white rounded-2xl shadow-sm border p-6">
+      {/* Form Section */}
+      <div className="max-w-6xl mx-auto px-4 py-6 sm:py-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Info Box */}
+        <div className="bg-white rounded-2xl shadow-sm border p-5 sm:p-6">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-[#1A2A49] text-white flex items-center justify-center">
               <AlarmClock size={20} />
@@ -172,13 +181,13 @@ export default function RequestForm() {
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-2xl shadow-sm border p-6">
+        <div className="bg-white rounded-2xl shadow-sm border p-5 sm:p-6">
           <h3 className="text-lg font-semibold text-[#1A2A49] mb-4">Your Details</h3>
           <form onSubmit={handleSubmit} className="space-y-5">
-            <input name="name"  value={form.name}  onChange={handleChange}  placeholder="Full Name"     className="w-full rounded-lg border px-4 py-3" required />
-            <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="Email Address" className="w-full rounded-lg border px-4 py-3" required />
-            <input name="phone" value={form.phone} onChange={handleChange} placeholder="Phone Number" className="w-full rounded-lg border px-4 py-3" required />
-            <textarea name="issue" value={form.issue} onChange={handleChange} placeholder="Describe your issue" rows={4} className="w-full rounded-lg border px-4 py-3" required />
+            <input name="name" value={form.name} onChange={handleChange} placeholder="Full Name" className="w-full rounded-lg border px-4 py-3 text-sm" required />
+            <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="Email Address" className="w-full rounded-lg border px-4 py-3 text-sm" required />
+            <input name="phone" value={form.phone} onChange={handleChange} placeholder="Phone Number" className="w-full rounded-lg border px-4 py-3 text-sm" required />
+            <textarea name="issue" value={form.issue} onChange={handleChange} placeholder="Describe your issue" rows={4} className="w-full rounded-lg border px-4 py-3 text-sm" required />
 
             <div className="text-xs text-gray-500 -mt-2">
               Note: Labour charge ₹50 will be added to the selected issue charge at payment step.
@@ -196,11 +205,11 @@ export default function RequestForm() {
         </div>
       </div>
 
-      {/* Payment Popup */}
+      {/* ✅ Payment Popup */}
       <PaymentPopup
         open={paymentOpen}
         onClose={() => setPaymentOpen(false)}
-        amount={location.state?.finalAmount || 0}
+        amount={location.state?.finalTotal || 0}
         onSuccess={() => saveRequest()}
       />
     </div>
