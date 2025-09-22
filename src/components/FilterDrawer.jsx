@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion"
-import { X } from "lucide-react"
+import { X, SlidersHorizontal } from "lucide-react"
 import { useState } from "react"
 
 export default function FilterDrawer({ open, onClose, onApply }) {
@@ -115,15 +115,17 @@ export default function FilterDrawer({ open, onClose, onApply }) {
 
           {/* Drawer */}
           <motion.div
-            initial={{ x: -350 }}
+            initial={{ x: -400 }}
             animate={{ x: 0 }}
-            exit={{ x: -350 }}
-            transition={{ type: "spring", stiffness: 100, damping: 20 }}
-            className="fixed top-0 left-0 h-full w-full sm:w-[360px] bg-white shadow-xl z-50 flex flex-col rounded-t-2xl sm:rounded-none"
+            exit={{ x: -400 }}
+            transition={{ type: "spring", stiffness: 120, damping: 20 }}
+            className="fixed top-0 left-0 h-full w-full sm:w-[360px] bg-white shadow-2xl z-50 flex flex-col rounded-t-2xl sm:rounded-none"
           >
             {/* Header */}
-            <div className="flex justify-between items-center px-6 py-4 border-b sticky top-0 bg-white z-10">
-              <h2 className="text-lg font-bold text-[#1A2A49]">Filters</h2>
+            <div className="flex justify-between items-center px-6 py-4 border-b sticky top-0 bg-white z-10 shadow-sm">
+              <h2 className="text-lg font-bold text-[#1A2A49] flex items-center gap-2">
+                <SlidersHorizontal size={18} /> Filters
+              </h2>
               <button onClick={onClose} aria-label="Close filters">
                 <X className="text-gray-600 hover:text-black" />
               </button>

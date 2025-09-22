@@ -2,8 +2,7 @@ import { useState, useRef, useEffect } from "react"
 import Slider from "../components/Slider"
 import LocomotiveScroll from "locomotive-scroll"
 import "locomotive-scroll/dist/locomotive-scroll.css"
-import { ReactTyped } from "react-typed"
-import { SlidersHorizontal, Search, X } from "lucide-react"
+import { Search, SlidersHorizontal } from "lucide-react"
 import WhyChooseUs from "../components/WhyChooseUs"
 import OurServices from "../components/OurServices"
 import FilterDrawer from "../components/FilterDrawer"
@@ -22,7 +21,6 @@ export default function Dashboard() {
   const [suggestions, setSuggestions] = useState([])
   const [filterOpen, setFilterOpen] = useState(false)
   const [appliedFilters, setAppliedFilters] = useState(null)
-  const [openSearch, setOpenSearch] = useState(false)
 
   useEffect(() => {
     if (!scrollRef.current) return
@@ -36,15 +34,16 @@ export default function Dashboard() {
   }, [])
 
   useEffect(() => {
-    if (filterOpen || openSearch) {
+    if (filterOpen) {
       document.body.style.overflow = "hidden"
       scrollInstance.current?.stop()
     } else {
       document.body.style.overflow = "auto"
       scrollInstance.current?.start()
     }
-  }, [filterOpen, openSearch])
+  }, [filterOpen])
 
+  // ✅ Dummy services
   const allServices = {
     ac: ["AC Repair", "AC Installation", "AC Gas Refill"],
     fan: ["Fan Motor Repair", "Ceiling Fan Installation", "Fan Regulator Fix"],
@@ -70,10 +69,63 @@ export default function Dashboard() {
     setSuggestions(matches)
   }
 
-  const popularSearches = ["AC Repair", "Fan Installation", "Switchboard Fix", "Lighting Setup"]
+  const handleSearch = () => {
+    if (query.trim()) {
+      navigate(`/request/${query.replace(/\s+/g, "-").toLowerCase()}`)
+      setQuery("")
+      setSuggestions([])
+    }
+  }
 
   return (
     <div ref={scrollRef} data-scroll-container className="min-h-screen pb-20">
+      {/* ✅ Animated Search Bar at Top */}
+      <motion.div
+        initial={{ y: -60, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="sticky top-0 z-40 bg-white shadow px-4 sm:px-6 py-3 flex items-center gap-2"
+      >
+        <input
+          type="text"
+          value={query}
+          onChange={handleChange}
+          placeholder="Search services..."
+          className="flex-1 border px-4 py-2 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1A2A49]"
+        />
+        <button
+          onClick={handleSearch}
+          className="p-2 bg-[#1A2A49] text-white rounded-full hover:bg-[#223a61]"
+        >
+          <Search size={20} />
+        </button>
+        <button
+          onClick={() => setFilterOpen(true)}
+          className="p-2 border border-gray-300 rounded-full hover:bg-gray-100"
+        >
+          <SlidersHorizontal size={20} className="text-[#1A2A49]" />
+        </button>
+      </motion.div>
+
+      {/* Suggestions dropdown */}
+      {suggestions.length > 0 && (
+        <div className="absolute left-0 right-0 top-14 mx-4 sm:mx-6 bg-white shadow-lg rounded-lg border max-h-48 overflow-y-auto z-50">
+          {suggestions.map((s, i) => (
+            <div
+              key={i}
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              onClick={() => {
+                navigate(`/request/${s.replace(/\s+/g, "-").toLowerCase()}`)
+                setQuery("")
+                setSuggestions([])
+              }}
+            >
+              {s}
+            </div>
+          ))}
+        </div>
+      )}
+
       {appliedFilters ? (
         <FilteredResults filters={appliedFilters} />
       ) : (
@@ -108,12 +160,14 @@ export default function Dashboard() {
               <div className="flex flex-col sm:flex-row gap-3 mt-2 w-full sm:w-auto">
                 <button
                   onClick={() => navigate("/request/ac-repair")}
-                  className="w-full sm:w-auto px-5 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61]">
+                  className="w-full sm:w-auto px-5 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61]"
+                >
                   Book Now
                 </button>
                 <button
                   onClick={() => (window.location.href = 'tel:+911234567890')}
-                  className="w-full sm:w-auto px-5 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61]">
+                  className="w-full sm:w-auto px-5 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61]"
+                >
                   Call Us
                 </button>
               </div>
@@ -177,99 +231,6 @@ export default function Dashboard() {
             <ExtraSections />
           </section>
         </>
-      )}
-
-      {/* Floating Search Button */}
-      {!openSearch && (
-        <button
-          onClick={() => setOpenSearch(true)}
-          className="fixed bottom-24 sm:bottom-6 right-6 z-50 bg-[#1A2A49] text-white p-4 rounded-full shadow-lg hover:bg-[#223a61]">
-          <Search size={22} />
-        </button>
-      )}
-
-      {/* Floating Search Overlay */}
-      {openSearch && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-end justify-center">
-          <motion.div
-            initial={{ y: 200, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 200, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="w-full max-w-lg bg-white rounded-t-2xl shadow-lg p-4"
-          >
-            <div className="flex justify-between items-center mb-3">
-              <h2 className="text-lg font-semibold text-[#1A2A49]">Search</h2>
-              <button
-                onClick={() => setOpenSearch(false)}
-                className="p-2 rounded-full hover:bg-gray-200"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="relative">
-              <input
-                type="text"
-                value={query}
-                onChange={handleChange}
-                className="w-full border px-5 py-3 rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-[#1A2A49]"/>
-              {!query && (
-                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                  <ReactTyped
-                    strings={[
-                      "Search AC Service...",
-                      "Search Fan Repair...",
-                      "Search Wiring Issues...",
-                      "Search Electrical Repairs...",
-                    ]}
-                    typeSpeed={80}
-                    backSpeed={40}
-                    loop
-                  />
-                </span>
-              )}
-            </div>
-
-            {suggestions.length > 0 && (
-              <ul className="mt-2 bg-white shadow-lg rounded-lg border text-left max-h-48 overflow-y-auto">
-                {suggestions.map((s, i) => (
-                  <li
-                    key={i}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => {
-                      setQuery(s)
-                      setSuggestions([])
-                    }}>
-                    {s}
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            <button
-              onClick={() => {
-                setFilterOpen(true)
-                setOpenSearch(false)
-              }}
-              className="mt-4 flex items-center gap-2 px-4 py-2 bg-[#1A2A49] text-white rounded-md hover:bg-[#223a61]">
-              <SlidersHorizontal size={18} /> Filter
-            </button>
-
-            <div className="flex flex-wrap gap-2 mt-4">
-              {popularSearches.map((item, i) => (
-                <motion.span
-                  key={i}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setQuery(item)}
-                  className="px-3 py-1 bg-gray-100 text-sm rounded-full cursor-pointer hover:bg-[#1A2A49] hover:text-white">
-                  {item}
-                </motion.span>
-              ))}
-            </div>
-          </motion.div>
-        </div>
       )}
 
       <FilterDrawer

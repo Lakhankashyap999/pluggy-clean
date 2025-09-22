@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom"
+import { Routes, Route, useLocation } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
 import { useState, useEffect } from "react"
 
@@ -11,11 +11,13 @@ import ServiceDetail from "./pages/ServiceDetail"
 
 import Navbar from "./components/Navbar"
 import BottomNavbar from "./components/BottomNavbar"
+import Footer from "./components/Footer"   // ✅ Footer import
 import LocationGate from "./components/LocationGate"
 
 export default function App() {
   const [city, setCity] = useState(null)
   const [user, setUser] = useState(null)
+  const location = useLocation() // ✅ current route
 
   useEffect(() => {
     const saved = localStorage.getItem("pluggy_city")
@@ -54,8 +56,11 @@ export default function App() {
         <Route path="/request/:service" element={<RequestForm />} />
       </Routes>
 
-      {/* ✅ Bottom Navigation only on mobile */}
-      <BottomNavbar />
+      {/* ✅ Bottom Navbar sirf Home page par */}
+      {location.pathname === "/" && <BottomNavbar />}
+
+      {/* ✅ Footer sabhi pages par */}
+      <Footer />
 
       <Toaster position="top-right" />
       <div id="portal-root"></div>
