@@ -17,11 +17,8 @@ export default function BottomNavbar() {
       }
     }
     read()
-    const onStorage = (e) => {
-      if (e.key === "pluggy_cart") read()
-    }
+    const onStorage = (e) => e.key === "pluggy_cart" && read()
     const onCustom = () => read()
-
     window.addEventListener("storage", onStorage)
     window.addEventListener("pluggy:cart-updated", onCustom)
     return () => {
@@ -34,6 +31,9 @@ export default function BottomNavbar() {
     window.dispatchEvent(new Event("pluggy:open-cart"))
   }
 
+  // ❌ Sirf Home page par dikhana
+  if (pathname !== "/") return null
+
   const navItems = [
     { id: "home", label: "Home", icon: Home, onTap: () => navigate("/") },
     { id: "services", label: "Services", icon: Grid, onTap: () => navigate("/services/ac-repair") },
@@ -42,36 +42,29 @@ export default function BottomNavbar() {
   ]
 
   return (
-    <div className="sm:hidden fixed bottom-3 left-1/2 -translate-x-1/2 w-[95%] max-w-md z-50">
-      <div className="flex justify-around items-center py-2 rounded-2xl shadow-lg border border-gray-200 bg-white/90 backdrop-blur-md">
+    <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
+      <div className="flex justify-around items-center py-2">
         {navItems.map((item) => {
           const isActive =
             (item.id === "home" && pathname === "/") ||
             (item.id !== "home" && pathname.startsWith(`/${item.id}`))
-
           return (
             <button
               key={item.id}
               onClick={item.onTap}
-              className={`flex flex-col items-center text-xs transition ${
+              className={`flex flex-col items-center text-xs ${
                 isActive ? "text-[#1A2A49] font-semibold" : "text-gray-500"
               }`}
             >
-              <div className="relative flex items-center justify-center">
-                <item.icon
-                  size={24}
-                  className={isActive ? "stroke-[#1A2A49]" : "stroke-gray-400"}
-                />
+              <div className="relative">
+                <item.icon size={22} />
                 {item.id === "cart" && cartCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                     {cartCount}
                   </span>
                 )}
               </div>
-              <span className="mt-0.5">{item.label}</span>
-              {isActive && (
-                <span className="mt-1 w-1.5 h-1.5 bg-[#1A2A49] rounded-full"></span>
-              )}
+              {item.label}
             </button>
           )
         })}

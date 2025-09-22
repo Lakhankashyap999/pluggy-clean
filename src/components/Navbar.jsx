@@ -5,21 +5,17 @@ import {
   ShoppingCart,
   ListChecks,
   Bell,
-  Menu,
-  X,
 } from "lucide-react"
 import LoginPopup from "./Popup/LoginPopup"
 import { Link, useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
 import toast from "react-hot-toast"
 import Cart from "./Cart"
-import { motion, AnimatePresence } from "framer-motion"
 
 export default function Navbar({ user, setUser }) {
   const navigate = useNavigate()
   const [cartOpen, setCartOpen] = useState(false)
   const [cartItems, setCartItems] = useState([])
-  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     const loadCart = () => {
@@ -107,80 +103,8 @@ export default function Navbar({ user, setUser }) {
               </div>
             )}
           </div>
-
-          {/* Right: Mobile Menu Button */}
-          <button
-            className="md:hidden flex items-center"
-            onClick={() => setMenuOpen(true)}
-          >
-            <Menu size={28} />
-          </button>
         </div>
       </nav>
-
-      {/* ✅ Animated Mobile Drawer */}
-      <AnimatePresence>
-        {menuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black z-40"
-              onClick={() => setMenuOpen(false)}
-            />
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", stiffness: 80, damping: 20 }}
-              className="fixed top-0 right-0 h-full w-3/4 sm:w-1/2 bg-white text-[#1A2A49] shadow-lg z-50 flex flex-col"
-            >
-              <div className="flex justify-between items-center px-6 py-4 border-b">
-                <h2 className="text-lg font-bold">Menu</h2>
-                <button onClick={() => setMenuOpen(false)}>
-                  <X size={24} />
-                </button>
-              </div>
-              <div className="flex-1 px-6 py-4 space-y-4 text-lg font-medium">
-                <button
-                  onClick={() => {
-                    navigate("/account", { state: { tab: "track" } })
-                    setMenuOpen(false)
-                  }}
-                  className="w-full text-left hover:text-[#223a61]"
-                >
-                  📋 My Requests
-                </button>
-                <button
-                  onClick={() => {
-                    setCartOpen(true)
-                    setMenuOpen(false)
-                  }}
-                  className="w-full text-left hover:text-[#223a61]"
-                >
-                  🛒 My Cart ({cartItems.length})
-                </button>
-                <button
-                  onClick={() => {
-                    navigate("/account", { state: { tab: "notifications" } })
-                    setMenuOpen(false)
-                  }}
-                  className="w-full text-left hover:text-[#223a61]"
-                >
-                  🔔 Notifications
-                </button>
-                <button
-                  onClick={() => (window.location.href = "tel:+911234567890")}
-                  className="w-full text-left hover:text-[#223a61]"
-                >
-                  📞 Call Us
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
 
       {/* ✅ Cart Popup */}
       <Cart

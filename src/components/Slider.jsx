@@ -15,17 +15,15 @@ export default function Slider() {
     "/image/six.jpg",
   ]
 
-  // ✅ responsive visible count
   const getVisibleCount = () => {
-    if (window.innerWidth < 640) return 1 // mobile
-    if (window.innerWidth < 1024) return 2 // tablet
-    return 3 // desktop
+    if (window.innerWidth < 640) return 1
+    if (window.innerWidth < 1024) return 2
+    return 3
   }
 
   const [visibleCount, setVisibleCount] = useState(getVisibleCount())
   const total = sliderImages.length
 
-  // ✅ clone images for infinite loop
   const imagesWithClones = [...sliderImages, ...sliderImages.slice(0, visibleCount)]
 
   useEffect(() => {
@@ -44,7 +42,6 @@ export default function Slider() {
 
   const slideNext = () => {
     const nextIndex = currentIndex + 1
-
     if (nextIndex <= total) {
       animateSlide(nextIndex)
       setCurrentIndex(nextIndex)
@@ -60,27 +57,27 @@ export default function Slider() {
     const percentage = -(index * (100 / visibleCount))
     gsap.to(sliderRef.current, {
       xPercent: percentage,
-      duration: 1.5,
+      duration: 1.2,
       ease: "power2.inOut",
       onComplete,
     })
   }
 
   return (
-    <div className="overflow-hidden w-full bg-gray-50 py-6 sm:py-8">
+    <div className="overflow-hidden w-full bg-gray-50 py-4 sm:py-6">
       <div ref={sliderRef} className="flex">
         {imagesWithClones.map((img, i) => (
           <div
             key={i}
-            className={`px-2 sm:px-3 lg:px-4 flex-shrink-0 ${
+            className={`px-1 sm:px-2 lg:px-3 flex-shrink-0 ${
               visibleCount === 1 ? "w-full" : visibleCount === 2 ? "w-1/2" : "w-1/3"
             }`}
           >
-            <div className="rounded-2xl overflow-hidden shadow-lg h-48 sm:h-64 lg:h-80">
+            <div className="rounded-xl overflow-hidden shadow-md h-40 sm:h-56 lg:h-72 bg-white">
               <img
                 src={img}
                 alt={`slide-${i}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             </div>
           </div>

@@ -24,7 +24,6 @@ export default function Dashboard() {
   const [appliedFilters, setAppliedFilters] = useState(null)
   const [openSearch, setOpenSearch] = useState(false)
 
-  // ✅ Locomotive init
   useEffect(() => {
     if (!scrollRef.current) return
     const scroll = new LocomotiveScroll({
@@ -36,7 +35,6 @@ export default function Dashboard() {
     return () => scroll.destroy()
   }, [])
 
-  // ✅ Lock background scroll when Filter/Search open
   useEffect(() => {
     if (filterOpen || openSearch) {
       document.body.style.overflow = "hidden"
@@ -47,7 +45,6 @@ export default function Dashboard() {
     }
   }, [filterOpen, openSearch])
 
-  // ✅ Suggestion Data
   const allServices = {
     ac: ["AC Repair", "AC Installation", "AC Gas Refill"],
     fan: ["Fan Motor Repair", "Ceiling Fan Installation", "Fan Regulator Fix"],
@@ -76,7 +73,7 @@ export default function Dashboard() {
   const popularSearches = ["AC Repair", "Fan Installation", "Switchboard Fix", "Lighting Setup"]
 
   return (
-    <div ref={scrollRef} data-scroll-container className="min-h-screen pb-24">
+    <div ref={scrollRef} data-scroll-container className="min-h-screen pb-20">
       {appliedFilters ? (
         <FilteredResults filters={appliedFilters} />
       ) : (
@@ -89,16 +86,16 @@ export default function Dashboard() {
           {/* Hero Section */}
           <section
             data-scroll-section
-            className="bg-gray-50 px-4 sm:px-6 lg:px-12 py-10 flex flex-col lg:flex-row items-center justify-between gap-10"
+            className="bg-gray-50 px-4 sm:px-6 lg:px-12 py-8 flex flex-col lg:flex-row items-center justify-between gap-8"
           >
             {/* Left */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="flex flex-col items-center lg:items-start text-center lg:text-left flex-1 space-y-5"
+              className="flex flex-col items-center lg:items-start text-center lg:text-left flex-1 space-y-4"
             >
-              <h2 className="text-3xl sm:text-4xl font-bold text-[#1A2A49] leading-snug">
+              <h2 className="text-2xl sm:text-4xl font-bold text-[#1A2A49] leading-snug">
                 Reliable Home Services, <br className="hidden sm:block" /> Anytime, Anywhere 🚀
               </h2>
 
@@ -108,17 +105,15 @@ export default function Dashboard() {
                 <p>👨‍🔧 <span className="font-semibold">500+</span> Verified Technicians</p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 mt-3 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row gap-3 mt-2 w-full sm:w-auto">
                 <button
                   onClick={() => navigate("/request/ac-repair")}
-                  className="w-full sm:w-auto px-6 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61] transition"
-                >
+                  className="w-full sm:w-auto px-5 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61]">
                   Book Now
                 </button>
                 <button
                   onClick={() => (window.location.href = 'tel:+911234567890')}
-                  className="w-full sm:w-auto px-6 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61] transition"
-                >
+                  className="w-full sm:w-auto px-5 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61]">
                   Call Us
                 </button>
               </div>
@@ -129,9 +124,9 @@ export default function Dashboard() {
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="flex flex-col gap-5 items-center flex-1 w-full"
+              className="flex flex-col gap-4 items-center flex-1 w-full"
             >
-              <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white px-6 py-5 rounded-xl shadow-lg w-full max-w-sm">
+              <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white px-6 py-4 rounded-xl shadow-lg w-full max-w-sm">
                 <p className="text-lg font-bold">🎉 Special Offer</p>
                 <p className="text-sm mt-1">
                   Get <span className="font-semibold">20% OFF</span> on your first booking! <br />
@@ -148,24 +143,24 @@ export default function Dashboard() {
           </section>
 
           {/* Why Choose Us */}
-          <section data-scroll-section className="bg-gray-50 py-12 px-4">
+          <section data-scroll-section className="bg-gray-50 py-10 px-4">
             <WhyChooseUs />
           </section>
 
           {/* Services */}
-          <section data-scroll-section className="bg-white py-12 px-4">
+          <section data-scroll-section className="bg-white py-10 px-4">
             <OurServices />
           </section>
 
           {/* Reviews */}
-          <section data-scroll-section className="bg-gray-50 py-12 px-4">
+          <section data-scroll-section className="bg-gray-50 py-10 px-4">
             <CustomerReviews />
           </section>
 
           {/* Brands */}
-          <section data-scroll-section className="bg-white py-12 px-4">
+          <section data-scroll-section className="bg-white py-10 px-4">
             <div className="max-w-6xl mx-auto text-center">
-              <h2 className="text-xl sm:text-2xl font-bold text-[#1A2A49] mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-[#1A2A49] mb-4">
                 Trusted By Leading Brands
               </h2>
               <div className="flex flex-wrap justify-center gap-6">
@@ -178,7 +173,7 @@ export default function Dashboard() {
           </section>
 
           {/* Extra Sections */}
-          <section data-scroll-section className="bg-gray-50 py-12 px-4">
+          <section data-scroll-section className="bg-gray-50 py-10 px-4">
             <ExtraSections />
           </section>
         </>
@@ -188,8 +183,7 @@ export default function Dashboard() {
       {!openSearch && (
         <button
           onClick={() => setOpenSearch(true)}
-          className="fixed bottom-24 sm:bottom-8 right-6 z-50 bg-[#1A2A49] text-white p-4 rounded-full shadow-lg hover:bg-[#223a61] transition"
-        >
+          className="fixed bottom-24 sm:bottom-6 right-6 z-50 bg-[#1A2A49] text-white p-4 rounded-full shadow-lg hover:bg-[#223a61]">
           <Search size={22} />
         </button>
       )}
@@ -202,9 +196,9 @@ export default function Dashboard() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 200, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-full max-w-lg bg-white rounded-t-2xl shadow-lg p-5"
+            className="w-full max-w-lg bg-white rounded-t-2xl shadow-lg p-4"
           >
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-3">
               <h2 className="text-lg font-semibold text-[#1A2A49]">Search</h2>
               <button
                 onClick={() => setOpenSearch(false)}
@@ -219,8 +213,7 @@ export default function Dashboard() {
                 type="text"
                 value={query}
                 onChange={handleChange}
-                className="w-full border px-5 py-3 rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-[#1A2A49]"
-              />
+                className="w-full border px-5 py-3 rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-[#1A2A49]"/>
               {!query && (
                 <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                   <ReactTyped
@@ -239,7 +232,7 @@ export default function Dashboard() {
             </div>
 
             {suggestions.length > 0 && (
-              <ul className="mt-3 bg-white shadow-lg rounded-lg border text-left max-h-48 overflow-y-auto">
+              <ul className="mt-2 bg-white shadow-lg rounded-lg border text-left max-h-48 overflow-y-auto">
                 {suggestions.map((s, i) => (
                   <li
                     key={i}
@@ -247,8 +240,7 @@ export default function Dashboard() {
                     onClick={() => {
                       setQuery(s)
                       setSuggestions([])
-                    }}
-                  >
+                    }}>
                     {s}
                   </li>
                 ))}
@@ -260,20 +252,18 @@ export default function Dashboard() {
                 setFilterOpen(true)
                 setOpenSearch(false)
               }}
-              className="mt-5 flex items-center gap-2 px-5 py-2 bg-[#1A2A49] text-white rounded-md hover:bg-[#223a61] transition"
-            >
+              className="mt-4 flex items-center gap-2 px-4 py-2 bg-[#1A2A49] text-white rounded-md hover:bg-[#223a61]">
               <SlidersHorizontal size={18} /> Filter
             </button>
 
-            <div className="flex flex-wrap gap-2 mt-5">
+            <div className="flex flex-wrap gap-2 mt-4">
               {popularSearches.map((item, i) => (
                 <motion.span
                   key={i}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setQuery(item)}
-                  className="px-3 py-1 bg-gray-100 text-sm rounded-full cursor-pointer hover:bg-[#1A2A49] hover:text-white transition"
-                >
+                  className="px-3 py-1 bg-gray-100 text-sm rounded-full cursor-pointer hover:bg-[#1A2A49] hover:text-white">
                   {item}
                 </motion.span>
               ))}
