@@ -7,7 +7,6 @@ export default function BottomNavbar() {
   const { pathname } = useLocation()
   const [cartCount, setCartCount] = useState(0)
 
-  // ✅ cart count sync (same-tab + cross-tab)
   useEffect(() => {
     const read = () => {
       try {
@@ -18,12 +17,9 @@ export default function BottomNavbar() {
       }
     }
     read()
-
-    // cross-tab updates
     const onStorage = (e) => {
       if (e.key === "pluggy_cart") read()
     }
-    // same-tab custom updates
     const onCustom = () => read()
 
     window.addEventListener("storage", onStorage)
@@ -35,7 +31,6 @@ export default function BottomNavbar() {
   }, [])
 
   const openCartPopup = () => {
-    // 👉 Navbar cart popup ko kholne ke liye event
     window.dispatchEvent(new Event("pluggy:open-cart"))
   }
 
@@ -47,9 +42,8 @@ export default function BottomNavbar() {
   ]
 
   return (
-    // ✅ mobile-only
-    <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-md z-50">
-      <div className="flex justify-around items-center py-2">
+    <div className="sm:hidden fixed bottom-3 left-1/2 -translate-x-1/2 w-[95%] max-w-md z-50">
+      <div className="flex justify-around items-center py-2 rounded-2xl shadow-lg border border-gray-200 bg-white/90 backdrop-blur-md">
         {navItems.map((item) => {
           const isActive =
             (item.id === "home" && pathname === "/") ||
@@ -59,19 +53,25 @@ export default function BottomNavbar() {
             <button
               key={item.id}
               onClick={item.onTap}
-              className={`flex flex-col items-center text-xs ${
+              className={`flex flex-col items-center text-xs transition ${
                 isActive ? "text-[#1A2A49] font-semibold" : "text-gray-500"
               }`}
             >
-              <div className="relative">
-                <item.icon size={22} />
+              <div className="relative flex items-center justify-center">
+                <item.icon
+                  size={24}
+                  className={isActive ? "stroke-[#1A2A49]" : "stroke-gray-400"}
+                />
                 {item.id === "cart" && cartCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                     {cartCount}
                   </span>
                 )}
               </div>
-              {item.label}
+              <span className="mt-0.5">{item.label}</span>
+              {isActive && (
+                <span className="mt-1 w-1.5 h-1.5 bg-[#1A2A49] rounded-full"></span>
+              )}
             </button>
           )
         })}

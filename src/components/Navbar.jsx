@@ -21,7 +21,6 @@ export default function Navbar({ user, setUser }) {
   const [cartItems, setCartItems] = useState([])
   const [menuOpen, setMenuOpen] = useState(false)
 
-  // ✅ Load + Sync cart
   useEffect(() => {
     const loadCart = () => {
       const saved = localStorage.getItem("pluggy_cart")
@@ -123,7 +122,6 @@ export default function Navbar({ user, setUser }) {
       <AnimatePresence>
         {menuOpen && (
           <>
-            {/* Overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
@@ -131,8 +129,6 @@ export default function Navbar({ user, setUser }) {
               className="fixed inset-0 bg-black z-40"
               onClick={() => setMenuOpen(false)}
             />
-
-            {/* Drawer */}
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
@@ -140,15 +136,12 @@ export default function Navbar({ user, setUser }) {
               transition={{ type: "spring", stiffness: 80, damping: 20 }}
               className="fixed top-0 right-0 h-full w-3/4 sm:w-1/2 bg-white text-[#1A2A49] shadow-lg z-50 flex flex-col"
             >
-              {/* Header */}
               <div className="flex justify-between items-center px-6 py-4 border-b">
                 <h2 className="text-lg font-bold">Menu</h2>
                 <button onClick={() => setMenuOpen(false)}>
                   <X size={24} />
                 </button>
               </div>
-
-              {/* Links */}
               <div className="flex-1 px-6 py-4 space-y-4 text-lg font-medium">
                 <button
                   onClick={() => {

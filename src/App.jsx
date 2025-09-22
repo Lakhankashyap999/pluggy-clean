@@ -10,8 +10,8 @@ import RequestForm from "./pages/RequestForm"
 import ServiceDetail from "./pages/ServiceDetail"
 
 import Navbar from "./components/Navbar"
+import BottomNavbar from "./components/BottomNavbar"
 import LocationGate from "./components/LocationGate"
-import BottomNavbar from "./components/BottomNavbar"   // ✅ import kiya
 
 export default function App() {
   const [city, setCity] = useState(null)
@@ -43,10 +43,7 @@ export default function App() {
 
   return (
     <>
-      {/* ✅ Top Navbar (sirf desktop/tablet) */}
-      <div className="hidden sm:block">
-        <Navbar city={city} setCity={setCity} user={user} setUser={setUser} />
-      </div>
+      <Navbar city={city} setCity={setCity} user={user} setUser={setUser} />
 
       <Routes>
         <Route path="/" element={<Dashboard />} />
@@ -57,10 +54,8 @@ export default function App() {
         <Route path="/request/:service" element={<RequestForm />} />
       </Routes>
 
-      {/* ✅ Mobile Bottom Navbar (sm se neeche) */}
-      <div className="block sm:hidden">
-        <BottomNavbar user={user} />
-      </div>
+      {/* ✅ Bottom Navigation only on mobile */}
+      <BottomNavbar />
 
       <Toaster position="top-right" />
       <div id="portal-root"></div>

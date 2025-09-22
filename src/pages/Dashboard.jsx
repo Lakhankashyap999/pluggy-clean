@@ -76,7 +76,7 @@ export default function Dashboard() {
   const popularSearches = ["AC Repair", "Fan Installation", "Switchboard Fix", "Lighting Setup"]
 
   return (
-    <div ref={scrollRef} data-scroll-container className="min-h-screen pb-16">
+    <div ref={scrollRef} data-scroll-container className="min-h-screen pb-20">
       {appliedFilters ? (
         <FilteredResults filters={appliedFilters} />
       ) : (
@@ -188,7 +188,7 @@ export default function Dashboard() {
       {!openSearch && (
         <button
           onClick={() => setOpenSearch(true)}
-          className="fixed bottom-20 right-6 z-50 bg-[#1A2A49] text-white p-4 rounded-full shadow-lg hover:bg-[#223a61]"
+          className="fixed bottom-24 sm:bottom-6 right-6 z-50 bg-[#1A2A49] text-white p-4 rounded-full shadow-lg hover:bg-[#223a61]"
         >
           <Search size={22} />
         </button>
