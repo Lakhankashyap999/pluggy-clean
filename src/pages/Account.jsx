@@ -1,37 +1,31 @@
 import { useState, useEffect } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import {
   User,
-  PackageSearch,
-  TicketPercent,
-  Bell,
-  LogOut,
-  Home,
+  ShoppingCart,
+  ListChecks,
+  Lock,
   MapPin,
+  Eye,
+  Key,
+  Bell,
+  TicketPercent,
   Wrench,
+  LogOut,
+  Edit,
 } from "lucide-react"
 import toast from "react-hot-toast"
-import LocationPopup from "../components/LocationPopup" // ✅ FIXED PATH
 
 export default function Account({ user, setUser }) {
-  const location = useLocation()
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState(location.state?.tab || "profile")
   const [requests, setRequests] = useState([])
-  const [openLocation, setOpenLocation] = useState(false)
-  const [hovered, setHovered] = useState(null)
+  const [editing, setEditing] = useState(false)
+  const [form, setForm] = useState({ name: "", email: "" })
 
   useEffect(() => {
     const saved = localStorage.getItem("pluggy_requests")
     if (saved) setRequests(JSON.parse(saved))
-  }, [location])
-
-  const handleCancel = (id) => {
-    const updated = requests.filter((r) => r.id !== id)
-    setRequests(updated)
-    localStorage.setItem("pluggy_requests", JSON.stringify(updated))
-    toast.success("Request cancelled ❌")
-  }
+  }, [])
 
   if (!user) {
     return (
@@ -41,198 +35,128 @@ export default function Account({ user, setUser }) {
     )
   }
 
-  const menus = [
-    {
-      label: "AC Services",
-      items: ["Cooling Issue", "Water Leakage", "Gas Refill", "Installation / Uninstallation", "Remote Not Working", "Unusual Noise"],
-    },
-    {
-      label: "Fan & Motor",
-      items: ["Slow Speed", "Noise Issue", "Regulator Problem", "Exhaust Fan Repair", "Motor Overheating", "Motor Winding"],
-    },
-    {
-      label: "Wiring & Switchboards",
-      items: ["Switch Burnt", "Plug Point Not Working", "MCB Tripping", "Short Circuit", "Socket Loose", "Sparking Issue"],
-    },
-    {
-      label: "Appliances",
-      items: ["Geyser Not Heating", "Geyser Leakage", "Refrigerator Cooling Issue", "Washing Machine Leakage", "Microwave Not Heating", "Induction Cooktop Issue", "Mixer / Grinder Problem"],
-    },
-    {
-      label: "Others",
-      items: ["Tube Light Fuse", "LED Flickering", "Fancy Light Setup", "Bulb Holder Issue", "Emergency Light Problem", "Inverter Battery Issue", "Inverter Charging Problem", "Doorbell Not Working", "CCTV Connection", "Wi-Fi Power Point", "Smart Device Setup"],
-    },
-  ]
+  // ✅ Start edit mode
+  const startEdit = () => {
+    setForm({ name: user.name, email: user.email })
+    setEditing(true)
+  }
+
+  // ✅ Save profile changes
+  const saveProfile = () => {
+    const updatedUser = { ...user, name: form.name, email: form.email }
+    setUser(updatedUser)
+    localStorage.setItem("pluggy_user", JSON.stringify(updatedUser))
+    setEditing(false)
+    toast.success("Profile updated ✅")
+  }
+
+  const Section = ({ title, children }) => (
+    <div className="mb-6">
+      <h3 className="text-sm font-bold text-gray-500 uppercase mb-2">{title}</h3>
+      <div className="bg-white rounded-xl shadow divide-y">{children}</div>
+    </div>
+  )
+
+  const Item = ({ icon: Icon, label, onClick }) => (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-gray-50 transition"
+    >
+      <Icon size={18} className="text-[#1A2A49]" />
+      <span className="text-gray-700">{label}</span>
+    </button>
+  )
 
   return (
-    <div className="bg-gray-50 min-h-screen px-2 sm:px-4 py-4">
-      <div className="max-w-5xl mx-auto bg-white shadow rounded-xl">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 border-b gap-3 sm:gap-0">
-          <h2 className="text-lg font-bold text-[#1A2A49]">My Account</h2>
-          <div className="flex flex-wrap sm:flex-nowrap gap-3">
-            <button
-              onClick={() => setOpenLocation(true)}
-              className="flex items-center gap-1 text-gray-700 hover:text-[#1A2A49]"
-            >
-              <MapPin size={18} /> Location
-            </button>
-            <button
-              onClick={() => navigate("/")}
-              className="flex items-center gap-1 text-gray-700 hover:text-[#1A2A49]"
-            >
-              <Home size={18} /> Home
-            </button>
-          </div>
-        </div>
+    <div className="bg-gray-50 min-h-screen px-3 sm:px-6 py-6">
+      <div className="max-w-3xl mx-auto">
+        <h2 className="text-2xl font-bold text-[#1A2A49] mb-6">My Account</h2>
 
-        {/* Tabs */}
-        <div className="flex flex-wrap sm:flex-nowrap border-b text-sm sm:text-base">
-          {[
-            { id: "profile", label: "My Profile", icon: <User size={16} /> },
-            { id: "track", label: "Track", icon: <PackageSearch size={16} /> },
-            { id: "coupons", label: "Coupons", icon: <TicketPercent size={16} /> },
-            { id: "notifications", label: "Notify", icon: <Bell size={16} /> },
-            { id: "services", label: "Services", icon: <Wrench size={16} /> },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-2 sm:py-3 text-center font-medium flex justify-center items-center gap-1 ${
-                activeTab === tab.id
-                  ? "text-[#1A2A49] border-b-2 border-[#1A2A49]"
-                  : "text-gray-500"
-              }`}
-            >
-              {tab.icon} <span className="hidden sm:inline">{tab.label}</span>
-            </button>
-          ))}
-        </div>
+        {/* My Orders */}
+        <Section title="My Orders">
+          <Item
+            icon={ListChecks}
+            label="My Orders"
+            onClick={() => navigate("/account", { state: { tab: "track" } })}
+          />
+          <Item
+            icon={ShoppingCart}
+            label={`My Cart (${(JSON.parse(localStorage.getItem("pluggy_cart") || "[]")).length})`}
+            onClick={() => window.dispatchEvent(new Event("pluggy:open-cart"))}
+          />
+        </Section>
 
-        {/* Content */}
-        <div className="p-4 sm:p-6 text-sm sm:text-base">
-          {activeTab === "profile" && (
-            <div className="space-y-1">
-              <h2 className="text-xl font-bold text-[#1A2A49] mb-4">My Profile</h2>
-              <p><span className="font-medium">Name:</span> {user.name}</p>
-              <p><span className="font-medium">Email:</span> {user.email}</p>
-              <p><span className="font-medium">Phone:</span> {user.phone}</p>
+        {/* Account Settings */}
+        <Section title="Account Settings">
+          <Item icon={Lock} label="Login & Security" onClick={() => toast("Login settings")} />
+          <Item icon={MapPin} label="Your Address" onClick={() => toast("Address book")} />
+          <Item icon={Eye} label="Recently Viewed" onClick={() => toast("Recently viewed")} />
+          <Item icon={Key} label="Change Password" onClick={() => toast("Change password")} />
+          {editing ? (
+            <div className="p-4">
+              <input
+                className="border w-full mb-2 px-3 py-2 rounded"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
+              <input
+                className="border w-full mb-2 px-3 py-2 rounded"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={saveProfile}
+                  className="px-4 py-2 bg-[#1A2A49] text-white rounded-lg hover:bg-[#223a61]"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => setEditing(false)}
+                  className="px-4 py-2 border rounded-lg"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
+          ) : (
+            <Item icon={Edit} label="Edit Profile" onClick={startEdit} />
           )}
+        </Section>
 
-          {activeTab === "track" && (
-            <div>
-              <h2 className="text-xl font-bold text-[#1A2A49] mb-4">Your Requests</h2>
-              {requests.length === 0 ? (
-                <p className="text-gray-600">No requests yet.</p>
-              ) : (
-                <ul className="space-y-3">
-                  {requests.map((r) => (
-                    <li key={r.id} className="border rounded-md p-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
-                      <div className="space-y-1">
-                        <p className="font-medium">{r.service}</p>
-                        <p className="text-sm text-gray-600">{r.issue}</p>
-                        {r.amount !== null && (
-                          <p className="text-sm text-[#1A2A49] font-semibold">
-                            Amount Paid: ₹{r.amount}
-                          </p>
-                        )}
-                        <p className="text-sm text-gray-500">{r.name} • {r.phone}</p>
-                        <p className="text-sm text-gray-500">{r.email}</p>
-                        <p className="text-xs text-gray-400">Created: {r.created_at}</p>
-                        <span className="inline-block mt-1 text-sm font-medium text-yellow-600">
-                          {r.status}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => handleCancel(r.id)}
-                        className="self-end sm:self-center text-gray-400 hover:text-red-600 transition"
-                        title="Cancel Request"
-                      >
-                        ✕
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-
-          {activeTab === "coupons" && (
-            <div>
-              <h2 className="text-xl font-bold text-[#1A2A49] mb-4">Coupons</h2>
-              <p className="text-gray-600">No coupons available. 🎟️</p>
-            </div>
-          )}
-
-          {activeTab === "notifications" && (
-            <div>
-              <h2 className="text-xl font-bold text-[#1A2A49] mb-4">Notifications</h2>
-              <p className="text-gray-600">No new notifications. 🔔</p>
-            </div>
-          )}
-
-          {activeTab === "services" && (
-            <div>
-              <h2 className="text-xl font-bold text-[#1A2A49] mb-6">Our Services</h2>
-              <ul className="space-y-6">
-                {menus.map((menu, i) => (
-                  <li
-                    key={i}
-                    className="relative group border rounded-lg p-4 hover:shadow-md"
-                    onMouseEnter={() => setHovered(i)}
-                    onMouseLeave={() => setHovered(null)}
-                  >
-                    <button className="flex justify-between items-center w-full font-medium text-[#1A2A49]">
-                      {menu.label}
-                    </button>
-                    {hovered === i && (
-                      <div className="mt-3 bg-white shadow-lg rounded-lg border p-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {menu.items.map((item, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() =>
-                              navigate(`/request/${item.replace(/\s+/g, "-").toLowerCase()}`)
-                            }
-                            className="text-sm text-gray-700 hover:bg-gray-100 px-3 py-1 rounded-md text-left"
-                          >
-                            {item}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
+        {/* Others */}
+        <Section title="Others">
+          <Item
+            icon={Bell}
+            label="Notifications"
+            onClick={() => navigate("/account", { state: { tab: "notifications" } })}
+          />
+          <Item
+            icon={TicketPercent}
+            label="Coupons"
+            onClick={() => navigate("/account", { state: { tab: "coupons" } })}
+          />
+          <Item
+            icon={Wrench}
+            label="Services"
+            onClick={() => navigate("/account", { state: { tab: "services" } })}
+          />
+        </Section>
 
         {/* Logout */}
-        <div className="border-t px-4 sm:px-6 py-4">
-          <button
+        <div className="bg-white rounded-xl shadow">
+          <Item
+            icon={LogOut}
+            label="Logout"
             onClick={() => {
               localStorage.removeItem("pluggy_user")
               setUser(null)
               toast.success("Logged out successfully ✅")
               navigate("/")
             }}
-            className="flex items-center gap-2 text-red-600 hover:text-red-800"
-          >
-            <LogOut size={18} /> Logout
-          </button>
+          />
         </div>
       </div>
-
-      {openLocation && (
-        <LocationPopup
-          onClose={() => setOpenLocation(false)}
-          onSave={(loc) => {
-            localStorage.setItem("pluggy_city", JSON.stringify(loc))
-            setOpenLocation(false)
-          }}
-        />
-      )}
     </div>
   )
 }
