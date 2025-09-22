@@ -7,10 +7,11 @@ import Login from "./pages/Login"
 import Signup from "./pages/Signup"
 import Account from "./pages/Account"
 import RequestForm from "./pages/RequestForm"
-import ServiceDetail from "./pages/ServiceDetail" // ✅ single detail page for all services
+import ServiceDetail from "./pages/ServiceDetail"
 
 import Navbar from "./components/Navbar"
 import LocationGate from "./components/LocationGate"
+import BottomNavbar from "./components/BottomNavbar"   // ✅ import kiya
 
 export default function App() {
   const [city, setCity] = useState(null)
@@ -42,19 +43,24 @@ export default function App() {
 
   return (
     <>
-      <Navbar city={city} setCity={setCity} user={user} setUser={setUser} />
+      {/* ✅ Top Navbar (sirf desktop/tablet) */}
+      <div className="hidden sm:block">
+        <Navbar city={city} setCity={setCity} user={user} setUser={setUser} />
+      </div>
 
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/signup" element={<Signup setUser={setUser} />} />
-
-        {/* ✅ All cards go to /services/:id */}
         <Route path="/services/:id" element={<ServiceDetail />} />
-
         <Route path="/account" element={<Account user={user} setUser={setUser} />} />
         <Route path="/request/:service" element={<RequestForm />} />
       </Routes>
+
+      {/* ✅ Mobile Bottom Navbar (sm se neeche) */}
+      <div className="block sm:hidden">
+        <BottomNavbar user={user} />
+      </div>
 
       <Toaster position="top-right" />
       <div id="portal-root"></div>
