@@ -1,4 +1,4 @@
-// App.jsx
+// src/App.jsx
 import { Routes, Route, useLocation } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
 import Navbar from "./components/Navbar"
@@ -16,7 +16,7 @@ import ServiceDetail from "./pages/ServiceDetail"
 import EngineerLogin from "./pages/EngineerLogin"
 import EngineerDashboard from "./pages/EngineerDashboard"
 
-// ✅ New account sub-pages
+// ✅ Account sub-pages
 import TrackRequests from "./pages/TrackRequests"
 import CartPage from "./pages/CartPage"
 import SecurityPage from "./pages/SecurityPage"
@@ -35,9 +35,12 @@ export default function App() {
     return <LocationGate onSelect={(c) => setCity(c)} />
   }
 
+  // ✅ Hide layout on auth pages
+  const hideLayout = ["/login", "/signup", "/engineer-login"].includes(location.pathname)
+
   return (
     <>
-      <Navbar />
+      {!hideLayout && <Navbar />}
       <ScrollToTop />
 
       <Routes>
@@ -64,8 +67,9 @@ export default function App() {
         <Route path="/engineer" element={<EngineerDashboard />} />
       </Routes>
 
-      {location.pathname === "/" && <BottomNavbar />}
-      <Footer />
+      {!hideLayout && location.pathname === "/" && <BottomNavbar />}
+      {!hideLayout && <Footer />}
+
       <Toaster position="top-right" />
       <div id="portal-root"></div>
     </>

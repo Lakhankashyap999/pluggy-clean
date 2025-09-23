@@ -1,94 +1,102 @@
-// src/AppContext.jsx
-import { createContext, useContext, useState, useEffect } from "react"
+import { createContext, useContext, useEffect, useState } from "react"
 
 const AppContext = createContext()
 
 export function AppProvider({ children }) {
-  // ----------------- User -----------------
+  // 🌍 City selection
+  const [city, setCity] = useState(localStorage.getItem("pluggy_city") || null)
+
+  // 👤 User state
   const [user, setUser] = useState(
     JSON.parse(localStorage.getItem("pluggy_user") || "null")
   )
 
-  const loginUser = (data) => {
-    setUser(data)
-    localStorage.setItem("pluggy_user", JSON.stringify(data))
-  }
-
-  const logoutUser = () => {
-    setUser(null)
-    localStorage.removeItem("pluggy_user")
-  }
-
-  // ----------------- Engineer -----------------
+  // 🛠️ Engineer state
   const [engineer, setEngineer] = useState(
     JSON.parse(localStorage.getItem("pluggy_engineer") || "null")
   )
 
-  const loginEngineer = (data) => {
-    setEngineer(data)
-    localStorage.setItem("pluggy_engineer", JSON.stringify(data))
-  }
-
-  const logoutEngineer = () => {
-    setEngineer(null)
-    localStorage.removeItem("pluggy_engineer")
-  }
-
-  // ----------------- Cart -----------------
+  // 📦 Cart state
   const [cart, setCart] = useState(
     JSON.parse(localStorage.getItem("pluggy_cart") || "[]")
   )
 
-  useEffect(() => {
-    localStorage.setItem("pluggy_cart", JSON.stringify(cart))
-  }, [cart])
-
-  // ----------------- Requests -----------------
-  const [requests, setRequestsState] = useState(
+  // 📋 Requests state
+  const [requests, setRequests] = useState(
     JSON.parse(localStorage.getItem("pluggy_requests") || "[]")
   )
 
-  const setRequests = (newReqs) => {
-    setRequestsState(newReqs)
-    localStorage.setItem("pluggy_requests", JSON.stringify(newReqs))
-  }
-
-  // ----------------- City -----------------
-  const [city, setCity] = useState(
-    localStorage.getItem("pluggy_city") || null
-  )
-
+  // 🌍 Update city
   useEffect(() => {
     if (city) localStorage.setItem("pluggy_city", city)
   }, [city])
 
-  // ----------------- Context Provider -----------------
+  // 👤 Update user
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("pluggy_user", JSON.stringify(user))
+    } else {
+      localStorage.removeItem("pluggy_user")
+    }
+  }, [user])
+
+  // 🛠️ Update engineer
+  useEffect(() => {
+    if (engineer) {
+      localStorage.setItem("pluggy_engineer", JSON.stringify(engineer))
+    } else {
+      localStorage.removeItem("pluggy_engineer")
+    }
+  }, [engineer])
+
+  // 📦 Update cart
+  useEffect(() => {
+    localStorage.setItem("pluggy_cart", JSON.stringify(cart))
+  }, [cart])
+
+  // 📋 Update requests
+  useEffect(() => {
+    localStorage.setItem("pluggy_requests", JSON.stringify(requests))
+  }, [requests])
+
+  // 🔑 Auth helpers
+  const loginUser = (data) => setUser(data)
+  const logoutUser = () => setUser(null)
+
+  const loginEngineer = (data) => setEngineer(data)
+  const logoutEngineer = () => setEngineer(null)
+
+  // 🛒 Cart helpers
+  const addToCart = (item) => setCart((prev) => [...prev, item])
+  const clearCart = () => setCart([])
+
+  // 📋 Request helpers
+  const addRequest = (req) => setRequests((prev) => [...prev, req])
+  const updateRequestStatus = (id, newStatus) =>
+    setRequests((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
+    )
+
   return (
     <AppContext.Provider
       value={{
-        // User
+        city,
+        setCity,
         user,
         setUser,
         loginUser,
         logoutUser,
-
-        // Engineer
         engineer,
         setEngineer,
         loginEngineer,
         logoutEngineer,
-
-        // Cart
         cart,
-        setCart,
-
-        // Requests
+        addToCart,
+        clearCart,
         requests,
+        addRequest,
+        updateRequestStatus,
         setRequests,
-
-        // City
-        city,
-        setCity,
       }}
     >
       {children}

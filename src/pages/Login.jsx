@@ -20,6 +20,7 @@ export default function Login() {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
+  // ✅ Normal login
   const handleSubmit = (e) => {
     e.preventDefault()
     const stored = localStorage.getItem("pluggy_user")
@@ -80,111 +81,119 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full flex flex-col md:flex-row items-center justify-center">
-        <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
-          {!showForgot ? (
-            <>
-              <h2 className="text-2xl font-bold text-[#1A2A49] mb-6 text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
+        {!showForgot ? (
+          <>
+            <h2 className="text-2xl font-bold text-[#1A2A49] mb-6 text-center">
+              Log in
+            </h2>
+
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              <div className="flex items-center border rounded-md px-3 py-2">
+                <Mail size={18} className="text-gray-400 mr-2" />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={form.email}
+                  onChange={handleChange}
+                  className="flex-1 outline-none text-sm"
+                  required
+                />
+              </div>
+              <div className="flex items-center border rounded-md px-3 py-2">
+                <Lock size={18} className="text-gray-400 mr-2" />
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={form.password}
+                  onChange={handleChange}
+                  className="flex-1 outline-none text-sm"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-[#1A2A49] text-white py-2 rounded-md hover:bg-[#223a61]"
+              >
                 Log in
-              </h2>
+              </button>
+            </form>
 
-              <form className="space-y-4" onSubmit={handleSubmit}>
-                <div className="flex items-center border rounded-md px-3 py-2">
-                  <Mail size={18} className="text-gray-400 mr-2" />
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    value={form.email}
-                    onChange={handleChange}
-                    className="flex-1 outline-none text-sm"
-                    required
-                  />
-                </div>
-                <div className="flex items-center border rounded-md px-3 py-2">
-                  <Lock size={18} className="text-gray-400 mr-2" />
-                  <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    value={form.password}
-                    onChange={handleChange}
-                    className="flex-1 outline-none text-sm"
-                    required
-                  />
-                </div>
+            {/* Forgot password */}
+            <p
+              onClick={() => setShowForgot(true)}
+              className="mt-3 text-sm text-[#1A2A49] text-center hover:underline cursor-pointer"
+            >
+              Forgot your password?
+            </p>
 
+            {/* Signup */}
+            <p className="mt-4 text-sm text-gray-600 text-center">
+              Don’t have an account?{" "}
+              <Link to="/signup" className="text-[#1A2A49] font-medium hover:underline">
+                Create new account
+              </Link>
+            </p>
+
+            {/* Engineer login link */}
+            <p className="mt-2 text-sm text-gray-600 text-center">
+              Are you an engineer?{" "}
+              <Link to="/engineer-login" className="text-[#1A2A49] font-medium hover:underline">
+                Login here
+              </Link>
+            </p>
+          </>
+        ) : (
+          <>
+            <h2 className="text-xl font-bold text-[#1A2A49] mb-6 text-center">
+              Reset Password
+            </h2>
+            {!otpSent ? (
+              <>
+                <input
+                  type="email"
+                  placeholder="Enter your registered email"
+                  className="w-full border rounded-lg px-4 py-3 text-sm mb-3"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                />
                 <button
-                  type="submit"
+                  onClick={sendOtp}
                   className="w-full bg-[#1A2A49] text-white py-2 rounded-md hover:bg-[#223a61]"
                 >
-                  Log in
+                  Send OTP
                 </button>
-              </form>
-
-              <p
-                onClick={() => setShowForgot(true)}
-                className="mt-3 text-sm text-[#1A2A49] text-center hover:underline cursor-pointer"
-              >
-                Forgot your password?
-              </p>
-
-              <p className="mt-4 text-sm text-gray-600 text-center">
-                Don’t have an account?{" "}
-                <Link to="/signup" className="text-[#1A2A49] font-medium hover:underline">
-                  Create new account
-                </Link>
-              </p>
-            </>
-          ) : (
-            <>
-              <h2 className="text-xl font-bold text-[#1A2A49] mb-6 text-center">
-                Reset Password
-              </h2>
-              {!otpSent ? (
-                <>
-                  <input
-                    type="email"
-                    placeholder="Enter your registered email"
-                    className="w-full border rounded-lg px-4 py-3 text-sm mb-3"
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  />
-                  <button
-                    onClick={sendOtp}
-                    className="w-full bg-[#1A2A49] text-white py-2 rounded-md hover:bg-[#223a61]"
-                  >
-                    Send OTP
-                  </button>
-                </>
-              ) : (
-                <>
-                  <input
-                    type="text"
-                    placeholder="Enter OTP"
-                    className="w-full border rounded-lg px-4 py-3 text-sm mb-3"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                  />
-                  <input
-                    type="password"
-                    placeholder="New Password"
-                    className="w-full border rounded-lg px-4 py-3 text-sm mb-3"
-                    value={newPass}
-                    onChange={(e) => setNewPass(e.target.value)}
-                  />
-                  <button
-                    onClick={resetPassword}
-                    className="w-full bg-[#1A2A49] text-white py-2 rounded-md hover:bg-[#223a61]"
-                  >
-                    Reset Password
-                  </button>
-                </>
-              )}
-            </>
-          )}
-        </div>
+              </>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  placeholder="Enter OTP"
+                  className="w-full border rounded-lg px-4 py-3 text-sm mb-3"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                />
+                <input
+                  type="password"
+                  placeholder="New Password"
+                  className="w-full border rounded-lg px-4 py-3 text-sm mb-3"
+                  value={newPass}
+                  onChange={(e) => setNewPass(e.target.value)}
+                />
+                <button
+                  onClick={resetPassword}
+                  className="w-full bg-[#1A2A49] text-white py-2 rounded-md hover:bg-[#223a61]"
+                >
+                  Reset Password
+                </button>
+              </>
+            )}
+          </>
+        )}
       </div>
     </div>
   )

@@ -10,7 +10,7 @@ export default function LocationGate({ onSelect }) {
 
   const cities = [
     "New Delhi", "Gurugram", "Noida", "Ghaziabad",
-    "Mumbai", "Pune", "Bengaluru", "Hyderabad", "Jaipur", "Chandigarh"
+    "Mumbai", "Pune", "Bengaluru", "Hyderabad", "Jaipur", "Chandigarh",
   ]
 
   const chooseCity = (city) => {
@@ -36,10 +36,10 @@ export default function LocationGate({ onSelect }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl overflow-hidden">
+      <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl overflow-hidden animate-fadeIn">
         {/* Header */}
         <div className="px-5 py-4 border-b flex items-center gap-2">
-          <MapPin size={20} className="text-[#F37021]" />
+          <MapPin size={22} className="text-[#F37021]" />
           <h2 className="text-lg sm:text-xl font-bold" style={{ color: BRAND }}>
             Select your city
           </h2>
@@ -77,20 +77,22 @@ export default function LocationGate({ onSelect }) {
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search city..."
                   className="w-full border rounded-lg px-4 py-2 text-sm focus:outline-[#1A2A49]"
+                  autoFocus
                 />
-                <div className="mt-2 max-h-48 overflow-auto rounded-lg border text-sm">
-                  {filtered.length === 0 && (
+                <div className="mt-2 max-h-48 overflow-auto rounded-lg border text-sm divide-y">
+                  {filtered.length === 0 ? (
                     <div className="p-3 text-gray-500">No results</div>
+                  ) : (
+                    filtered.map((c) => (
+                      <div
+                        key={c}
+                        onClick={() => chooseCity(c)}
+                        className="px-4 py-2 cursor-pointer hover:bg-[#F37021]/10"
+                      >
+                        {c}
+                      </div>
+                    ))
                   )}
-                  {filtered.map((c) => (
-                    <div
-                      key={c}
-                      onClick={() => chooseCity(c)}
-                      className="px-4 py-2 cursor-pointer hover:bg-[#F37021]/10"
-                    >
-                      {c}
-                    </div>
-                  ))}
                 </div>
               </>
             )}
