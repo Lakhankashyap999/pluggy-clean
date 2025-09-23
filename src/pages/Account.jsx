@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
 import {
-  User,
   ShoppingCart,
   ListChecks,
   Lock,
@@ -15,17 +13,17 @@ import {
   Edit,
 } from "lucide-react"
 import toast from "react-hot-toast"
+import { useApp } from "../AppContext"
 
-export default function Account({ user, setUser }) {
-  const navigate = useNavigate()
-  const [requests, setRequests] = useState([])
+export default function Account() {
+  const { user, setUser, requests, cart, logoutUser } = useApp()
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({ name: "", email: "" })
+  const [activeTab, setActiveTab] = useState(null)
 
   useEffect(() => {
-    const saved = localStorage.getItem("pluggy_requests")
-    if (saved) setRequests(JSON.parse(saved))
-  }, [])
+    if (user) setForm({ name: user.name, email: user.email })
+  }, [user])
 
   if (!user) {
     return (
@@ -35,17 +33,10 @@ export default function Account({ user, setUser }) {
     )
   }
 
-  // ✅ Start edit mode
-  const startEdit = () => {
-    setForm({ name: user.name, email: user.email })
-    setEditing(true)
-  }
-
   // ✅ Save profile changes
   const saveProfile = () => {
     const updatedUser = { ...user, name: form.name, email: form.email }
     setUser(updatedUser)
-    localStorage.setItem("pluggy_user", JSON.stringify(updatedUser))
     setEditing(false)
     toast.success("Profile updated ✅")
   }
@@ -72,28 +63,105 @@ export default function Account({ user, setUser }) {
       <div className="max-w-3xl mx-auto">
         <h2 className="text-2xl font-bold text-[#1A2A49] mb-6">My Account</h2>
 
-        {/* My Orders */}
+        {/* Options */}
         <Section title="My Orders">
-          <Item
-            icon={ListChecks}
-            label="My Orders"
-            onClick={() => navigate("/account", { state: { tab: "track" } })}
-          />
-          <Item
-            icon={ShoppingCart}
-            label={`My Cart (${(JSON.parse(localStorage.getItem("pluggy_cart") || "[]")).length})`}
-            onClick={() => window.dispatchEvent(new Event("pluggy:open-cart"))}
-          />
+          <Item icon={ListChecks} label="Track Requests" onClick={() => setActiveTab("track")} />
+          <Item icon={ShoppingCart} label={`My Cart (${cart.length})`} onClick={() => setActiveTab("cart")} />
         </Section>
 
-        {/* Account Settings */}
         <Section title="Account Settings">
-          <Item icon={Lock} label="Login & Security" onClick={() => toast("Login settings")} />
-          <Item icon={MapPin} label="Your Address" onClick={() => toast("Address book")} />
-          <Item icon={Eye} label="Recently Viewed" onClick={() => toast("Recently viewed")} />
-          <Item icon={Key} label="Change Password" onClick={() => toast("Change password")} />
-          {editing ? (
-            <div className="p-4">
+          <Item icon={Lock} label="Login & Security" onClick={() => setActiveTab("login")} />
+          <Item icon={MapPin} label="Your Address" onClick={() => setActiveTab("address")} />
+          <Item icon={Eye} label="Recently Viewed" onClick={() => setActiveTab("recent")} />
+          <Item icon={Key} label="Change Password" onClick={() => setActiveTab("password")} />
+          <Item icon={Edit} label="Edit Profile" onClick={() => setActiveTab("editProfile")} />
+        </Section>
+
+        <Section title="Others">
+          <Item icon={Bell} label="Notifications" onClick={() => setActiveTab("notifications")} />
+          <Item icon={TicketPercent} label="Coupons" onClick={() => setActiveTab("coupons")} />
+          <Item icon={Wrench} label="Services" onClick={() => setActiveTab("services")} />
+        </Section>
+
+        <div className="bg-white rounded-xl shadow">
+          <Item
+            icon={LogOut}
+            label="Logout"
+            onClick={() => {
+              logoutUser()
+              toast.success("Logged out successfully ✅")
+            }}
+          />
+        </div>
+
+        {/* Tab Content */}
+        <div className="mt-8 bg-white p-6 rounded-xl shadow">
+          {activeTab === "track" && (
+            <div>
+              <h3 className="font-bold text-[#1A2A49] mb-3">Track Your Requests</h3>
+              {requests.length === 0 ? (
+                <p className="text-gray-600">No requests found.</p>
+              ) : (
+                <ul className="space-y-3">
+                  {requests.map((r) => (
+                    <li key={r.id} className="border rounded-lg p-3">
+                      <div className="font-semibold">{r.service}</div>
+                      <div className="text-sm text-gray-600">Issue: {r.issue}</div>
+                      <div className="text-sm">Amount: ₹{r.amount}</div>
+                      <div className="text-sm text-gray-500">Status: {r.status}</div>
+                      {r.status === "Accepted" && (
+                        <div className="text-green-600 font-medium mt-1">
+                          ✅ Accepted — Your engineer will call you shortly
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
+          {activeTab === "cart" && (
+            <div>
+              <h3 className="font-bold text-[#1A2A49] mb-3">My Cart</h3>
+              {cart.length === 0 ? (
+                <p className="text-gray-600">Your cart is empty.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {cart.map((c, i) => (
+                    <li key={i} className="border p-2 rounded">
+                      {c.issue} — ₹{c.price}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
+          {activeTab === "notifications" && (
+            <div>
+              <h3 className="font-bold text-[#1A2A49] mb-3">Notifications</h3>
+              <p className="text-gray-600">No new notifications.</p>
+            </div>
+          )}
+
+          {activeTab === "coupons" && (
+            <div>
+              <h3 className="font-bold text-[#1A2A49] mb-3">Coupons</h3>
+              <p className="text-gray-600">No coupons available.</p>
+            </div>
+          )}
+
+          {activeTab === "services" && (
+            <div>
+              <h3 className="font-bold text-[#1A2A49] mb-3">Services</h3>
+              <p className="text-gray-600">Services list will be shown here.</p>
+            </div>
+          )}
+
+          {activeTab === "editProfile" && (
+            <div>
+              <h3 className="font-bold text-[#1A2A49] mb-3">Edit Profile</h3>
               <input
                 className="border w-full mb-2 px-3 py-2 rounded"
                 value={form.name}
@@ -119,42 +187,7 @@ export default function Account({ user, setUser }) {
                 </button>
               </div>
             </div>
-          ) : (
-            <Item icon={Edit} label="Edit Profile" onClick={startEdit} />
           )}
-        </Section>
-
-        {/* Others */}
-        <Section title="Others">
-          <Item
-            icon={Bell}
-            label="Notifications"
-            onClick={() => navigate("/account", { state: { tab: "notifications" } })}
-          />
-          <Item
-            icon={TicketPercent}
-            label="Coupons"
-            onClick={() => navigate("/account", { state: { tab: "coupons" } })}
-          />
-          <Item
-            icon={Wrench}
-            label="Services"
-            onClick={() => navigate("/account", { state: { tab: "services" } })}
-          />
-        </Section>
-
-        {/* Logout */}
-        <div className="bg-white rounded-xl shadow">
-          <Item
-            icon={LogOut}
-            label="Logout"
-            onClick={() => {
-              localStorage.removeItem("pluggy_user")
-              setUser(null)
-              toast.success("Logged out successfully ✅")
-              navigate("/")
-            }}
-          />
         </div>
       </div>
     </div>

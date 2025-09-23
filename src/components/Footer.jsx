@@ -55,7 +55,7 @@ export default function Footer() {
               <MapPin size={16} /> Hapur, Uttar Pradesh, India
             </li>
             <li className="flex items-center gap-2">
-              <Phone size={16} /> +91 9634675735
+              <Phone size={16} /> +91 09098098099
             </li>
             <li className="flex items-center gap-2">
               <Mail size={16} /> contact@pluggy.com

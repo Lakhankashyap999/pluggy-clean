@@ -1,38 +1,15 @@
-import { useEffect, useState } from "react"
 import { Home, Grid, ShoppingCart, User } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
+import { useApp } from "../AppContext"
 
 export default function BottomNavbar() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const [cartCount, setCartCount] = useState(0)
-
-  useEffect(() => {
-    const read = () => {
-      try {
-        const items = JSON.parse(localStorage.getItem("pluggy_cart") || "[]")
-        setCartCount(Array.isArray(items) ? items.length : 0)
-      } catch {
-        setCartCount(0)
-      }
-    }
-    read()
-    const onStorage = (e) => e.key === "pluggy_cart" && read()
-    const onCustom = () => read()
-    window.addEventListener("storage", onStorage)
-    window.addEventListener("pluggy:cart-updated", onCustom)
-    return () => {
-      window.removeEventListener("storage", onStorage)
-      window.removeEventListener("pluggy:cart-updated", onCustom)
-    }
-  }, [])
+  const { cart } = useApp()
 
   const openCartPopup = () => {
     window.dispatchEvent(new Event("pluggy:open-cart"))
   }
-
-  // ❌ Sirf Home page par dikhana
-  if (pathname !== "/") return null
 
   const navItems = [
     { id: "home", label: "Home", icon: Home, onTap: () => navigate("/") },
@@ -47,20 +24,25 @@ export default function BottomNavbar() {
         {navItems.map((item) => {
           const isActive =
             (item.id === "home" && pathname === "/") ||
-            (item.id !== "home" && pathname.startsWith(`/${item.id}`))
+            (item.id === "services" && pathname.startsWith("/services")) ||
+            (item.id === "account" && pathname.startsWith("/account")) ||
+            (item.id === "cart" && pathname.startsWith("/cart"))
+
           return (
             <button
               key={item.id}
               onClick={item.onTap}
               className={`flex flex-col items-center text-xs ${
-                isActive ? "text-[#1A2A49] font-semibold" : "text-gray-500"
+                isActive
+                  ? "text-[#1A2A49] font-semibold"
+                  : "text-gray-500"
               }`}
             >
               <div className="relative">
                 <item.icon size={22} />
-                {item.id === "cart" && cartCount > 0 && (
+                {item.id === "cart" && cart.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                    {cartCount}
+                    {cart.length}
                   </span>
                 )}
               </div>

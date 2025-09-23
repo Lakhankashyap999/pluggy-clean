@@ -6,13 +6,13 @@ import { ChevronLeft, Shield, Info, AlarmClock, Home } from "lucide-react"
 import { DotLottieReact } from "@lottiefiles/dotlottie-react"
 import successAnim from "../assets/success.lottie"
 import PaymentPopup from "../components/PaymentPopup"
+import { useApp } from "../AppContext"
 
 export default function RequestForm() {
   const { service } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
-  const stored = localStorage.getItem("pluggy_user")
-  const user = stored ? JSON.parse(stored) : null
+  const { user, addRequest } = useApp() // ✅ context se user & addRequest
 
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -23,7 +23,10 @@ export default function RequestForm() {
     name: user?.name || "",
     email: user?.email || "",
     phone: user?.phone || "",
-    issue: location.state?.selectedIssue?.issue || location.state?.selectedIssue || "",
+    issue:
+      location.state?.selectedIssue?.issue ||
+      location.state?.selectedIssue ||
+      "",
   })
 
   const handleChange = (e) => {
@@ -44,9 +47,8 @@ export default function RequestForm() {
       created_at,
     }
 
-    const saved = localStorage.getItem("pluggy_requests")
-    const requests = saved ? JSON.parse(saved) : []
-    localStorage.setItem("pluggy_requests", JSON.stringify([...requests, newReq]))
+    // ✅ context me save
+    addRequest(newReq)
 
     try {
       await sendRequestEmail({
@@ -88,9 +90,13 @@ export default function RequestForm() {
           <div className="w-32 sm:w-40 h-32 sm:h-40 mx-auto">
             <DotLottieReact src={successAnim} loop={false} autoplay />
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-[#1A2A49] mt-4">Request Submitted</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#1A2A49] mt-4">
+            Request Submitted
+          </h2>
           <p className="text-gray-600 mt-2">
-            Your request for <span className="font-semibold">{cleanService}</span> has been received.
+            Your request for{" "}
+            <span className="font-semibold">{cleanService}</span> has been
+            received.
           </p>
 
           <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
@@ -117,8 +123,12 @@ export default function RequestForm() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg text-center w-full max-w-md">
-          <h2 className="text-lg sm:text-xl font-bold text-[#1A2A49] mb-4">Please log in first</h2>
-          <p className="text-gray-600 mb-6">You need to log in or sign up before raising a request.</p>
+          <h2 className="text-lg sm:text-xl font-bold text-[#1A2A49] mb-4">
+            Please log in first
+          </h2>
+          <p className="text-gray-600 mb-6">
+            You need to log in or sign up before raising a request.
+          </p>
           <div className="flex gap-3 justify-center">
             <button
               onClick={() => navigate("/login")}
@@ -144,11 +154,17 @@ export default function RequestForm() {
       {/* Header */}
       <div className="bg-white border-b">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-gray-700 hover:text-[#1A2A49]">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1 text-gray-700 hover:text-[#1A2A49]"
+          >
             <ChevronLeft size={20} />
             <span className="text-sm">Back</span>
           </button>
-          <button onClick={() => navigate("/")} className="flex items-center gap-1 text-gray-700 hover:text-[#1A2A49]">
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center gap-1 text-gray-700 hover:text-[#1A2A49]"
+          >
             <Home size={20} />
             <span className="text-sm">Home</span>
           </button>
@@ -164,40 +180,87 @@ export default function RequestForm() {
               <AlarmClock size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-[#1A2A49]">Raise a Request</h2>
+              <h2 className="text-lg font-semibold text-[#1A2A49]">
+                Raise a Request
+              </h2>
               <p className="text-xs text-gray-500">{cleanService}</p>
             </div>
           </div>
           <div className="mt-6 space-y-3">
             <div className="flex items-start gap-3">
               <Shield size={18} className="text-[#1A2A49]" />
-              <p className="text-sm text-gray-600">Verified technicians, 30 days service guarantee</p>
+              <p className="text-sm text-gray-600">
+                Verified technicians, 30 days service guarantee
+              </p>
             </div>
             <div className="flex items-start gap-3">
               <Info size={18} className="text-[#1A2A49]" />
-              <p className="text-sm text-gray-600">Please describe the issue clearly.</p>
+              <p className="text-sm text-gray-600">
+                Please describe the issue clearly.
+              </p>
             </div>
           </div>
         </div>
 
         {/* Form */}
         <div className="bg-white rounded-2xl shadow-sm border p-5 sm:p-6">
-          <h3 className="text-lg font-semibold text-[#1A2A49] mb-4">Your Details</h3>
+          <h3 className="text-lg font-semibold text-[#1A2A49] mb-4">
+            Your Details
+          </h3>
           <form onSubmit={handleSubmit} className="space-y-5">
-            <input name="name" value={form.name} onChange={handleChange} placeholder="Full Name" className="w-full rounded-lg border px-4 py-3 text-sm" required />
-            <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="Email Address" className="w-full rounded-lg border px-4 py-3 text-sm" required />
-            <input name="phone" value={form.phone} onChange={handleChange} placeholder="Phone Number" className="w-full rounded-lg border px-4 py-3 text-sm" required />
-            <textarea name="issue" value={form.issue} onChange={handleChange} placeholder="Describe your issue" rows={4} className="w-full rounded-lg border px-4 py-3 text-sm" required />
+            <input
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Full Name"
+              className="w-full rounded-lg border px-4 py-3 text-sm"
+              required
+            />
+            <input
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="Email Address"
+              className="w-full rounded-lg border px-4 py-3 text-sm"
+              required
+            />
+            <input
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              placeholder="Phone Number"
+              className="w-full rounded-lg border px-4 py-3 text-sm"
+              required
+            />
+            <textarea
+              name="issue"
+              value={form.issue}
+              onChange={handleChange}
+              placeholder="Describe your issue"
+              rows={4}
+              className="w-full rounded-lg border px-4 py-3 text-sm"
+              required
+            />
 
             <div className="text-xs text-gray-500 -mt-2">
-              Note: Labour charge ₹50 will be added to the selected issue charge at payment step.
+              Note: Labour charge ₹50 will be added to the selected issue
+              charge at payment step.
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t">
-              <button type="button" onClick={() => navigate("/")} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+              <button
+                type="button"
+                onClick={() => navigate("/")}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
                 Cancel
               </button>
-              <button type="submit" disabled={loading} className="px-5 py-2 rounded-lg bg-[#1A2A49] text-white hover:bg-[#223a61] disabled:opacity-60">
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-5 py-2 rounded-lg bg-[#1A2A49] text-white hover:bg-[#223a61] disabled:opacity-60"
+              >
                 {loading ? "Submitting..." : "Submit Request"}
               </button>
             </div>

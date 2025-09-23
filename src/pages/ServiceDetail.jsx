@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom"
-import { ChevronLeft, Star, Wrench, ShoppingCart } from "lucide-react"
+import { ChevronLeft, Star, Wrench } from "lucide-react"
 import { useState } from "react"
 import Cart from "../components/Cart"
+import { useApp } from "../AppContext"
 
 const serviceData = {
   "ac-repair": {
@@ -72,6 +73,7 @@ export default function ServiceDetail() {
 
   const [selectedIssues, setSelectedIssues] = useState([])
   const [cartOpen, setCartOpen] = useState(false)
+  const { addToCart } = useApp() // ✅ context se cart update hoga
 
   if (!service) {
     return (
@@ -196,9 +198,7 @@ export default function ServiceDetail() {
         finalTotal={finalTotal}
         onRemove={removeIssue}
         onProceed={() => {
-          const saved = JSON.parse(localStorage.getItem("pluggy_cart") || "[]")
-          const updated = [...saved, ...selectedIssues]
-          localStorage.setItem("pluggy_cart", JSON.stringify(updated))
+          addToCart(selectedIssues) // ✅ context me cart save
           navigate(`/request/${id}`, { state: { selectedIssues, finalTotal } })
         }}
       />

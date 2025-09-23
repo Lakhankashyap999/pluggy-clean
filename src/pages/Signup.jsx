@@ -1,9 +1,11 @@
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import toast from "react-hot-toast"
+import { useApp } from "../AppContext"
 
-export default function Signup({ setUser }) {
+export default function Signup() {
   const navigate = useNavigate()
+  const { loginUser } = useApp() // ✅ context se user set karne ke liye
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -28,10 +30,11 @@ export default function Signup({ setUser }) {
       name: form.name,
       email: form.email,
       phone: form.phone,
+      password: form.password, // ✅ ab password bhi store hoga
     }
 
-    localStorage.setItem("pluggy_user", JSON.stringify(userData))
-    setUser(userData) // ✅ update global state
+    // context update karega aur localStorage sync AppContext se ho jayega
+    loginUser(userData)
 
     toast.success("Account created successfully 🎉")
     navigate("/")

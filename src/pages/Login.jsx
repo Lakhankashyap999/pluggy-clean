@@ -2,9 +2,11 @@ import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import toast from "react-hot-toast"
 import { Mail, Lock } from "lucide-react"
+import { useApp } from "../AppContext"
 
-export default function Login({ setUser }) {
+export default function Login() {
   const navigate = useNavigate()
+  const { loginUser } = useApp()
   const [form, setForm] = useState({ email: "", password: "" })
 
   const handleChange = (e) => {
@@ -22,12 +24,12 @@ export default function Login({ setUser }) {
 
     const userData = JSON.parse(stored)
 
-    if (form.email === userData.email && form.password === "123") {
-      setUser(userData)
+    if (form.email === userData.email && form.password === userData.password) {
+      loginUser(userData) // ✅ context me user set
       toast.success("Logged in successfully 🎉")
       navigate("/")
     } else {
-      toast.error("Invalid credentials ❌ (use Signup first)")
+      toast.error("Invalid credentials ❌")
     }
   }
 
@@ -46,6 +48,7 @@ export default function Login({ setUser }) {
               value={form.email}
               onChange={handleChange}
               className="w-full border rounded-md px-3 py-2 focus:outline-[#1A2A49]"
+              required
             />
             <input
               type="password"
@@ -54,6 +57,7 @@ export default function Login({ setUser }) {
               value={form.password}
               onChange={handleChange}
               className="w-full border rounded-md px-3 py-2 focus:outline-[#1A2A49]"
+              required
             />
             <button
               type="submit"
@@ -89,6 +93,7 @@ export default function Login({ setUser }) {
                 value={form.email}
                 onChange={handleChange}
                 className="flex-1 outline-none text-sm"
+                required
               />
             </div>
 
@@ -101,6 +106,7 @@ export default function Login({ setUser }) {
                 value={form.password}
                 onChange={handleChange}
                 className="flex-1 outline-none text-sm"
+                required
               />
             </div>
 

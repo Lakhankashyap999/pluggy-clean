@@ -1,54 +1,35 @@
 import {
-  Phone,
-  User,
-  LogOut,
-  ShoppingCart,
-  ListChecks,
-  Bell,
+  Phone, User, LogOut, ShoppingCart, ListChecks, Bell,
 } from "lucide-react"
-import LoginPopup from "./Popup/LoginPopup"
 import { Link, useNavigate } from "react-router-dom"
-import { useState, useEffect } from "react"
 import toast from "react-hot-toast"
 import Cart from "./Cart"
+import { useEffect, useState } from "react"
+import { useApp } from "../AppContext"
 
-export default function Navbar({ user, setUser }) {
+export default function Navbar() {
   const navigate = useNavigate()
+  const { user, logoutUser, cart, removeFromCart } = useApp()
   const [cartOpen, setCartOpen] = useState(false)
-  const [cartItems, setCartItems] = useState([])
 
   useEffect(() => {
-    const loadCart = () => {
-      const saved = localStorage.getItem("pluggy_cart")
-      if (saved) setCartItems(JSON.parse(saved))
-      else setCartItems([])
-    }
-    loadCart()
-    window.addEventListener("storage", loadCart)
-    return () => window.removeEventListener("storage", loadCart)
+    const open = () => setCartOpen(true)
+    window.addEventListener("pluggy:open-cart", open)
+    return () => window.removeEventListener("pluggy:open-cart", open)
   }, [])
 
-  useEffect(() => {
-    localStorage.setItem("pluggy_cart", JSON.stringify(cartItems))
-  }, [cartItems])
-
-  const handleRemove = (issue) => {
-    const updated = cartItems.filter((i) => i.issue !== issue)
-    setCartItems(updated)
-  }
+  const finalTotal =
+    cart.reduce((sum, i) => sum + i.price, 0) + (cart.length > 0 ? 50 : 0)
 
   return (
     <>
-      {/* ✅ Top Navbar */}
       <nav className="bg-[#1A2A49] shadow-sm sticky top-0 z-50">
         <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between text-white">
-          {/* Left: Logo */}
           <Link to="/" className="flex items-center gap-2">
             <img src="/image/logos.png" alt="Pluggy" className="h-10 w-10 rounded-md" />
             <span className="text-xl font-extrabold">Pluggy</span>
           </Link>
 
-          {/* Right: Desktop Menu */}
           <div className="hidden md:flex items-center gap-6">
             <button
               onClick={() => navigate("/account", { state: { tab: "track" } })}
@@ -56,28 +37,32 @@ export default function Navbar({ user, setUser }) {
             >
               <ListChecks size={18} /> My Requests
             </button>
+
             <button
               onClick={() => setCartOpen(true)}
               className="flex items-center gap-2 hover:text-gray-300"
             >
-              <ShoppingCart size={18} /> My Cart ({cartItems.length})
+              <ShoppingCart size={18} /> My Cart ({cart.length})
             </button>
+
             <button
               onClick={() => navigate("/account", { state: { tab: "notifications" } })}
               className="flex items-center gap-2 hover:text-gray-300"
             >
               <Bell size={18} /> Notifications
             </button>
+
             <button className="flex items-center gap-2 px-4 py-2 bg-white text-[#1A2A49] rounded-lg shadow hover:bg-gray-100">
               <Phone size={16} /> Call us
             </button>
+
             {!user ? (
-              <LoginPopup
-                onLogin={(u) => {
-                  setUser(u)
-                  toast.success("Logged in successfully 🎉")
-                }}
-              />
+              <button
+                onClick={() => navigate("/login")}
+                className="px-4 py-2 bg-white text-[#1A2A49] rounded-lg shadow hover:bg-gray-100"
+              >
+                Log in
+              </button>
             ) : (
               <div className="relative group">
                 <button className="flex items-center gap-1 text-sm font-medium">
@@ -85,14 +70,11 @@ export default function Navbar({ user, setUser }) {
                   <span className="font-semibold">{user.name}</span>
                 </button>
                 <div className="absolute right-0 mt-2 w-56 bg-white text-black shadow-lg rounded-lg border hidden group-hover:block z-50">
-                  <Link to="/account" className="block px-4 py-2 hover:bg-gray-100">
-                    My Profile
-                  </Link>
+                  <Link to="/account" className="block px-4 py-2 hover:bg-gray-100">My Profile</Link>
                   <div
                     className="px-4 py-2 text-red-600 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
                     onClick={() => {
-                      localStorage.removeItem("pluggy_user")
-                      setUser(null)
+                      logoutUser()
                       toast.success("Logged out successfully ✅")
                       navigate("/")
                     }}
@@ -106,19 +88,15 @@ export default function Navbar({ user, setUser }) {
         </div>
       </nav>
 
-      {/* ✅ Cart Popup */}
       <Cart
         open={cartOpen}
         onClose={() => setCartOpen(false)}
-        items={cartItems}
-        labourCharge={50}
+        items={cart}
+        labourCharge={cart.length > 0 ? 50 : 0}
         discount={0}
-        finalTotal={
-          cartItems.reduce((sum, i) => sum + i.price, 0) +
-          (cartItems.length > 0 ? 50 : 0)
-        }
-        onRemove={handleRemove}
-        onProceed={() => navigate("/checkout")}
+        finalTotal={finalTotal}
+        onRemove={removeFromCart}
+        onProceed={() => navigate("/request/ac-repair")}
       />
     </>
   )
