@@ -19,15 +19,22 @@ export default function Footer() {
             Reliable home services at your doorstep. <br />
             Quality technicians, transparent pricing, and customer trust.
           </p>
-          <div className="mt-4 flex">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="px-3 py-2 rounded-l-md focus:outline-none text-gray-900 w-48"
-            />
-            <button className="bg-blue-600 px-3 py-2 rounded-r-md text-white hover:bg-blue-700 transition">
-              Subscribe
-            </button>
+
+          {/* ✨ Unique Subscribe Box */}
+          <div className="mt-5">
+            <div className="flex flex-col sm:flex-row items-stretch bg-white rounded-full overflow-hidden shadow-lg max-w-sm">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1 px-4 py-3 text-sm text-gray-800 focus:outline-none"
+              />
+              <button className="bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 text-white font-medium text-sm hover:from-blue-700 hover:to-indigo-700 transition-all sm:rounded-r-full h-full">
+                Subscribe
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 mt-2">
+              📩 Get latest offers & service updates directly in your inbox
+            </p>
           </div>
         </div>
 
@@ -35,10 +42,10 @@ export default function Footer() {
         <div>
           <h3 className="text-lg font-semibold text-white mb-4">Company</h3>
           <ul className="space-y-2 text-sm">
-            <li><Link to="/about" className="hover:text-white">About</Link></li>
-            <li><Link to="/careers" className="hover:text-white">Careers</Link></li>
-            <li><Link to="/contact" className="hover:text-white">Contact</Link></li>
-            <li><Link to="/blog" className="hover:text-white">Blog</Link></li>
+            <li><Link to="/about" className="hover:text-white transition">About</Link></li>
+            <li><Link to="/careers" className="hover:text-white transition">Careers</Link></li>
+            <li><Link to="/contact" className="hover:text-white transition">Contact</Link></li>
+            <li><Link to="/blog" className="hover:text-white transition">Blog</Link></li>
           </ul>
         </div>
 
@@ -46,10 +53,10 @@ export default function Footer() {
         <div>
           <h3 className="text-lg font-semibold text-white mb-4">Services</h3>
           <ul className="space-y-2 text-sm">
-            <li><Link to="/services/ac-repair" className="hover:text-white">AC Services</Link></li>
-            <li><Link to="/services/fan-motor" className="hover:text-white">Fan & Motor</Link></li>
-            <li><Link to="/services/wiring" className="hover:text-white">Wiring</Link></li>
-            <li><Link to="/services/electrical" className="hover:text-white">Electrical</Link></li>
+            <li><Link to="/services/ac-repair" className="hover:text-white transition">AC Services</Link></li>
+            <li><Link to="/services/fan-motor" className="hover:text-white transition">Fan & Motor</Link></li>
+            <li><Link to="/services/wiring" className="hover:text-white transition">Wiring</Link></li>
+            <li><Link to="/services/electrical" className="hover:text-white transition">Electrical</Link></li>
           </ul>
         </div>
 
@@ -58,21 +65,21 @@ export default function Footer() {
           <h3 className="text-lg font-semibold text-white mb-4">Get in Touch</h3>
           <ul className="space-y-3 text-sm">
             <li className="flex items-center gap-2">
-              <MapPin size={16} /> Hapur, Uttar Pradesh, India
+              <MapPin size={16} className="text-blue-400" /> Hapur, Uttar Pradesh, India
             </li>
             <li className="flex items-center gap-2">
-              <Phone size={16} /> +91 09098098099
+              <Phone size={16} className="text-blue-400" /> +91 09098098099
             </li>
             <li className="flex items-center gap-2">
-              <Mail size={16} /> contact@pluggy.com
+              <Mail size={16} className="text-blue-400" /> contact@pluggy.com
             </li>
           </ul>
         </div>
       </div>
 
       {/* ✅ Bottom Bar */}
-      <div className="border-t border-gray-600 py-4 text-center text-sm text-gray-400">
-        © {new Date().getFullYear()} Pluggy. All rights reserved.
+      <div className="border-t border-gray-700 py-4 text-center text-sm text-gray-400 bg-[#16213d]">
+        © {new Date().getFullYear()} <span className="text-white font-semibold">Pluggy</span>. All rights reserved.
       </div>
     </motion.footer>
   )

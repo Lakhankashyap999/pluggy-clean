@@ -1,5 +1,7 @@
+import { useState } from "react"
 import { X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useApp } from "../AppContext"
 
 export default function Cart({
   open,
@@ -8,9 +10,21 @@ export default function Cart({
   labourCharge,
   discount,
   finalTotal,
-  onRemove,
   onProceed,
 }) {
+  const { address, setAddress, removeFromCart } = useApp() // ✅ use removeFromCart from context
+  const [tempAddress, setTempAddress] = useState("")
+  const [showAddressForm, setShowAddressForm] = useState(false)
+
+  const handleSaveAddress = () => {
+    if (!tempAddress.trim()) return
+    setAddress(tempAddress) // ✅ update context + localStorage
+    setTempAddress("")
+    setShowAddressForm(false)
+  }
+
+  if (!open) return null
+
   return (
     <AnimatePresence>
       {open && (
@@ -33,6 +47,7 @@ export default function Cart({
             className="fixed inset-0 flex justify-center items-center z-50"
           >
             <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl h-[90vh] flex flex-col overflow-hidden">
+              
               {/* Header */}
               <div className="flex justify-between items-center px-6 py-4 border-b">
                 <h2 className="text-lg font-bold text-[#1A2A49]">My Cart</h2>
@@ -63,7 +78,7 @@ export default function Cart({
                           <p className="text-sm text-gray-600">₹{item.price}</p>
                         </div>
                         <button
-                          onClick={() => onRemove(item.issue)}
+                          onClick={() => removeFromCart(item.issue)} // ✅ remove from context
                           className="text-red-600 hover:text-red-800"
                         >
                           Remove
@@ -73,6 +88,56 @@ export default function Cart({
                   </ul>
                 )}
               </div>
+
+              {/* Address Section */}
+              {items.length > 0 && (
+                <div className="px-6 py-3 border-t">
+                  {address ? (
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm text-gray-700">
+                        <span className="font-semibold">Delivery Address:</span>{" "}
+                        {address}
+                      </p>
+                      <button
+                        onClick={() => setShowAddressForm(true)}
+                        className="text-blue-600 text-sm"
+                      >
+                        Change
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-red-500">
+                      ⚠ Please select a delivery address
+                    </p>
+                  )}
+
+                  {showAddressForm && (
+                    <div className="mt-3">
+                      <textarea
+                        value={tempAddress}
+                        onChange={(e) => setTempAddress(e.target.value)}
+                        placeholder="Enter your address..."
+                        className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none"
+                        rows={3}
+                      />
+                      <div className="flex justify-end gap-3 mt-2">
+                        <button
+                          onClick={() => setShowAddressForm(false)}
+                          className="px-4 py-1 bg-gray-200 rounded-lg text-sm"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSaveAddress}
+                          className="px-4 py-1 bg-[#1A2A49] text-white rounded-lg text-sm"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Summary */}
               {items.length > 0 && (
@@ -89,9 +154,17 @@ export default function Cart({
                     <span>Total</span>
                     <span>₹{finalTotal}</span>
                   </div>
+
+                  {/* Proceed Button */}
                   <motion.button
                     whileTap={{ scale: 0.97 }}
-                    onClick={onProceed}
+                    onClick={() => {
+                      if (!address) {
+                        setShowAddressForm(true)
+                        return
+                      }
+                      onProceed()
+                    }}
                     className="mt-4 w-full py-3 bg-[#1A2A49] text-white rounded-lg hover:bg-[#223a61]"
                   >
                     Proceed to Checkout

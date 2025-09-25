@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom"
-import { ChevronLeft, Star, Wrench } from "lucide-react"
+import { ChevronLeft, Star, Wrench, Info } from "lucide-react"
 import { useState } from "react"
 import Cart from "../components/Cart"
 import { useApp } from "../AppContext"
@@ -73,7 +73,7 @@ export default function ServiceDetail() {
 
   const [selectedIssues, setSelectedIssues] = useState([])
   const [cartOpen, setCartOpen] = useState(false)
-  const [address, setAddress] = useState("") // ✅ new state
+  const [address, setAddress] = useState("")
   const { addToCart } = useApp()
 
   if (!service) {
@@ -99,11 +99,15 @@ export default function ServiceDetail() {
   const labourCharge = selectedIssues.length > 0 ? 50 : 0
   const subtotal = selectedIssues.reduce((sum, i) => sum + i.price, 0)
   const discount =
-    selectedIssues.length >= 3 ? subtotal * 0.15 : selectedIssues.length === 2 ? subtotal * 0.1 : 0
+    selectedIssues.length >= 3
+      ? subtotal * 0.15
+      : selectedIssues.length === 2
+      ? subtotal * 0.1
+      : 0
   const finalTotal = subtotal + labourCharge - discount
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-40">
+    <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header */}
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -172,6 +176,32 @@ export default function ServiceDetail() {
         </div>
       </div>
 
+      {/* Info Section */}
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl shadow p-6 flex gap-3">
+          <Info className="text-blue-600 mt-1" size={20} />
+          <div>
+            <h3 className="font-semibold text-[#1A2A49] mb-2">
+              Important Information
+            </h3>
+            <ul className="text-sm text-gray-700 space-y-2 list-disc list-inside">
+              <li>Labour charges of ₹50 are mandatory and added to every order.</li>
+              <li>All prices are exclusive of spare parts (if required).</li>
+              <li>
+                Service comes with a <span className="font-semibold">30 days warranty</span>.
+              </li>
+              <li>
+                In case of cancellation after technician arrival, ₹99 will be charged
+                as visiting fee.
+              </li>
+              <li>
+                Final bill may vary depending on actual inspection and repair needs.
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       {/* Bottom Summary */}
       {selectedIssues.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4 z-20">
@@ -198,22 +228,6 @@ export default function ServiceDetail() {
         discount={discount}
         finalTotal={finalTotal}
         onRemove={removeIssue}
-        // ✅ address input
-        extraContent={
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Service Address
-            </label>
-            <input
-              type="text"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Enter service location"
-              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-[#1A2A49]"
-              required
-            />
-          </div>
-        }
         onProceed={() => {
           if (!address) {
             alert("Please enter service address")

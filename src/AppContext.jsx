@@ -26,6 +26,11 @@ export function AppProvider({ children }) {
     JSON.parse(localStorage.getItem("pluggy_requests") || "[]")
   )
 
+  // 🏠 Address state
+  const [address, setAddress] = useState(
+    localStorage.getItem("pluggy_address") || ""
+  )
+
   // 🌍 Update city
   useEffect(() => {
     if (city) localStorage.setItem("pluggy_city", city)
@@ -59,6 +64,15 @@ export function AppProvider({ children }) {
     localStorage.setItem("pluggy_requests", JSON.stringify(requests))
   }, [requests])
 
+  // 🏠 Update address
+  useEffect(() => {
+    if (address) {
+      localStorage.setItem("pluggy_address", address)
+    } else {
+      localStorage.removeItem("pluggy_address")
+    }
+  }, [address])
+
   // 🔑 Auth helpers
   const loginUser = (data) => setUser(data)
   const logoutUser = () => setUser(null)
@@ -67,7 +81,18 @@ export function AppProvider({ children }) {
   const logoutEngineer = () => setEngineer(null)
 
   // 🛒 Cart helpers
-  const addToCart = (item) => setCart((prev) => [...prev, item])
+  const addToCart = (item) => {
+    if (Array.isArray(item)) {
+      setCart((prev) => [...prev, ...item]) // ✅ array merge
+    } else {
+      setCart((prev) => [...prev, item]) // ✅ single item
+    }
+  }
+
+  const removeFromCart = (issueName) => {
+    setCart((prev) => prev.filter((item) => item.issue !== issueName))
+  }
+
   const clearCart = () => setCart([])
 
   // 📋 Request helpers
@@ -92,11 +117,15 @@ export function AppProvider({ children }) {
         logoutEngineer,
         cart,
         addToCart,
+        removeFromCart, // ✅ new helper
         clearCart,
+        setCart,
         requests,
         addRequest,
         updateRequestStatus,
         setRequests,
+        address,
+        setAddress,
       }}
     >
       {children}
