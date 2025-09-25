@@ -1,5 +1,10 @@
 import {
-  Phone, User, LogOut, ShoppingCart, ListChecks, Bell,
+  Phone,
+  User,
+  LogOut,
+  ShoppingCart,
+  ListChecks,
+  Bell,
 } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
@@ -23,14 +28,15 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="bg-[#1A2A49] shadow-sm sticky top-0 z-50">
+      {/* ✅ Navbar sirf md aur upar screens par */}
+      <nav className="hidden md:block bg-[#1A2A49] shadow-sm sticky top-0 z-50">
         <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between text-white">
           <Link to="/" className="flex items-center gap-2">
             <img src="/image/logos.png" alt="Pluggy" className="h-10 w-10 rounded-md" />
             <span className="text-xl font-extrabold">Pluggy</span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-6">
+          <div className="flex items-center gap-6">
             <button
               onClick={() => navigate("/account", { state: { tab: "track" } })}
               className="flex items-center gap-2 hover:text-gray-300"
@@ -52,9 +58,12 @@ export default function Navbar() {
               <Bell size={18} /> Notifications
             </button>
 
-            <button className="flex items-center gap-2 px-4 py-2 bg-white text-[#1A2A49] rounded-lg shadow hover:bg-gray-100">
+            <a
+              href="tel:+919876543210"
+              className="flex items-center gap-2 px-4 py-2 bg-white text-[#1A2A49] rounded-lg shadow hover:bg-gray-100"
+            >
               <Phone size={16} /> Call us
-            </button>
+            </a>
 
             {!user ? (
               <button
@@ -70,7 +79,9 @@ export default function Navbar() {
                   <span className="font-semibold">{user.name}</span>
                 </button>
                 <div className="absolute right-0 mt-2 w-56 bg-white text-black shadow-lg rounded-lg border hidden group-hover:block z-50">
-                  <Link to="/account" className="block px-4 py-2 hover:bg-gray-100">My Profile</Link>
+                  <Link to="/account" className="block px-4 py-2 hover:bg-gray-100">
+                    My Profile
+                  </Link>
                   <div
                     className="px-4 py-2 text-red-600 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
                     onClick={() => {
@@ -88,6 +99,7 @@ export default function Navbar() {
         </div>
       </nav>
 
+      {/* ✅ Cart Popup (har screen pe chalega) */}
       <Cart
         open={cartOpen}
         onClose={() => setCartOpen(false)}

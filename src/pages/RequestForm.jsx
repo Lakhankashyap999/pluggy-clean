@@ -2,7 +2,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom"
 import { useState } from "react"
 import toast from "react-hot-toast"
 import { sendRequestEmail } from "../lib/email"
-import { ChevronLeft, Shield, Info, AlarmClock, Home } from "lucide-react"
+import { ChevronLeft, Shield, Info, AlarmClock, Home, MapPin } from "lucide-react"
 import { DotLottieReact } from "@lottiefiles/dotlottie-react"
 import successAnim from "../assets/success.lottie"
 import PaymentPopup from "../components/PaymentPopup"
@@ -12,7 +12,7 @@ export default function RequestForm() {
   const { service } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
-  const { user, addRequest } = useApp() // ✅ context se user & addRequest
+  const { user, addRequest } = useApp()
 
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -27,6 +27,7 @@ export default function RequestForm() {
       location.state?.selectedIssue?.issue ||
       location.state?.selectedIssue ||
       "",
+    address: location.state?.address || "", // ✅ address from ServiceDetail
   })
 
   const handleChange = (e) => {
@@ -43,11 +44,11 @@ export default function RequestForm() {
       phone: form.phone,
       issue: form.issue,
       amount: location.state?.finalTotal || 0,
+      address: form.address, // ✅ save address
       status: "Confirmed",
       created_at,
     }
 
-    // ✅ context me save
     addRequest(newReq)
 
     try {
@@ -58,6 +59,7 @@ export default function RequestForm() {
         service: cleanService,
         issue: form.issue,
         amount: newReq.amount,
+        address: form.address,
         created_at,
       })
       toast.success("Request submitted & emailed ✅")
@@ -73,6 +75,10 @@ export default function RequestForm() {
     e.preventDefault()
     if (!form.issue) {
       toast.error("Please select an issue first ❌")
+      return
+    }
+    if (!form.address) {
+      toast.error("Please enter service address ❌")
       return
     }
     setLoading(true)
@@ -101,7 +107,7 @@ export default function RequestForm() {
 
           <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
             <button
-              onClick={() => navigate("/account", { state: { tab: "track" } })}
+              onClick={() => navigate("/account/track")}
               className="px-5 py-2 rounded-lg bg-[#1A2A49] text-white hover:bg-[#223a61]"
             >
               Track your request
@@ -233,6 +239,20 @@ export default function RequestForm() {
               className="w-full rounded-lg border px-4 py-3 text-sm"
               required
             />
+
+            {/* ✅ Address Input */}
+            <div className="flex items-center border rounded-lg px-3 py-2">
+              <MapPin size={18} className="text-gray-400 mr-2" />
+              <input
+                name="address"
+                value={form.address}
+                onChange={handleChange}
+                placeholder="Service Address"
+                className="flex-1 outline-none text-sm"
+                required
+              />
+            </div>
+
             <textarea
               name="issue"
               value={form.issue}

@@ -39,39 +39,49 @@ export default function App() {
   const hideLayout = ["/login", "/signup", "/engineer-login"].includes(location.pathname)
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       {!hideLayout && <Navbar />}
       <ScrollToTop />
 
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+      {/* Main content expand karega */}
+      <main className="flex-1">
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
 
-        {/* Account */}
-        <Route path="/account" element={<Account />} />
-        <Route path="/account/track" element={<TrackRequests />} />
-        <Route path="/account/cart" element={<CartPage />} />
-        <Route path="/account/security" element={<SecurityPage />} />
-        <Route path="/account/address" element={<AddressPage />} />
-        <Route path="/account/recent" element={<RecentPage />} />
-        <Route path="/account/password" element={<ChangePasswordPage />} />
-        <Route path="/account/edit" element={<EditProfilePage />} />
+          {/* Account */}
+          <Route path="/account" element={<Account />} />
+          <Route path="/account/track" element={<TrackRequests />} />
+          <Route path="/account/cart" element={<CartPage />} />
+          <Route path="/account/security" element={<SecurityPage />} />
+          <Route path="/account/address" element={<AddressPage />} />
+          <Route path="/account/recent" element={<RecentPage />} />
+          <Route path="/account/password" element={<ChangePasswordPage />} />
+          <Route path="/account/edit" element={<EditProfilePage />} />
 
-        {/* Services + Requests */}
-        <Route path="/services/:id" element={<ServiceDetail />} />
-        <Route path="/request/:service" element={<RequestForm />} />
+          {/* Services + Requests */}
+          <Route path="/services/:id" element={<ServiceDetail />} />
+          <Route path="/request/:service" element={<RequestForm />} />
 
-        {/* Engineer */}
-        <Route path="/engineer-login" element={<EngineerLogin />} />
-        <Route path="/engineer" element={<EngineerDashboard />} />
-      </Routes>
+          {/* Engineer */}
+          <Route path="/engineer-login" element={<EngineerLogin />} />
+          <Route path="/engineer" element={<EngineerDashboard />} />
+        </Routes>
+      </main>
 
-      {!hideLayout && location.pathname === "/" && <BottomNavbar />}
-      {!hideLayout && <Footer />}
+      {/* ✅ Bottom nav hamesha (mobile only) */}
+      {!hideLayout && <BottomNavbar />}
+
+      {/* ✅ Footer sirf home page + mobile only */}
+      {!hideLayout && location.pathname === "/" && (
+        <div className="sm:hidden">
+          <Footer />
+        </div>
+      )}
 
       <Toaster position="top-right" />
       <div id="portal-root"></div>
-    </>
+    </div>
   )
 }

@@ -1,3 +1,4 @@
+// src/pages/Dashboard.jsx
 import { useState, useRef, useEffect } from "react"
 import Slider from "../components/Slider"
 import LocomotiveScroll from "locomotive-scroll"
@@ -79,35 +80,44 @@ export default function Dashboard() {
 
   return (
     <div ref={scrollRef} data-scroll-container className="min-h-screen pb-20">
-      {/* ✅ Animated Search Bar at Top */}
+      {/* ✅ Search Bar */}
       <motion.div
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="sticky top-0 z-40 bg-white shadow px-4 sm:px-6 py-3 flex items-center gap-2"
+        className="sticky top-0 z-40 w-full px-4 sm:px-6 py-3"
       >
-        <input
-          type="text"
-          value={query}
-          onChange={handleChange}
-          placeholder="Search services..."
-          className="flex-1 border px-4 py-2 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1A2A49]"
-        />
-        <button
-          onClick={handleSearch}
-          className="p-2 bg-[#1A2A49] text-white rounded-full hover:bg-[#223a61]"
+        <div
+          className={`
+            flex items-center gap-2 rounded-full shadow-lg
+            ${window.innerWidth >= 768
+              ? "backdrop-blur-md bg-white/30 border border-white/40 max-w-2xl mx-auto px-4"
+              : "bg-white shadow px-3"}
+          `}
         >
-          <Search size={20} />
-        </button>
-        <button
-          onClick={() => setFilterOpen(true)}
-          className="p-2 border border-gray-300 rounded-full hover:bg-gray-100"
-        >
-          <SlidersHorizontal size={20} className="text-[#1A2A49]" />
-        </button>
+          <input
+            type="text"
+            value={query}
+            onChange={handleChange}
+            placeholder="Search services..."
+            className="flex-1 bg-transparent border-none focus:outline-none px-2 py-2 text-sm sm:text-base"
+          />
+          <button
+            onClick={handleSearch}
+            className="p-2 bg-[#1A2A49] text-white rounded-full hover:bg-[#223a61]"
+          >
+            <Search size={18} />
+          </button>
+          <button
+            onClick={() => setFilterOpen(true)}
+            className="p-2 border border-gray-300 rounded-full hover:bg-gray-100 bg-white"
+          >
+            <SlidersHorizontal size={18} className="text-[#1A2A49]" />
+          </button>
+        </div>
       </motion.div>
 
-      {/* Suggestions dropdown */}
+      {/* ✅ Suggestions dropdown */}
       {suggestions.length > 0 && (
         <div className="absolute left-0 right-0 top-14 mx-4 sm:mx-6 bg-white shadow-lg rounded-lg border max-h-48 overflow-y-auto z-50">
           {suggestions.map((s, i) => (
@@ -148,7 +158,8 @@ export default function Dashboard() {
               className="flex flex-col items-center lg:items-start text-center lg:text-left flex-1 space-y-4"
             >
               <h2 className="text-2xl sm:text-4xl font-bold text-[#1A2A49] leading-snug">
-                Reliable Home Services, <br className="hidden sm:block" /> Anytime, Anywhere 🚀
+                Reliable Home Services,{" "}
+                <br className="hidden sm:block" /> Anytime, Anywhere 🚀
               </h2>
 
               <div className="flex flex-col gap-2 text-gray-700 text-sm">
@@ -165,7 +176,7 @@ export default function Dashboard() {
                   Book Now
                 </button>
                 <button
-                  onClick={() => (window.location.href = 'tel:+911234567890')}
+                  onClick={() => (window.location.href = "tel:+911234567890")}
                   className="w-full sm:w-auto px-5 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61]"
                 >
                   Call Us
