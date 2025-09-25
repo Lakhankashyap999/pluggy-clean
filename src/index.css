@@ -8,15 +8,35 @@ html, body {
   margin: 0;
   padding: 0;
   width: 100%;
-  overflow-x: hidden;   /* ✅ horizontal scroll ko rokega */
+  height: 100%;               /* ✅ ensure full height */
+  overflow-x: hidden;         /* ✅ horizontal scroll prevent */
+  scroll-behavior: smooth;    /* ✅ smooth native scroll */
+  font-family: 'Inter', sans-serif;
 }
 
 * {
   box-sizing: border-box;
 }
 
-/* Bottom navbar ke liye padding fix */
+/* App wrapper (Flex column layout ke liye) */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main content should grow and leave room for footer */
+main {
+  flex: 1;
+}
+
+/* ✅ Bottom navbar ke liye padding fix */
 .main-container {
   min-height: 100vh;
-  padding-bottom: 80px;  /* ✅ bottom navbar height ke barabar space */
+  padding-bottom: 72px; /* Bottom navbar ki height ke barabar */
+}
+
+/* ✅ Footer styles adjust so it never cuts */
+footer {
+  margin-top: auto;   /* Pushes footer to bottom */
 }

@@ -35,15 +35,16 @@ export default function App() {
     return <LocationGate onSelect={(c) => setCity(c)} />
   }
 
-  // ✅ Hide layout on auth pages
+  // ✅ Auth/engineer pages par layout hide
   const hideLayout = ["/login", "/signup", "/engineer-login"].includes(location.pathname)
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex flex-col min-h-screen">
+      {/* ✅ Navbar */}
       {!hideLayout && <Navbar />}
       <ScrollToTop />
 
-      {/* Main content expand karega */}
+      {/* ✅ Main content */}
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<Dashboard />} />
@@ -70,15 +71,11 @@ export default function App() {
         </Routes>
       </main>
 
-      {/* ✅ Bottom nav hamesha (mobile only) */}
-      {!hideLayout && <BottomNavbar />}
+      {/* ✅ Bottom navbar only Home (mobile view) */}
+      {!hideLayout && location.pathname === "/" && <BottomNavbar />}
 
-      {/* ✅ Footer sirf home page + mobile only */}
-      {!hideLayout && location.pathname === "/" && (
-        <div className="sm:hidden">
-          <Footer />
-        </div>
-      )}
+      {/* ✅ Footer har jagah show karega */}
+      {!hideLayout && <Footer />}
 
       <Toaster position="top-right" />
       <div id="portal-root"></div>

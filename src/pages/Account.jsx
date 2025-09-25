@@ -8,7 +8,6 @@ import {
   MapPin,
   Eye,
   Key,
-  Edit,
   Bell,
   TicketPercent,
   Wrench,
@@ -50,7 +49,7 @@ export default function Account() {
 
   return (
     <div className="bg-gray-50 min-h-screen px-3 sm:px-6 py-6">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto pb-10">
         {/* ✅ Profile Header */}
         <div className="bg-white rounded-2xl shadow p-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-8">
           <div className="h-20 w-20 rounded-full bg-[#1A2A49] text-white flex items-center justify-center text-2xl font-bold">
@@ -87,11 +86,7 @@ export default function Account() {
 
         {/* ✅ Others */}
         <Section title="Others">
-          <Item
-            icon={Bell}
-            label="Notifications"
-            path="/account/notifications"
-          />
+          <Item icon={Bell} label="Notifications" path="/account/notifications" />
           <Item icon={TicketPercent} label="Coupons" path="/account/coupons" />
           <Item icon={Wrench} label="Services" path="/account/services" />
         </Section>

@@ -1,11 +1,8 @@
-import { useEffect, useRef, useState } from "react"
-import gsap from "gsap"
+import { useEffect, useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 
 export default function Slider() {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const sliderRef = useRef(null)
-
-  const sliderImages = [
+  const images = [
     "/image/frontpage.png",
     "/image/first.jpg",
     "/image/second.jpg",
@@ -15,73 +12,64 @@ export default function Slider() {
     "/image/six.jpg",
   ]
 
-  const getVisibleCount = () => {
-    if (window.innerWidth < 640) return 1
-    if (window.innerWidth < 1024) return 2
-    return 3
-  }
+  const [[index, direction], setIndex] = useState([0, 0])
 
-  const [visibleCount, setVisibleCount] = useState(getVisibleCount())
-  const total = sliderImages.length
-
-  const imagesWithClones = [...sliderImages, ...sliderImages.slice(0, visibleCount)]
-
-  useEffect(() => {
-    const handleResize = () => setVisibleCount(getVisibleCount())
-    window.addEventListener("resize", handleResize)
-
-    const interval = setInterval(() => {
-      slideNext()
-    }, 3000)
-
-    return () => {
-      clearInterval(interval)
-      window.removeEventListener("resize", handleResize)
-    }
-  }, [currentIndex, visibleCount])
-
-  const slideNext = () => {
-    const nextIndex = currentIndex + 1
-    if (nextIndex <= total) {
-      animateSlide(nextIndex)
-      setCurrentIndex(nextIndex)
-    } else {
-      animateSlide(nextIndex, () => {
-        gsap.set(sliderRef.current, { xPercent: 0 })
-        setCurrentIndex(0)
-      })
-    }
-  }
-
-  const animateSlide = (index, onComplete) => {
-    const percentage = -(index * (100 / visibleCount))
-    gsap.to(sliderRef.current, {
-      xPercent: percentage,
-      duration: 1.2,
-      ease: "power2.inOut",
-      onComplete,
+  const paginate = (dir) => {
+    setIndex(([prev]) => {
+      let next = prev + dir
+      if (next < 0) next = images.length - 1
+      if (next >= images.length) next = 0
+      return [next, dir]
     })
   }
 
+  useEffect(() => {
+    const interval = setInterval(() => paginate(1), 3000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const variants = {
+    enter: (dir) => ({
+      x: dir > 0 ? 200 : -200,
+      opacity: 0,
+    }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir) => ({
+      x: dir > 0 ? -200 : 200,
+      opacity: 0,
+    }),
+  }
+
   return (
-    <div className="overflow-hidden w-full bg-gray-50 py-4 sm:py-6">
-      <div ref={sliderRef} className="flex">
-        {imagesWithClones.map((img, i) => (
-          <div
-            key={i}
-            className={`px-1 sm:px-2 lg:px-3 flex-shrink-0 ${
-              visibleCount === 1 ? "w-full" : visibleCount === 2 ? "w-1/2" : "w-1/3"
-            }`}
-          >
-            <div className="rounded-xl overflow-hidden shadow-md h-40 sm:h-56 lg:h-72 bg-white">
-              <img
-                src={img}
-                alt={`slide-${i}`}
-                className="w-full h-full object-contain"
-              />
-            </div>
-          </div>
-        ))}
+    <div className="relative w-full overflow-hidden bg-gray-50 py-4 sm:py-6 h-56 sm:h-72 lg:h-96">
+      <AnimatePresence initial={false} custom={direction}>
+        <motion.img
+          key={index}
+          src={images[index]}
+          custom={direction}
+          variants={variants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{ duration: 0.8 }}
+          className="absolute inset-0 w-full h-full object-contain rounded-xl"
+        />
+      </AnimatePresence>
+
+      {/* Navigation buttons */}
+      <div className="absolute inset-0 flex items-center justify-between px-4">
+        <button
+          onClick={() => paginate(-1)}
+          className="bg-black/30 text-white p-2 rounded-full hover:bg-black/50"
+        >
+          ‹
+        </button>
+        <button
+          onClick={() => paginate(1)}
+          className="bg-black/30 text-white p-2 rounded-full hover:bg-black/50"
+        >
+          ›
+        </button>
       </div>
     </div>
   )

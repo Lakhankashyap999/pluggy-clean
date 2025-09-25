@@ -1,11 +1,17 @@
 import { Mail, Phone, MapPin } from "lucide-react"
 import { Link } from "react-router-dom"
+import { motion } from "framer-motion"
 
 export default function Footer() {
   return (
-    <footer className="bg-[#1A2A49] text-gray-300 pt-10 pb-6 mt-12">
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-        
+    <motion.footer
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      viewport={{ once: true }}
+      className="bg-[#1A2A49] text-gray-300 mt-12"
+    >
+      <div className="max-w-7xl mx-auto px-6 pt-10 pb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
         {/* Brand */}
         <div>
           <h2 className="text-2xl font-extrabold text-white">Pluggy</h2>
@@ -13,13 +19,13 @@ export default function Footer() {
             Reliable home services at your doorstep. <br />
             Quality technicians, transparent pricing, and customer trust.
           </p>
-          <div className="mt-4">
+          <div className="mt-4 flex">
             <input
               type="email"
               placeholder="Enter your email"
               className="px-3 py-2 rounded-l-md focus:outline-none text-gray-900 w-48"
             />
-            <button className="bg-blue-600 px-3 py-2 rounded-r-md text-white">
+            <button className="bg-blue-600 px-3 py-2 rounded-r-md text-white hover:bg-blue-700 transition">
               Subscribe
             </button>
           </div>
@@ -64,10 +70,10 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Bottom Bar */}
-      <div className="border-t border-gray-600 mt-10 pt-4 text-center text-sm text-gray-400">
+      {/* ✅ Bottom Bar */}
+      <div className="border-t border-gray-600 py-4 text-center text-sm text-gray-400">
         © {new Date().getFullYear()} Pluggy. All rights reserved.
       </div>
-    </footer>
+    </motion.footer>
   )
 }
