@@ -1,3 +1,4 @@
+// src/pages/Login.jsx
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import toast from "react-hot-toast"
@@ -31,8 +32,8 @@ export default function Login() {
     const userData = JSON.parse(stored)
     if (form.email === userData.email && form.password === userData.password) {
       loginUser(userData)
-      toast.success("Logged in successfully 🎉")
-      navigate("/account")
+      toast.success(`Welcome back, ${userData.name}! 🎉`)
+      navigate("/") // ✅ homepage redirect
     } else {
       toast.error("Invalid credentials ❌")
     }
@@ -86,7 +87,7 @@ export default function Login() {
         {!showForgot ? (
           <>
             <h2 className="text-2xl font-bold text-[#1A2A49] mb-6 text-center">
-              Log in
+              Log in to Pluggy
             </h2>
 
             <form className="space-y-4" onSubmit={handleSubmit}>
@@ -117,7 +118,7 @@ export default function Login() {
 
               <button
                 type="submit"
-                className="w-full bg-[#1A2A49] text-white py-2 rounded-md hover:bg-[#223a61]"
+                className="w-full bg-[#1A2A49] text-white py-2 rounded-md hover:bg-[#223a61] transition"
               >
                 Log in
               </button>
@@ -163,7 +164,7 @@ export default function Login() {
                 />
                 <button
                   onClick={sendOtp}
-                  className="w-full bg-[#1A2A49] text-white py-2 rounded-md hover:bg-[#223a61]"
+                  className="w-full bg-[#1A2A49] text-white py-2 rounded-md hover:bg-[#223a61] transition"
                 >
                   Send OTP
                 </button>
@@ -186,7 +187,7 @@ export default function Login() {
                 />
                 <button
                   onClick={resetPassword}
-                  className="w-full bg-[#1A2A49] text-white py-2 rounded-md hover:bg-[#223a61]"
+                  className="w-full bg-[#1A2A49] text-white py-2 rounded-md hover:bg-[#223a61] transition"
                 >
                   Reset Password
                 </button>

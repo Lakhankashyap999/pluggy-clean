@@ -25,6 +25,11 @@ import RecentPage from "./pages/RecentPage"
 import ChangePasswordPage from "./pages/ChangePasswordPage"
 import EditProfilePage from "./pages/EditProfilePage"
 
+// ✅ Newly added
+import CouponsPage from "./pages/CouponsPage"
+import NotificationsPage from "./pages/NotificationsPage"
+import ServicesPage from "./pages/ServicesPage"
+
 import { useApp } from "./AppContext"
 
 export default function App() {
@@ -60,6 +65,9 @@ export default function App() {
           <Route path="/account/recent" element={<RecentPage />} />
           <Route path="/account/password" element={<ChangePasswordPage />} />
           <Route path="/account/edit" element={<EditProfilePage />} />
+          <Route path="/account/coupons" element={<CouponsPage />} />
+          <Route path="/account/notifications" element={<NotificationsPage />} />
+          <Route path="/account/services" element={<ServicesPage />} />
 
           {/* Services + Requests */}
           <Route path="/services/:id" element={<ServiceDetail />} />

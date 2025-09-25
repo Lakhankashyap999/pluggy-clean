@@ -1,52 +1,59 @@
 // src/pages/TrackRequests.jsx
 import { useApp } from "../AppContext"
-import { PackageSearch, Calendar, CircleDollarSign, User, Wrench } from "lucide-react"
+import {
+  PackageSearch,
+  Calendar,
+  CircleDollarSign,
+  User,
+  Wrench,
+} from "lucide-react"
 
 export default function TrackRequests() {
   const { requests } = useApp()
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6">
-      <h2 className="text-xl sm:text-2xl font-bold text-[#1A2A49] mb-6">
-        Track Your Requests
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <h2 className="text-2xl sm:text-3xl font-bold text-[#1A2A49] mb-8 text-center">
+        📦 Track Your Service Requests
       </h2>
 
       {requests.length === 0 ? (
         // ✅ Empty state
-        <div className="flex flex-col items-center justify-center text-center py-16 bg-white rounded-2xl shadow-sm border">
+        <div className="flex flex-col items-center justify-center text-center py-16 bg-white rounded-2xl shadow border">
           <img
             src="https://illustrations.popsy.co/gray/no-data.svg"
             alt="No requests"
-            className="w-40 sm:w-52 mb-4"
+            className="w-44 sm:w-56 mb-5"
           />
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">
+          <h3 className="text-lg font-semibold text-gray-800 mb-1">
             No requests yet
           </h3>
-          <p className="text-gray-500 text-sm mb-4">
-            Raise a service request and track its status here.
+          <p className="text-gray-500 text-sm mb-5 max-w-sm">
+            Raise a service request and track its real-time status here.
           </p>
           <a
             href="/"
-            className="px-5 py-2 bg-[#1A2A49] text-white rounded-lg hover:bg-[#223a61] text-sm"
+            className="px-6 py-2 bg-[#1A2A49] text-white rounded-lg hover:bg-[#223a61] text-sm font-medium shadow-md"
           >
-            Book a Service
+            + Book a Service
           </a>
         </div>
       ) : (
         // ✅ Requests list
-        <ul className="space-y-4">
+        <div className="space-y-5">
           {requests.map((r) => (
-            <li
+            <div
               key={r.id}
-              className="bg-white rounded-xl shadow-md border p-4 sm:p-5 hover:shadow-lg transition"
+              className="bg-white rounded-2xl shadow-md border p-5 hover:shadow-lg transition"
             >
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-bold text-[#1A2A49] flex items-center gap-2">
-                  <Wrench size={18} className="text-[#F37021]" />
+              {/* Header row */}
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="font-semibold text-[#1A2A49] flex items-center gap-2 text-lg">
+                  <Wrench size={20} className="text-[#F37021]" />
                   {r.service}
                 </h3>
                 <span
-                  className={`text-xs px-3 py-1 rounded-full ${
+                  className={`text-xs px-3 py-1 rounded-full font-medium ${
                     r.status === "Accepted"
                       ? "bg-green-100 text-green-700"
                       : r.status === "In Progress"
@@ -60,29 +67,45 @@ export default function TrackRequests() {
                 </span>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-3 text-sm text-gray-600">
+              {/* Info grid */}
+              <div className="grid sm:grid-cols-2 gap-3 text-sm text-gray-600 mb-3">
                 <p className="flex items-center gap-2">
-                  <User size={14} className="text-[#1A2A49]" /> {r.name}
+                  <User size={15} className="text-[#1A2A49]" />{" "}
+                  <span className="font-medium">{r.name}</span>
                 </p>
                 <p className="flex items-center gap-2">
-                  <Calendar size={14} className="text-[#1A2A49]" /> {r.created_at}
+                  <Calendar size={15} className="text-[#1A2A49]" /> {r.created_at}
                 </p>
                 <p className="flex items-center gap-2">
-                  <PackageSearch size={14} className="text-[#1A2A49]" /> {r.issue}
+                  <PackageSearch size={15} className="text-[#1A2A49]" />{" "}
+                  {r.issue}
                 </p>
                 <p className="flex items-center gap-2">
-                  <CircleDollarSign size={14} className="text-[#1A2A49]" /> ₹{r.amount}
+                  <CircleDollarSign size={15} className="text-[#1A2A49]" /> ₹
+                  {r.amount}
                 </p>
               </div>
 
+              {/* Status message */}
               {r.status === "Accepted" && (
-                <div className="text-green-600 font-medium text-sm mt-3">
-                  ✅ Your engineer will call you shortly
+                <div className="text-green-600 font-medium text-sm mt-2">
+                  ✅ Your engineer has accepted the request and will reach your
+                  location shortly.
                 </div>
               )}
-            </li>
+              {r.status === "In Progress" && (
+                <div className="text-yellow-600 font-medium text-sm mt-2">
+                  🔧 Your service is currently in progress.
+                </div>
+              )}
+              {r.status === "Completed" && (
+                <div className="text-blue-600 font-medium text-sm mt-2">
+                  🎉 Service completed successfully!
+                </div>
+              )}
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   )

@@ -6,9 +6,9 @@ export function AppProvider({ children }) {
   // 🌍 City selection
   const [city, setCity] = useState(localStorage.getItem("pluggy_city") || null)
 
-  // 👤 User state
+  // 👤 Active logged-in user
   const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem("pluggy_user") || "null")
+    JSON.parse(localStorage.getItem("pluggy_activeUser") || "null")
   )
 
   // 🛠️ Engineer state
@@ -36,12 +36,12 @@ export function AppProvider({ children }) {
     if (city) localStorage.setItem("pluggy_city", city)
   }, [city])
 
-  // 👤 Update user
+  // 👤 Update active user
   useEffect(() => {
     if (user) {
-      localStorage.setItem("pluggy_user", JSON.stringify(user))
+      localStorage.setItem("pluggy_activeUser", JSON.stringify(user))
     } else {
-      localStorage.removeItem("pluggy_user")
+      localStorage.removeItem("pluggy_activeUser")
     }
   }, [user])
 
@@ -117,7 +117,7 @@ export function AppProvider({ children }) {
         logoutEngineer,
         cart,
         addToCart,
-        removeFromCart, // ✅ new helper
+        removeFromCart,
         clearCart,
         setCart,
         requests,

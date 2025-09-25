@@ -13,6 +13,7 @@ import {
   Wrench,
   LogOut,
   User,
+  ChevronLeft,
 } from "lucide-react"
 import toast from "react-hot-toast"
 
@@ -22,8 +23,14 @@ export default function Account() {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-[70vh] text-gray-600">
-        Please log in to view your account
+      <div className="flex flex-col items-center justify-center min-h-[70vh] text-gray-600 gap-4">
+        <p>Please log in to view your account</p>
+        <button
+          onClick={() => navigate("/login")}
+          className="px-4 py-2 bg-[#1A2A49] text-white rounded-lg hover:bg-[#223a61] transition"
+        >
+          Log in
+        </button>
       </div>
     )
   }
@@ -50,6 +57,18 @@ export default function Account() {
   return (
     <div className="bg-gray-50 min-h-screen px-3 sm:px-6 py-6">
       <div className="max-w-3xl mx-auto pb-10">
+
+        {/* ✅ Top Header with Back button */}
+        <div className="flex items-center gap-3 mb-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1 text-[#1A2A49] hover:underline"
+          >
+            <ChevronLeft size={20} />
+            <span className="text-sm font-medium">Back</span>
+          </button>
+        </div>
+
         {/* ✅ Profile Header */}
         <div className="bg-white rounded-2xl shadow p-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-8">
           <div className="h-20 w-20 rounded-full bg-[#1A2A49] text-white flex items-center justify-center text-2xl font-bold">
