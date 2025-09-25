@@ -80,8 +80,34 @@ export default function Dashboard() {
     }
   }
 
+  // ✅ get user name from localStorage
+  const getUserName = () => {
+    try {
+      const stored = localStorage.getItem("user")
+      if (stored) {
+        return JSON.parse(stored).name
+      }
+    } catch (err) {
+      return null
+    }
+    return null
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
+
+      {/* ✅ Mobile Top Header */}
+      <div className="sm:hidden bg-[#1A2A49] text-white flex items-center justify-between px-4 py-3 sticky top-0 z-50">
+        <div className="flex items-center gap-2">
+          <img
+            src="/image/logos.png"
+            alt="Pluggy"
+            className="h-6 w-6 object-contain filter brightness-0 invert"
+          />
+          <span className="text-lg font-bold">Pluggy</span>
+        </div>
+        <div className="text-sm font-medium">{getUserName() || "Guest"}</div>
+      </div>
 
       {/* ✅ Desktop/Tablet Search Bar */}
       <motion.div
@@ -220,9 +246,15 @@ export default function Dashboard() {
                   <br className="hidden sm:block" /> Anytime, Anywhere 🚀
                 </h2>
                 <div className="flex flex-col gap-2 text-gray-700 text-sm">
-                  <p>⭐ <span className="font-semibold">4.8/5</span> Average Rating</p>
-                  <p>🏠 <span className="font-semibold">10,000+</span> Homes Served</p>
-                  <p>👨‍🔧 <span className="font-semibold">500+</span> Verified Technicians</p>
+                  <p>
+                    ⭐ <span className="font-semibold">4.8/5</span> Average Rating
+                  </p>
+                  <p>
+                    🏠 <span className="font-semibold">10,000+</span> Homes Served
+                  </p>
+                  <p>
+                    👨‍🔧 <span className="font-semibold">500+</span> Verified Technicians
+                  </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 mt-2 w-full sm:w-auto">
                   <button
@@ -250,9 +282,12 @@ export default function Dashboard() {
                 <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white px-6 py-4 rounded-xl shadow-lg w-full max-w-sm">
                   <p className="text-lg font-bold">🎉 Special Offer</p>
                   <p className="text-sm mt-1">
-                    Get <span className="font-semibold">20% OFF</span> on your first booking! <br />
+                    Get <span className="font-semibold">20% OFF</span> on your first booking!{" "}
+                    <br />
                     Use Code:{" "}
-                    <span className="bg-white text-[#1A2A49] px-2 py-0.5 rounded">PLUG20</span>
+                    <span className="bg-white text-[#1A2A49] px-2 py-0.5 rounded">
+                      PLUG20
+                    </span>
                   </p>
                 </div>
                 <img
