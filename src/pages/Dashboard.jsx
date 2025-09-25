@@ -9,9 +9,12 @@ import CustomerReviews from "../components/CustomerReviews"
 import ExtraSections from "../components/ExtraSections"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
+import { useApp } from "../AppContext"
 
 export default function Dashboard() {
   const navigate = useNavigate()
+  const { user } = useApp()
+
   const [query, setQuery] = useState("")
   const [suggestions, setSuggestions] = useState([])
   const [filterOpen, setFilterOpen] = useState(false)
@@ -80,19 +83,6 @@ export default function Dashboard() {
     }
   }
 
-  // ✅ get user name from localStorage
-  const getUserName = () => {
-    try {
-      const stored = localStorage.getItem("user")
-      if (stored) {
-        return JSON.parse(stored).name
-      }
-    } catch (err) {
-      return null
-    }
-    return null
-  }
-
   return (
     <div className="min-h-screen flex flex-col">
 
@@ -106,7 +96,7 @@ export default function Dashboard() {
           />
           <span className="text-lg font-bold">Pluggy</span>
         </div>
-        <div className="text-sm font-medium">{getUserName() || "Guest"}</div>
+        <div className="text-sm font-medium">{user?.name || "Guest"}</div>
       </div>
 
       {/* ✅ Desktop/Tablet Search Bar */}
@@ -222,13 +212,20 @@ export default function Dashboard() {
               <Slider />
             </section>
 
+            {/* ✅ Dussehra Banner - Fixed */}
             <section className="block sm:hidden mt-4 px-4">
-              <div className="rounded-xl overflow-hidden shadow-lg">
+              <div className="relative rounded-xl overflow-hidden shadow-lg">
                 <img
-                  src="/image/dussehra-banner.jpg"
+                  src="/dussehra-banner.jpg"
                   alt="Happy Dussehra"
                   className="w-full h-auto object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none"
+                  }}
                 />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white text-lg font-bold">
+                  🎉 Happy Dussehra 🎉
+                </div>
               </div>
             </section>
 
@@ -246,15 +243,9 @@ export default function Dashboard() {
                   <br className="hidden sm:block" /> Anytime, Anywhere 🚀
                 </h2>
                 <div className="flex flex-col gap-2 text-gray-700 text-sm">
-                  <p>
-                    ⭐ <span className="font-semibold">4.8/5</span> Average Rating
-                  </p>
-                  <p>
-                    🏠 <span className="font-semibold">10,000+</span> Homes Served
-                  </p>
-                  <p>
-                    👨‍🔧 <span className="font-semibold">500+</span> Verified Technicians
-                  </p>
+                  <p>⭐ <span className="font-semibold">4.8/5</span> Average Rating</p>
+                  <p>🏠 <span className="font-semibold">10,000+</span> Homes Served</p>
+                  <p>👨‍🔧 <span className="font-semibold">500+</span> Verified Technicians</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 mt-2 w-full sm:w-auto">
                   <button
@@ -282,12 +273,9 @@ export default function Dashboard() {
                 <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white px-6 py-4 rounded-xl shadow-lg w-full max-w-sm">
                   <p className="text-lg font-bold">🎉 Special Offer</p>
                   <p className="text-sm mt-1">
-                    Get <span className="font-semibold">20% OFF</span> on your first booking!{" "}
-                    <br />
+                    Get <span className="font-semibold">20% OFF</span> on your first booking! <br />
                     Use Code:{" "}
-                    <span className="bg-white text-[#1A2A49] px-2 py-0.5 rounded">
-                      PLUG20
-                    </span>
+                    <span className="bg-white text-[#1A2A49] px-2 py-0.5 rounded">PLUG20</span>
                   </p>
                 </div>
                 <img
@@ -316,10 +304,10 @@ export default function Dashboard() {
                   Trusted By Leading Brands
                 </h2>
                 <div className="flex flex-wrap justify-center gap-6">
-                  <img src="../image/philips.png" alt="Philips" className="h-8 sm:h-10" />
-                  <img src="../image/crompton.png" alt="Crompton" className="h-8 sm:h-10" />
-                  <img src="../image/syska.png" alt="Syska" className="h-8 sm:h-10" />
-                  <img src="../image/havells.jpg" alt="Havells" className="h-8 sm:h-10" />
+                  <img src="/image/philips.png" alt="Philips" className="h-8 sm:h-10" />
+                  <img src="/image/crompton.png" alt="Crompton" className="h-8 sm:h-10" />
+                  <img src="/image/syska.png" alt="Syska" className="h-8 sm:h-10" />
+                  <img src="/image/havells.jpg" alt="Havells" className="h-8 sm:h-10" />
                 </div>
               </div>
             </section>
