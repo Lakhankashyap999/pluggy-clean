@@ -5,6 +5,7 @@ import {
   ShoppingCart,
   ListChecks,
   Bell,
+  ChevronRight,
 } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
@@ -17,7 +18,8 @@ export default function Navbar() {
   const navigate = useNavigate()
   const { user, logoutUser, cart, removeFromCart } = useApp()
   const [cartOpen, setCartOpen] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(null)
+  const [activeCategory, setActiveCategory] = useState(null)
 
   useEffect(() => {
     const open = () => setCartOpen(true)
@@ -27,6 +29,13 @@ export default function Navbar() {
 
   const finalTotal =
     cart.reduce((sum, i) => sum + i.price, 0) + (cart.length > 0 ? 50 : 0)
+
+  const servicesData = {
+    AC: ["AC Repair", "AC Installation", "AC Gas Refill"],
+    Wiring: ["House Wiring", "Short Circuit Fix", "Switchboard Repair"],
+    Lighting: ["Tube Light Install", "LED Replacement", "Smart Light Setup"],
+    Fan: ["Fan Motor Repair", "Ceiling Fan Installation", "Fan Regulator Fix"],
+  }
 
   const fadeDown = {
     hidden: { y: -20, opacity: 0 },
@@ -41,7 +50,7 @@ export default function Navbar() {
 
   return (
     <>
-      {/* ✅ Navbar (md+) with framer-motion entry */}
+      {/* ✅ Desktop Navbar only */}
       <motion.nav
         variants={fadeDown}
         initial="hidden"
@@ -49,6 +58,7 @@ export default function Navbar() {
         className="hidden md:block bg-[#1A2A49] shadow-sm sticky top-0 z-50"
       >
         <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between text-white">
+          {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <motion.img
               src="/image/logos.png"
@@ -61,7 +71,83 @@ export default function Navbar() {
             <span className="text-xl font-extrabold">Pluggy</span>
           </Link>
 
+          {/* Menu Items */}
           <div className="flex items-center gap-6">
+            {/* Services Dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={() => setMenuOpen("services")}
+              onMouseLeave={() => {
+                setMenuOpen(null)
+                setActiveCategory(null)
+              }}
+            >
+              <button className="flex items-center gap-2 hover:text-gray-300">
+                Services
+              </button>
+
+              <AnimatePresence>
+                {menuOpen === "services" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute left-0 top-full mt-2 bg-white text-black shadow-lg rounded-lg border z-50 flex"
+                  >
+                    {/* Categories */}
+                    <div className="w-48 border-r">
+                      {Object.keys(servicesData).map((category) => (
+                        <div
+                          key={category}
+                          className={`flex items-center justify-between px-4 py-2 hover:bg-gray-100 cursor-pointer ${
+                            activeCategory === category ? "bg-gray-100" : ""
+                          }`}
+                          onMouseEnter={() => setActiveCategory(category)}
+                        >
+                          <span>{category}</span>
+                          <motion.div
+                            initial={{ x: 0 }}
+                            whileHover={{ x: 3 }}
+                            transition={{ type: "spring", stiffness: 200 }}
+                          >
+                            <ChevronRight size={16} className="text-gray-500" />
+                          </motion.div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Issues - only show when category active */}
+                    {activeCategory && (
+                      <motion.div
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        className="w-64"
+                      >
+                        {servicesData[activeCategory].map((item) => (
+                          <div
+                            key={item}
+                            className="flex items-center justify-between px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                            onClick={() => {
+                              navigate(
+                                `/request/${item.replace(/\s+/g, "-").toLowerCase()}`
+                              )
+                              setMenuOpen(null)
+                              setActiveCategory(null)
+                            }}
+                          >
+                            <span>{item}</span>
+                            <ChevronRight size={14} className="text-gray-400" />
+                          </div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* My Requests */}
             <motion.button
               onClick={() => navigate("/account", { state: { tab: "track" } })}
               className="flex items-center gap-2 hover:text-gray-300"
@@ -70,6 +156,7 @@ export default function Navbar() {
               <ListChecks size={18} /> My Requests
             </motion.button>
 
+            {/* My Cart */}
             <motion.button
               onClick={() => setCartOpen(true)}
               className="flex items-center gap-2 hover:text-gray-300"
@@ -78,14 +165,18 @@ export default function Navbar() {
               <ShoppingCart size={18} /> My Cart ({cart.length})
             </motion.button>
 
+            {/* Notifications */}
             <motion.button
-              onClick={() => navigate("/account", { state: { tab: "notifications" } })}
+              onClick={() =>
+                navigate("/account", { state: { tab: "notifications" } })
+              }
               className="flex items-center gap-2 hover:text-gray-300"
               whileTap={{ scale: 0.97 }}
             >
               <Bell size={18} /> Notifications
             </motion.button>
 
+            {/* Call Us */}
             <motion.a
               href="tel:+919876543210"
               className="flex items-center gap-2 px-4 py-2 bg-white text-[#1A2A49] rounded-lg shadow hover:bg-gray-100"
@@ -94,6 +185,7 @@ export default function Navbar() {
               <Phone size={16} /> Call us
             </motion.a>
 
+            {/* User Menu */}
             {!user ? (
               <motion.button
                 onClick={() => navigate("/login")}
@@ -105,17 +197,16 @@ export default function Navbar() {
             ) : (
               <div
                 className="relative"
-                onMouseEnter={() => setMenuOpen(true)}
-                onMouseLeave={() => setMenuOpen(false)}
+                onMouseEnter={() => setMenuOpen("user")}
+                onMouseLeave={() => setMenuOpen(null)}
               >
                 <button className="flex items-center gap-1 text-sm font-medium">
                   <User size={18} />
                   <span className="font-semibold">{user.name}</span>
                 </button>
 
-                {/* Dropdown animated */}
                 <AnimatePresence>
-                  {menuOpen && (
+                  {menuOpen === "user" && (
                     <motion.div
                       variants={pop}
                       initial="hidden"
@@ -126,7 +217,7 @@ export default function Navbar() {
                       <Link
                         to="/account"
                         className="block px-4 py-2 hover:bg-gray-100"
-                        onClick={() => setMenuOpen(false)}
+                        onClick={() => setMenuOpen(null)}
                       >
                         My Profile
                       </Link>
@@ -149,7 +240,7 @@ export default function Navbar() {
         </div>
       </motion.nav>
 
-      {/* ✅ Cart Popup (unchanged API, polish later in Part 2) */}
+      {/* ✅ Cart Popup */}
       <Cart
         open={cartOpen}
         onClose={() => setCartOpen(false)}

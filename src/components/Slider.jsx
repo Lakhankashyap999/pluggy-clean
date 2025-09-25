@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useEffect, useState, useRef } from "react"
+import { motion } from "framer-motion"
 
 export default function Slider() {
   const images = [
@@ -12,60 +12,103 @@ export default function Slider() {
     "/image/six.jpg",
   ]
 
-  const [[index, direction], setIndex] = useState([0, 0])
-
-  const paginate = (dir) => {
-    setIndex(([prev]) => {
-      let next = prev + dir
-      if (next < 0) next = images.length - 1
-      if (next >= images.length) next = 0
-      return [next, dir]
-    })
+  const getVisibleCount = () => {
+    if (window.innerWidth < 640) return 1
+    if (window.innerWidth < 1024) return 2
+    return 3
   }
 
-  useEffect(() => {
-    const interval = setInterval(() => paginate(1), 3000)
-    return () => clearInterval(interval)
-  }, [])
+  const [visibleCount, setVisibleCount] = useState(getVisibleCount())
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [transitioning, setTransitioning] = useState(true)
+  const containerRef = useRef(null)
+  const [slideWidth, setSlideWidth] = useState(0)
 
-  const variants = {
-    enter: (dir) => ({
-      x: dir > 0 ? 200 : -200,
-      opacity: 0,
-    }),
-    center: { x: 0, opacity: 1 },
-    exit: (dir) => ({
-      x: dir > 0 ? -200 : 200,
-      opacity: 0,
-    }),
+  const total = images.length
+  const imagesWithClones = [...images, ...images.slice(0, visibleCount)]
+
+  useEffect(() => {
+    const update = () => {
+      setVisibleCount(getVisibleCount())
+      if (containerRef.current) {
+        setSlideWidth(containerRef.current.offsetWidth / getVisibleCount())
+      }
+    }
+    update()
+    window.addEventListener("resize", update)
+
+    const interval = setInterval(() => slideNext(), 4000)
+    return () => {
+      window.removeEventListener("resize", update)
+      clearInterval(interval)
+    }
+  }, [currentIndex])
+
+  const slideNext = () => {
+    const next = currentIndex + 1
+    if (next <= total) {
+      setCurrentIndex(next)
+      setTransitioning(true)
+    } else {
+      setCurrentIndex(next)
+      setTransitioning(true)
+      setTimeout(() => {
+        setTransitioning(false)
+        setCurrentIndex(0)
+      }, 1000)
+    }
+  }
+
+  const slidePrev = () => {
+    const prev = currentIndex - 1
+    if (prev < 0) {
+      setCurrentIndex(total - 1)
+    } else {
+      setCurrentIndex(prev)
+    }
+    setTransitioning(true)
   }
 
   return (
-    <div className="relative w-full overflow-hidden bg-gray-50 py-4 sm:py-6 h-56 sm:h-72 lg:h-96">
-      <AnimatePresence initial={false} custom={direction}>
-        <motion.img
-          key={index}
-          src={images[index]}
-          custom={direction}
-          variants={variants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={{ duration: 0.8 }}
-          className="absolute inset-0 w-full h-full object-contain rounded-xl"
-        />
-      </AnimatePresence>
+    <div
+      ref={containerRef}
+      className="relative w-full overflow-hidden bg-gray-50 py-4 sm:py-6"
+    >
+      <motion.div
+        className="flex"
+        animate={{ x: -currentIndex * slideWidth }}
+        transition={
+          transitioning ? { duration: 1, ease: "easeInOut" } : { duration: 0 }
+        }
+      >
+        {imagesWithClones.map((img, i) => (
+          <div
+            key={i}
+            style={{ flex: `0 0 ${100 / visibleCount}%` }}
+            className="px-2"
+          >
+            {/* aspect-ratio box to avoid white gap */}
+            <div className="rounded-xl overflow-hidden shadow-md aspect-[16/9] bg-black">
+              <img
+                src={img}
+                alt={`slide-${i}`}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        ))}
+      </motion.div>
 
-      {/* Navigation buttons */}
-      <div className="absolute inset-0 flex items-center justify-between px-4">
+      {/* nav buttons */}
+      <div className="absolute inset-0 flex items-center justify-between px-2 sm:px-4">
         <button
-          onClick={() => paginate(-1)}
+          onClick={slidePrev}
           className="bg-black/30 text-white p-2 rounded-full hover:bg-black/50"
         >
           ‹
         </button>
         <button
-          onClick={() => paginate(1)}
+          onClick={slideNext}
           className="bg-black/30 text-white p-2 rounded-full hover:bg-black/50"
         >
           ›
