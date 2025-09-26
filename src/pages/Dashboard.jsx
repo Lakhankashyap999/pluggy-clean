@@ -269,14 +269,22 @@ export default function Dashboard() {
               />
             </section>
 
-            {/* Why Choose Us */}
+            {/* ✅ Our Services (moved UP) */}
             <section className="px-4 sm:px-6 lg:px-12 py-10 bg-white">
-              <WhyChooseUs />
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#1A2A49] mb-10 text-center relative">
+                Our Services
+                <span className="block w-16 h-1 bg-[#1A2A49] mx-auto mt-2 rounded"></span>
+              </h2>
+              <OurServices />
             </section>
 
-            {/* Our Services */}
+            {/* ✅ Why Choose Us (moved DOWN) */}
             <section className="px-4 sm:px-6 lg:px-12 py-10 bg-gray-50">
-              <OurServices />
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#1A2A49] mb-10 text-center relative">
+                Why Choose Pluggy?
+                <span className="block w-16 h-1 bg-[#1A2A49] mx-auto mt-2 rounded"></span>
+              </h2>
+              <WhyChooseUs />
             </section>
 
             {/* Customer Reviews */}
