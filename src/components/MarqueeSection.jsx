@@ -8,16 +8,15 @@ export default function MarqueeSection() {
 
   const Line = ({ text, reverse = false }) => (
     <div className="relative overflow-hidden">
-      {/* ✅ Two tracks for seamless infinite loop */}
       <div
-        className={`flex ${
-          reverse ? "animate-marquee-reverse" : "animate-marquee"
+        className={`flex whitespace-nowrap ${
+          reverse ? "animate-marquee-reverse font-['Playfair_Display'] italic" : "animate-marquee font-['Poppins']"
         }`}
       >
-        <span className="mx-8 text-[#1A2A49] text-xl sm:text-2xl font-semibold">
+        <span className="mx-2 sm:mx-4 md:mx-6 text-[#1A2A49] text-sm sm:text-base md:text-lg lg:text-xl font-semibold">
           {text}
         </span>
-        <span className="mx-8 text-[#1A2A49] text-xl sm:text-2xl font-semibold">
+        <span className="mx-2 sm:mx-4 md:mx-6 text-[#1A2A49] text-sm sm:text-base md:text-lg lg:text-xl font-semibold">
           {text}
         </span>
       </div>
@@ -25,10 +24,14 @@ export default function MarqueeSection() {
   )
 
   return (
-    <div className="bg-white py-12 space-y-10 font-['Poppins']">
+    <div className="bg-white py-8 space-y-6">
+      {/* Right → Left (Playfair Display font) */}
       <Line text={lines[0]} reverse />
+      {/* Left → Right (Poppins font) */}
       <Line text={lines[1]} />
+      {/* Right → Left (Playfair Display font) */}
       <Line text={lines[2]} reverse />
+      {/* Left → Right (Poppins font) */}
       <Line text={lines[3]} />
     </div>
   )
