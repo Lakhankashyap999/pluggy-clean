@@ -260,7 +260,7 @@ export default function Dashboard() {
 
               {/* Right */}
               <motion.img
-                src="/image/hero.png"
+                src="../image/Electrician-rafiki.png"
                 alt="Home Services"
                 className="w-full max-w-md rounded-xl"
                 initial={{ opacity: 0, x: 50 }}
