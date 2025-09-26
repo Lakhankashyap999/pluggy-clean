@@ -69,6 +69,12 @@ export default function Dashboard() {
     Object.keys(allServices).forEach((key) => {
       if (key.startsWith(value)) {
         matches = [...matches, ...allServices[key]]
+      } else {
+        allServices[key].forEach((item) => {
+          if (item.toLowerCase().includes(value)) {
+            matches.push(item)
+          }
+        })
       }
     })
     setSuggestions(matches)
@@ -86,19 +92,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen flex flex-col">
-
-      {/* ✅ Mobile Top Header */}
-      <div className="sm:hidden bg-[#1A2A49] text-white flex items-center justify-between px-4 py-3 sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <img
-            src="/image/logos.png"
-            alt="Pluggy"
-            className="h-6 w-6 object-contain filter brightness-0 invert"
-          />
-          <span className="text-lg font-bold">Pluggy</span>
-        </div>
-        <div className="text-sm font-medium">{user?.name || "Guest"}</div>
-      </div>
+      {/* ❌ Mobile Top Header (DUPLICATE NAVBAR) Removed */}
 
       {/* ✅ Desktop/Tablet Search Bar */}
       <motion.div
@@ -134,8 +128,8 @@ export default function Dashboard() {
               {suggestions.map((s, i) => (
                 <div
                   key={i}
-                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                   onClick={() => handleSearch(s)}
+                  className="px-4 py-2 text-sm cursor-pointer hover:bg-gray-100"
                 >
                   {s}
                 </div>
@@ -145,60 +139,50 @@ export default function Dashboard() {
         </div>
       </motion.div>
 
-      {/* ✅ Mobile Floating Search Button */}
-      <button
-        onClick={() => setSearchOpen(true)}
-        className="sm:hidden fixed bottom-20 right-4 z-40 bg-[#1A2A49] text-white p-4 rounded-full shadow-lg"
-      >
-        <Search size={22} />
-      </button>
-
       {/* ✅ Mobile Search Drawer */}
       <AnimatePresence>
         {searchOpen && (
           <motion.div
-            initial={{ y: -80, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -80, opacity: 0 }}
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
             transition={{ duration: 0.3 }}
-            className="fixed top-0 left-0 right-0 bg-white shadow-lg z-50 px-4 py-3"
+            className="fixed inset-0 bg-black/50 z-50 flex justify-center items-end sm:hidden"
           >
-            <div className="flex items-center gap-2">
+            <div className="bg-white rounded-t-2xl w-full p-4 shadow-lg">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="font-semibold text-[#1A2A49]">Search Services</h3>
+                <button onClick={() => setSearchOpen(false)}>
+                  <X size={20} />
+                </button>
+              </div>
               <input
                 type="text"
                 value={query}
                 onChange={handleChange}
                 placeholder={`Try "${placeholder}"`}
-                className="flex-1 border rounded-full px-3 py-2 text-sm focus:outline-none placeholder-gray-400"
+                className="w-full border rounded-lg px-3 py-2 mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A2A49]"
               />
+              {suggestions.length > 0 && (
+                <div className="max-h-40 overflow-y-auto border rounded-lg mb-3">
+                  {suggestions.map((s, i) => (
+                    <div
+                      key={i}
+                      onClick={() => handleSearch(s)}
+                      className="px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                    >
+                      {s}
+                    </div>
+                  ))}
+                </div>
+              )}
               <button
                 onClick={() => handleSearch()}
-                className="p-2 bg-[#1A2A49] text-white rounded-full hover:bg-[#223a61]"
+                className="w-full py-2 bg-[#1A2A49] text-white rounded-lg hover:bg-[#223a61]"
               >
-                <Search size={18} />
-              </button>
-              <button
-                onClick={() => setSearchOpen(false)}
-                className="p-2 bg-gray-200 rounded-full hover:bg-gray-300"
-              >
-                <X size={18} />
+                Search
               </button>
             </div>
-
-            {/* ✅ Suggestions dropdown mobile */}
-            {suggestions.length > 0 && (
-              <div className="mt-2 bg-white border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
-                {suggestions.map((s, i) => (
-                  <div
-                    key={i}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => handleSearch(s)}
-                  >
-                    {s}
-                  </div>
-                ))}
-              </div>
-            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -208,7 +192,7 @@ export default function Dashboard() {
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
         onApply={(filters) => {
-          setAppliedFilters(filters) // ✅ filter apply hone ke baad set hoga
+          setAppliedFilters(filters)
           setFilterOpen(false)
         }}
       />
@@ -250,82 +234,44 @@ export default function Dashboard() {
                 className="flex flex-col items-center lg:items-start text-center lg:text-left flex-1 space-y-4"
               >
                 <h2 className="text-2xl sm:text-4xl font-bold text-[#1A2A49] leading-snug">
-                  Reliable Home Services,{" "}
-                  <br className="hidden sm:block" /> Anytime, Anywhere 🚀
+                  Reliable Home Services, <br className="hidden sm:block" /> Anytime, Anywhere 🚀
                 </h2>
                 <div className="flex flex-col gap-2 text-gray-700 text-sm">
                   <p>⭐ <span className="font-semibold">4.8/5</span> Average Rating</p>
                   <p>🏠 <span className="font-semibold">10,000+</span> Homes Served</p>
                   <p>👨‍🔧 <span className="font-semibold">500+</span> Verified Technicians</p>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3 mt-2 w-full sm:w-auto">
+                <div className="flex flex-col sm:flex-row gap-3 mt-4">
                   <button
-                    onClick={() => navigate("/request/ac-repair")}
-                    className="w-full sm:w-auto px-5 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61] transition"
+                    onClick={() => navigate("/services")}
+                    className="px-6 py-2 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61]"
                   >
-                    Book Now
+                    Book a Service
                   </button>
-                  <button
-                    onClick={() => (window.location.href = "tel:+911234567890")}
-                    className="w-full sm:w-auto px-5 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61] transition"
+                  <a
+                    href="tel:+919876543210"
+                    className="px-6 py-2 border border-[#1A2A49] text-[#1A2A49] rounded-lg hover:bg-gray-50"
                   >
                     Call Us
-                  </button>
+                  </a>
                 </div>
               </motion.div>
 
               {/* Right */}
-              <motion.div
+              <motion.img
+                src="/image/hero.png"
+                alt="Home Services"
+                className="w-full max-w-md rounded-xl"
                 initial={{ opacity: 0, x: 50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8 }}
-                className="flex flex-col gap-4 items-center flex-1 w-full"
-              >
-                <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white px-6 py-4 rounded-xl shadow-lg w-full max-w-sm">
-                  <p className="text-lg font-bold">🎉 Special Offer</p>
-                  <p className="text-sm mt-1">
-                    Get <span className="font-semibold">20% OFF</span> on your first booking! <br />
-                    Use Code:{" "}
-                    <span className="bg-white text-[#1A2A49] px-2 py-0.5 rounded">PLUG20</span>
-                  </p>
-                </div>
-                <img
-                  src="/image/Electrician-rafiki.png"
-                  alt="Technician"
-                  className="w-full max-w-[280px] sm:max-w-[340px] lg:max-w-[420px] object-contain"
-                />
-              </motion.div>
+              />
             </section>
 
-            <section className="bg-gray-50 py-10 px-4">
-              <WhyChooseUs />
-            </section>
-
-            <section className="bg-white py-10 px-4">
-              <OurServices />
-            </section>
-
-            <section className="bg-gray-50 py-10 px-4">
-              <CustomerReviews />
-            </section>
-
-            <section className="bg-white py-10 px-4">
-              <div className="max-w-6xl mx-auto text-center">
-                <h2 className="text-xl sm:text-2xl font-bold text-[#1A2A49] mb-4">
-                  Trusted By Leading Brands
-                </h2>
-                <div className="flex flex-wrap justify-center gap-6">
-                  <img src="/image/philips.png" alt="Philips" className="h-8 sm:h-10" />
-                  <img src="/image/crompton.png" alt="Crompton" className="h-8 sm:h-10" />
-                  <img src="/image/syska.png" alt="Syska" className="h-8 sm:h-10" />
-                  <img src="/image/havells.jpg" alt="Havells" className="h-8 sm:h-10" />
-                </div>
-              </div>
-            </section>
-
-            <section className="bg-gray-50 py-10 px-4">
-              <ExtraSections />
-            </section>
+            <WhyChooseUs />
+            <OurServices />
+            <CustomerReviews />
+            <ExtraSections />
           </>
         )}
       </div>
