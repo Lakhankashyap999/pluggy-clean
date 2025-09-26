@@ -1,3 +1,4 @@
+// src/components/Navbar.jsx
 import {
   Phone,
   User,
@@ -5,6 +6,8 @@ import {
   ShoppingCart,
   ListChecks,
   Bell,
+  Menu,
+  X,
   ChevronRight,
 } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
@@ -18,8 +21,9 @@ export default function Navbar() {
   const navigate = useNavigate()
   const { user, logoutUser, cart, removeFromCart } = useApp()
   const [cartOpen, setCartOpen] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(null)
+  const [menuOpen, setMenuOpen] = useState(null) // desktop dropdown
   const [activeCategory, setActiveCategory] = useState(null)
+  const [mobileMenu, setMobileMenu] = useState(false) // mobile drawer
 
   useEffect(() => {
     const open = () => setCartOpen(true)
@@ -35,8 +39,10 @@ export default function Navbar() {
     Wiring: ["House Wiring", "Short Circuit Fix", "Switchboard Repair"],
     Lighting: ["Tube Light Install", "LED Replacement", "Smart Light Setup"],
     Fan: ["Fan Motor Repair", "Ceiling Fan Installation", "Fan Regulator Fix"],
+    Appliances: ["Geyser Repair", "Fridge Service", "Washing Machine Repair"],
   }
 
+  // Animations
   const fadeDown = {
     hidden: { y: -20, opacity: 0 },
     visible: { y: 0, opacity: 1, transition: { duration: 0.35 } },
@@ -50,7 +56,7 @@ export default function Navbar() {
 
   return (
     <>
-      {/* ✅ Desktop Navbar only */}
+      {/* ✅ Desktop Navbar */}
       <motion.nav
         variants={fadeDown}
         initial="hidden"
@@ -63,7 +69,7 @@ export default function Navbar() {
             <motion.img
               src="/image/logos.png"
               alt="Pluggy"
-              className="h-10 w-10 rounded-md"
+              className="h-12 w-12 rounded-md filter brightness-0 invert"
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.98 }}
               transition={{ type: "spring", stiffness: 260, damping: 18 }}
@@ -105,18 +111,12 @@ export default function Navbar() {
                           onMouseEnter={() => setActiveCategory(category)}
                         >
                           <span>{category}</span>
-                          <motion.div
-                            initial={{ x: 0 }}
-                            whileHover={{ x: 3 }}
-                            transition={{ type: "spring", stiffness: 200 }}
-                          >
-                            <ChevronRight size={16} className="text-gray-500" />
-                          </motion.div>
+                          <ChevronRight size={16} className="text-gray-500" />
                         </div>
                       ))}
                     </div>
 
-                    {/* Issues - only show when category active */}
+                    {/* Issues */}
                     {activeCategory && (
                       <motion.div
                         initial={{ opacity: 0, x: -10 }}
@@ -149,7 +149,7 @@ export default function Navbar() {
 
             {/* My Requests */}
             <motion.button
-              onClick={() => navigate("/account", { state: { tab: "track" } })}
+              onClick={() => navigate("/account/track")}
               className="flex items-center gap-2 hover:text-gray-300"
               whileTap={{ scale: 0.97 }}
             >
@@ -167,9 +167,7 @@ export default function Navbar() {
 
             {/* Notifications */}
             <motion.button
-              onClick={() =>
-                navigate("/account", { state: { tab: "notifications" } })
-              }
+              onClick={() => navigate("/account/notifications")}
               className="flex items-center gap-2 hover:text-gray-300"
               whileTap={{ scale: 0.97 }}
             >
@@ -214,13 +212,15 @@ export default function Navbar() {
                       exit="exit"
                       className="absolute right-0 mt-2 w-56 bg-white text-black shadow-lg rounded-lg border z-50 overflow-hidden"
                     >
-                      <Link
-                        to="/account"
-                        className="block px-4 py-2 hover:bg-gray-100"
-                        onClick={() => setMenuOpen(null)}
+                      <button
+                        onClick={() => {
+                          navigate("/account")
+                          setMenuOpen(null)
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100"
                       >
-                        My Profile
-                      </Link>
+                        My Account
+                      </button>
                       <div
                         className="px-4 py-2 text-red-600 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
                         onClick={() => {
@@ -239,6 +239,110 @@ export default function Navbar() {
           </div>
         </div>
       </motion.nav>
+
+      {/* ✅ Mobile Navbar */}
+      <div className="md:hidden bg-[#1A2A49] text-white shadow-sm sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2">
+          <img
+            src="/image/logos.png"
+            alt="Pluggy"
+            className="h-9 w-9 rounded-md filter brightness-0 invert"
+          />
+          <span className="text-lg font-bold">Pluggy</span>
+        </Link>
+        <button onClick={() => setMobileMenu(!mobileMenu)}>
+          {mobileMenu ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
+      {/* ✅ Mobile Drawer */}
+      <AnimatePresence>
+        {mobileMenu && (
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden fixed top-0 right-0 bottom-0 w-72 bg-white text-black shadow-lg z-50 flex flex-col"
+          >
+            <div className="flex justify-between items-center px-4 py-3 border-b">
+              <span className="font-bold text-[#1A2A49]">Menu</span>
+              <button onClick={() => setMobileMenu(false)}>
+                <X size={22} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <button
+                onClick={() => {
+                  navigate("/account/track")
+                  setMobileMenu(false)
+                }}
+                className="w-full px-4 py-3 text-left hover:bg-gray-100"
+              >
+                My Requests
+              </button>
+              <button
+                onClick={() => {
+                  setCartOpen(true)
+                  setMobileMenu(false)
+                }}
+                className="w-full px-4 py-3 text-left hover:bg-gray-100"
+              >
+                My Cart ({cart.length})
+              </button>
+              <button
+                onClick={() => {
+                  navigate("/account/notifications")
+                  setMobileMenu(false)
+                }}
+                className="w-full px-4 py-3 text-left hover:bg-gray-100"
+              >
+                Notifications
+              </button>
+              <a
+                href="tel:+919876543210"
+                className="w-full block px-4 py-3 hover:bg-gray-100"
+              >
+                Call Us
+              </a>
+              {!user ? (
+                <button
+                  onClick={() => {
+                    navigate("/login")
+                    setMobileMenu(false)
+                  }}
+                  className="w-full px-4 py-3 text-left hover:bg-gray-100"
+                >
+                  Log in
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      navigate("/account")
+                      setMobileMenu(false)
+                    }}
+                    className="w-full px-4 py-3 text-left hover:bg-gray-100"
+                  >
+                    My Account
+                  </button>
+                  <button
+                    onClick={() => {
+                      logoutUser()
+                      toast.success("Logged out successfully ✅")
+                      navigate("/")
+                      setMobileMenu(false)
+                    }}
+                    className="w-full px-4 py-3 text-left text-red-600 hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ✅ Cart Popup */}
       <Cart
