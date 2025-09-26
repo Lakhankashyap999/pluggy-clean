@@ -1,4 +1,3 @@
-// src/pages/Dashboard.jsx
 import { useState, useEffect } from "react"
 import Slider from "../components/Slider"
 import { Search, SlidersHorizontal, X } from "lucide-react"
@@ -20,7 +19,7 @@ export default function Dashboard() {
   const [suggestions, setSuggestions] = useState([])
   const [filterOpen, setFilterOpen] = useState(false)
   const [appliedFilters, setAppliedFilters] = useState(null)
-  const [searchOpen, setSearchOpen] = useState(false) // ✅ mobile drawer toggle
+  const [searchOpen, setSearchOpen] = useState(false)
 
   // ✅ all services
   const allServices = {
@@ -30,7 +29,7 @@ export default function Dashboard() {
     electrical: ["Fuse Replacement", "MCB Repair", "New Electrical Fittings"],
   }
 
-  // ✅ placeholder auto typing services
+  // ✅ rotating placeholder
   const serviceSuggestions = [
     "AC Repair",
     "AC Installation",
@@ -57,7 +56,7 @@ export default function Dashboard() {
     setPlaceholder(serviceSuggestions[index])
   }, [index])
 
-  // ✅ suggestion filter
+  // ✅ filter suggestions
   const handleChange = (e) => {
     const value = e.target.value.toLowerCase()
     setQuery(value)
@@ -86,13 +85,13 @@ export default function Dashboard() {
       navigate(`/request/${q.replace(/\s+/g, "-").toLowerCase()}`)
       setQuery("")
       setSuggestions([])
-      setSearchOpen(false) // close drawer on mobile
+      setSearchOpen(false)
     }
   }
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* ❌ Mobile Top Header (DUPLICATE NAVBAR) Removed */}
+      {/* ❌ Duplicate Mobile Top Header removed */}
 
       {/* ✅ Desktop/Tablet Search Bar */}
       <motion.div
@@ -122,7 +121,7 @@ export default function Dashboard() {
             <SlidersHorizontal size={18} className="text-[#1A2A49]" />
           </button>
 
-          {/* ✅ Suggestions dropdown desktop */}
+          {/* ✅ Suggestions dropdown */}
           {suggestions.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
               {suggestions.map((s, i) => (
@@ -207,7 +206,7 @@ export default function Dashboard() {
               <Slider />
             </section>
 
-            {/* ✅ Dussehra Banner */}
+            {/* Dussehra Banner */}
             <section className="block sm:hidden mt-4 px-4">
               <div className="relative rounded-xl overflow-hidden shadow-lg">
                 <img
@@ -225,7 +224,7 @@ export default function Dashboard() {
             </section>
 
             {/* Hero Section */}
-            <section className="bg-gray-50 px-4 sm:px-6 lg:px-12 py-8 flex flex-col lg:flex-row items-center justify-between gap-8">
+            <section className="bg-gray-50 px-4 sm:px-6 lg:px-12 py-10 flex flex-col lg:flex-row items-center justify-between gap-8">
               {/* Left */}
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
@@ -234,7 +233,8 @@ export default function Dashboard() {
                 className="flex flex-col items-center lg:items-start text-center lg:text-left flex-1 space-y-4"
               >
                 <h2 className="text-2xl sm:text-4xl font-bold text-[#1A2A49] leading-snug">
-                  Reliable Home Services, <br className="hidden sm:block" /> Anytime, Anywhere 🚀
+                  Reliable Home Services,{" "}
+                  <br className="hidden sm:block" /> Anytime, Anywhere 🚀
                 </h2>
                 <div className="flex flex-col gap-2 text-gray-700 text-sm">
                   <p>⭐ <span className="font-semibold">4.8/5</span> Average Rating</p>
@@ -268,10 +268,25 @@ export default function Dashboard() {
               />
             </section>
 
-            <WhyChooseUs />
-            <OurServices />
-            <CustomerReviews />
-            <ExtraSections />
+            {/* ✅ Why Choose Us */}
+            <section className="px-4 sm:px-6 lg:px-12 py-10 bg-white">
+              <WhyChooseUs />
+            </section>
+
+            {/* ✅ Our Services */}
+            <section className="px-4 sm:px-6 lg:px-12 py-10 bg-gray-50">
+              <OurServices />
+            </section>
+
+            {/* ✅ Customer Reviews */}
+            <section className="px-4 sm:px-6 lg:px-12 py-10 bg-white">
+              <CustomerReviews />
+            </section>
+
+            {/* ✅ Extra Sections */}
+            <section className="px-4 sm:px-6 lg:px-12 py-10 bg-gray-50">
+              <ExtraSections />
+            </section>
           </>
         )}
       </div>
