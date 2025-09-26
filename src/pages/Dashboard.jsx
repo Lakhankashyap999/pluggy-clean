@@ -1,3 +1,4 @@
+// src/pages/Dashboard.jsx
 import { useState, useEffect } from "react"
 import Slider from "../components/Slider"
 import { Search, SlidersHorizontal, X } from "lucide-react"
@@ -202,6 +203,16 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
+      {/* ✅ Filter Drawer */}
+      <FilterDrawer
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        onApply={(filters) => {
+          setAppliedFilters(filters) // ✅ filter apply hone ke baad set hoga
+          setFilterOpen(false)
+        }}
+      />
+
       {/* ✅ Main Content */}
       <div className="flex-1">
         {appliedFilters ? (
@@ -212,7 +223,7 @@ export default function Dashboard() {
               <Slider />
             </section>
 
-            {/* ✅ Dussehra Banner - Fixed */}
+            {/* ✅ Dussehra Banner */}
             <section className="block sm:hidden mt-4 px-4">
               <div className="relative rounded-xl overflow-hidden shadow-lg">
                 <img
@@ -250,13 +261,13 @@ export default function Dashboard() {
                 <div className="flex flex-col sm:flex-row gap-3 mt-2 w-full sm:w-auto">
                   <button
                     onClick={() => navigate("/request/ac-repair")}
-                    className="w-full sm:w-auto px-5 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61]"
+                    className="w-full sm:w-auto px-5 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61] transition"
                   >
                     Book Now
                   </button>
                   <button
                     onClick={() => (window.location.href = "tel:+911234567890")}
-                    className="w-full sm:w-auto px-5 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61]"
+                    className="w-full sm:w-auto px-5 py-3 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61] transition"
                   >
                     Call Us
                   </button>

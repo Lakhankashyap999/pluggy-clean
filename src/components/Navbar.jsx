@@ -6,8 +6,6 @@ import {
   ShoppingCart,
   ListChecks,
   Bell,
-  Menu,
-  X,
   ChevronRight,
 } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
@@ -23,7 +21,6 @@ export default function Navbar() {
   const [cartOpen, setCartOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(null) // desktop dropdown
   const [activeCategory, setActiveCategory] = useState(null)
-  const [mobileMenu, setMobileMenu] = useState(false) // mobile drawer
 
   useEffect(() => {
     const open = () => setCartOpen(true)
@@ -56,6 +53,19 @@ export default function Navbar() {
 
   return (
     <>
+      {/* ✅ Mobile Top Bar (simple, no hamburger) */}
+      <div className="md:hidden bg-[#1A2A49] text-white flex items-center justify-between px-4 py-3 sticky top-0 z-50">
+        <div className="flex items-center gap-2">
+          <img
+            src="/image/logos.png"
+            alt="Pluggy"
+            className="h-7 w-7 object-contain filter brightness-0 invert"
+          />
+          <span className="text-lg font-bold">Pluggy</span>
+        </div>
+        <div className="text-sm font-medium">{user?.name || "Guest"}</div>
+      </div>
+
       {/* ✅ Desktop Navbar */}
       <motion.nav
         variants={fadeDown}
@@ -239,110 +249,6 @@ export default function Navbar() {
           </div>
         </div>
       </motion.nav>
-
-      {/* ✅ Mobile Navbar */}
-      <div className="md:hidden bg-[#1A2A49] text-white shadow-sm sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <img
-            src="/image/logos.png"
-            alt="Pluggy"
-            className="h-9 w-9 rounded-md filter brightness-0 invert"
-          />
-          <span className="text-lg font-bold">Pluggy</span>
-        </Link>
-        <button onClick={() => setMobileMenu(!mobileMenu)}>
-          {mobileMenu ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      </div>
-
-      {/* ✅ Mobile Drawer */}
-      <AnimatePresence>
-        {mobileMenu && (
-          <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden fixed top-0 right-0 bottom-0 w-72 bg-white text-black shadow-lg z-50 flex flex-col"
-          >
-            <div className="flex justify-between items-center px-4 py-3 border-b">
-              <span className="font-bold text-[#1A2A49]">Menu</span>
-              <button onClick={() => setMobileMenu(false)}>
-                <X size={22} />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto">
-              <button
-                onClick={() => {
-                  navigate("/account/track")
-                  setMobileMenu(false)
-                }}
-                className="w-full px-4 py-3 text-left hover:bg-gray-100"
-              >
-                My Requests
-              </button>
-              <button
-                onClick={() => {
-                  setCartOpen(true)
-                  setMobileMenu(false)
-                }}
-                className="w-full px-4 py-3 text-left hover:bg-gray-100"
-              >
-                My Cart ({cart.length})
-              </button>
-              <button
-                onClick={() => {
-                  navigate("/account/notifications")
-                  setMobileMenu(false)
-                }}
-                className="w-full px-4 py-3 text-left hover:bg-gray-100"
-              >
-                Notifications
-              </button>
-              <a
-                href="tel:+919876543210"
-                className="w-full block px-4 py-3 hover:bg-gray-100"
-              >
-                Call Us
-              </a>
-              {!user ? (
-                <button
-                  onClick={() => {
-                    navigate("/login")
-                    setMobileMenu(false)
-                  }}
-                  className="w-full px-4 py-3 text-left hover:bg-gray-100"
-                >
-                  Log in
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={() => {
-                      navigate("/account")
-                      setMobileMenu(false)
-                    }}
-                    className="w-full px-4 py-3 text-left hover:bg-gray-100"
-                  >
-                    My Account
-                  </button>
-                  <button
-                    onClick={() => {
-                      logoutUser()
-                      toast.success("Logged out successfully ✅")
-                      navigate("/")
-                      setMobileMenu(false)
-                    }}
-                    className="w-full px-4 py-3 text-left text-red-600 hover:bg-gray-100"
-                  >
-                    Logout
-                  </button>
-                </>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* ✅ Cart Popup */}
       <Cart
