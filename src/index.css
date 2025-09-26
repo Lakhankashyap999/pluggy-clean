@@ -8,9 +8,9 @@ html, body {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100%;               /* ✅ ensure full height */
-  overflow-x: hidden;         /* ✅ horizontal scroll prevent */
-  scroll-behavior: smooth;    /* ✅ smooth native scroll */
+  height: 100%;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
   font-family: 'Inter', sans-serif;
 }
 
@@ -18,7 +18,7 @@ html, body {
   box-sizing: border-box;
 }
 
-/* App wrapper (Flex column layout ke liye) */
+/* App wrapper */
 #root {
   min-height: 100vh;
   display: flex;
@@ -33,10 +33,32 @@ main {
 /* ✅ Bottom navbar ke liye padding fix */
 .main-container {
   min-height: 100vh;
-  padding-bottom: 72px; /* Bottom navbar ki height ke barabar */
+  padding-bottom: 72px; /* Bottom navbar ki height */
 }
 
-/* ✅ Footer styles adjust so it never cuts */
+/* ✅ Footer styles */
 footer {
-  margin-top: auto;   /* Pushes footer to bottom */
+  margin-top: auto;
+}
+
+/* ✅ Right → Left marquee (seamless) */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); } /* sirf half shift */
+}
+.animate-marquee {
+  display: inline-flex;
+  min-width: 200%; /* do tracks ek sath */
+  animation: marquee 18s linear infinite;
+}
+
+/* ✅ Left → Right marquee (seamless) */
+@keyframes marquee-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+.animate-marquee-reverse {
+  display: inline-flex;
+  min-width: 200%;
+  animation: marquee-reverse 18s linear infinite;
 }
