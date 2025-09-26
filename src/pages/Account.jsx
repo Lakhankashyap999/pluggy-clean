@@ -1,4 +1,3 @@
-// src/pages/Account.jsx
 import { useApp } from "../AppContext"
 import { useNavigate } from "react-router-dom"
 import {
@@ -23,7 +22,7 @@ export default function Account() {
 
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] text-gray-600 gap-4">
+      <div className="flex flex-col items-center justify-center main-container text-gray-600 gap-4">
         <p>Please log in to view your account</p>
         <button
           onClick={() => navigate("/login")}
@@ -55,8 +54,8 @@ export default function Account() {
   )
 
   return (
-    <div className="bg-gray-50 min-h-screen px-3 sm:px-6 py-6">
-      <div className="max-w-3xl mx-auto pb-10">
+    <div className="main-container bg-gray-50 px-3 sm:px-6 py-6">
+      <div className="max-w-3xl mx-auto">
 
         {/* ✅ Top Header with Back button */}
         <div className="flex items-center gap-3 mb-6">
