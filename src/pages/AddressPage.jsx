@@ -1,8 +1,8 @@
-// src/pages/AddressPage.jsx
 import { useState } from "react"
 import { useApp } from "../AppContext"
 import { MapPin, Plus, Trash2, Edit } from "lucide-react"
 import toast from "react-hot-toast"
+import BackButton from "../components/BackButton"
 
 export default function AddressPage() {
   const { address, setAddress } = useApp()
@@ -50,6 +50,7 @@ export default function AddressPage() {
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6">
       <div className="max-w-2xl mx-auto">
+        <BackButton />
         <h2 className="text-xl font-bold text-[#1A2A49] mb-4">My Addresses</h2>
 
         {/* Address Form */}

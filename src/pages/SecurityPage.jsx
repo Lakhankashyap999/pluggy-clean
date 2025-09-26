@@ -1,12 +1,13 @@
-// src/pages/SecurityPage.jsx
 import { Shield, Mail, Phone, Lock } from "lucide-react"
 import { useApp } from "../AppContext"
+import BackButton from "../components/BackButton"
 
 export default function SecurityPage() {
   const { user } = useApp()
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
+      <BackButton />
       <h2 className="text-xl font-bold text-[#1A2A49] mb-6 flex items-center gap-2">
         <Shield size={20} /> Login & Security
       </h2>

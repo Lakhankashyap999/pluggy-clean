@@ -1,6 +1,6 @@
-// src/pages/CartPage.jsx
 import { useApp } from "../AppContext"
 import { useState } from "react"
+import BackButton from "../components/BackButton"
 
 export default function CartPage() {
   const { cart, address, setAddress } = useApp()
@@ -16,6 +16,7 @@ export default function CartPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
+      <BackButton />
       <h2 className="text-xl font-bold text-[#1A2A49] mb-4">My Cart</h2>
 
       {cart.length === 0 ? (

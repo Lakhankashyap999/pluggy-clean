@@ -1,8 +1,8 @@
-// src/pages/EditProfilePage.jsx
 import { useState } from "react"
 import { useApp } from "../AppContext"
 import toast from "react-hot-toast"
 import { User, Mail, Phone } from "lucide-react"
+import BackButton from "../components/BackButton"
 
 export default function EditProfilePage() {
   const { user, setUser } = useApp()
@@ -31,6 +31,7 @@ export default function EditProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+        <BackButton />
         {/* Header */}
         <div className="mb-6 text-center">
           <div className="h-20 w-20 mx-auto rounded-full bg-[#1A2A49] text-white flex items-center justify-center text-2xl font-bold">

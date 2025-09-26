@@ -1,5 +1,5 @@
-// src/pages/NotificationsPage.jsx
 import { Bell } from "lucide-react"
+import BackButton from "../components/BackButton"
 
 export default function NotificationsPage() {
   const notifications = [
@@ -25,6 +25,7 @@ export default function NotificationsPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
+      <BackButton />
       <h2 className="text-xl sm:text-2xl font-bold text-[#1A2A49] mb-6 flex items-center gap-2">
         <Bell size={22} className="text-[#1A2A49]" /> Notifications
       </h2>

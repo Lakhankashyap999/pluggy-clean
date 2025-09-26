@@ -1,8 +1,8 @@
-// src/pages/ChangePasswordPage.jsx
 import { useState } from "react"
 import { useApp } from "../AppContext"
 import { Lock } from "lucide-react"
 import toast from "react-hot-toast"
+import BackButton from "../components/BackButton"
 
 export default function ChangePasswordPage() {
   const { user, setUser } = useApp()
@@ -46,6 +46,7 @@ export default function ChangePasswordPage() {
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6">
       <div className="max-w-md mx-auto bg-white shadow rounded-xl p-6">
+        <BackButton />
         <h2 className="text-xl font-bold text-[#1A2A49] mb-4">
           Change Password
         </h2>

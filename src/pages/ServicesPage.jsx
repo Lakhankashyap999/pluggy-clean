@@ -1,5 +1,5 @@
-// src/pages/ServicesPage.jsx
 import { Wrench } from "lucide-react"
+import BackButton from "../components/BackButton"
 
 export default function ServicesPage() {
   const services = [
@@ -11,6 +11,7 @@ export default function ServicesPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
+      <BackButton />
       <h2 className="text-xl sm:text-2xl font-bold text-[#1A2A49] mb-6 flex items-center gap-2">
         <Wrench size={22} className="text-[#1A2A49]" /> Our Services
       </h2>
