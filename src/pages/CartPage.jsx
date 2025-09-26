@@ -2,18 +2,23 @@ import { useApp } from "../AppContext"
 import { useState } from "react"
 import BackButton from "../components/BackButton"
 import { Trash2, MapPin, ShoppingBag } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import PaymentPopup from "../components/PaymentPopup"
 
 export default function CartPage() {
-  const { cart, address, setAddress, setCart } = useApp()
+  const { cart, address, setAddress, setCart, clearCart, addRequest, user } = useApp()
   const [tempAddress, setTempAddress] = useState("")
   const [showForm, setShowForm] = useState(false)
+  const [showPayment, setShowPayment] = useState(false)
+  const navigate = useNavigate()
 
-  // Calculate totals
+  // 🧮 Calculate totals
   const subtotal = cart.reduce((sum, c) => sum + (c.price || 0), 0)
   const labourCharge = subtotal > 0 ? 50 : 0
   const discount = subtotal > 500 ? 100 : 0
   const finalTotal = subtotal + labourCharge - discount
 
+  // ✅ Save address
   const handleSave = () => {
     if (!tempAddress.trim()) return
     setAddress(tempAddress)
@@ -22,10 +27,20 @@ export default function CartPage() {
     setShowForm(false)
   }
 
+  // ✅ Remove item
   const removeItem = (index) => {
     const updated = cart.filter((_, i) => i !== index)
     setCart(updated)
     localStorage.setItem("pluggy_cart", JSON.stringify(updated))
+  }
+
+  // ✅ Checkout
+  const handleCheckout = () => {
+    if (!address || address.trim() === "") {
+      setShowForm(true) // force user to add address
+      return
+    }
+    setShowPayment(true) // open payment popup
   }
 
   return (
@@ -36,7 +51,7 @@ export default function CartPage() {
       </h2>
 
       {cart.length === 0 ? (
-        // ✅ Empty Cart
+        // 🛒 Empty Cart
         <div className="text-center py-16 bg-white rounded-xl shadow">
           <img
             src="https://illustrations.popsy.co/gray/empty-cart.svg"
@@ -56,7 +71,7 @@ export default function CartPage() {
         </div>
       ) : (
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Cart Items */}
+          {/* 🛠 Cart Items */}
           <div className="lg:col-span-2 space-y-4">
             {cart.map((c, i) => (
               <div
@@ -78,7 +93,7 @@ export default function CartPage() {
             ))}
           </div>
 
-          {/* Summary Box */}
+          {/* 📊 Summary Box */}
           <div className="bg-white rounded-xl shadow-md p-5 h-fit">
             <h3 className="font-semibold text-[#1A2A49] mb-4">Price Summary</h3>
             <div className="space-y-2 text-sm text-gray-600">
@@ -101,7 +116,7 @@ export default function CartPage() {
               </div>
             </div>
 
-            {/* Address Section */}
+            {/* 📍 Address Section */}
             <div className="mt-6">
               <h4 className="font-semibold text-[#1A2A49] mb-2 flex items-center gap-2">
                 <MapPin size={16} /> Delivery Address
@@ -147,9 +162,12 @@ export default function CartPage() {
               )}
             </div>
 
-            {/* Actions */}
+            {/* 🚀 Actions */}
             <div className="mt-6 space-y-3">
-              <button className="w-full bg-[#1A2A49] text-white py-2 rounded-lg hover:bg-[#223a61] shadow">
+              <button
+                onClick={handleCheckout}
+                className="w-full bg-[#1A2A49] text-white py-2 rounded-lg hover:bg-[#223a61] shadow"
+              >
                 Proceed to Checkout
               </button>
               <a
@@ -162,6 +180,31 @@ export default function CartPage() {
           </div>
         </div>
       )}
+
+      {/* 💳 Payment Popup */}
+      <PaymentPopup
+        open={showPayment}
+        onClose={() => setShowPayment(false)}
+        amount={finalTotal}
+        onSuccess={() => {
+          const newRequest = {
+            id: Date.now(),
+            items: cart,
+            issue: cart.map(c => c.issue).join(", "),
+            service: cart.map(c => c.service || "Service").join(", "),
+            address,
+            amount: finalTotal,
+            status: "Pending",
+            created_at: new Date().toLocaleString(),
+            name: user?.name || "Guest",
+          }
+
+          addRequest(newRequest)
+          clearCart()
+          setShowPayment(false)
+          navigate("/") // redirect to Dashboard
+        }}
+      />
     </div>
   )
 }

@@ -6,7 +6,6 @@ import BottomNavbar from "./components/BottomNavbar"
 import Footer from "./components/Footer"
 import LocationGate from "./components/LocationGate"
 import ScrollToTop from "./components/ScrollToTop"
-import MarqueeSection from "./components/MarqueeSection"   // ✅ NEW
 
 import Dashboard from "./pages/Dashboard"
 import Login from "./pages/Login"
@@ -83,8 +82,7 @@ export default function App() {
       {/* ✅ Bottom navbar only Home (mobile view) */}
       {!hideLayout && location.pathname === "/" && <BottomNavbar />}
 
-      {/* ✅ Footer ke upar marquee */}
-      {!hideLayout && <MarqueeSection />}
+      {/* ✅ Footer har jagah show hoga */}
       {!hideLayout && <Footer />}
 
       <Toaster position="top-right" />

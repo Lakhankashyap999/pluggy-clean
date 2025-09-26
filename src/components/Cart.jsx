@@ -2,6 +2,7 @@ import { useState } from "react"
 import { X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useApp } from "../AppContext"
+import PaymentPopup from "./PaymentPopup"   // ✅ import PaymentPopup
 
 export default function Cart({
   open,
@@ -10,17 +11,26 @@ export default function Cart({
   labourCharge,
   discount,
   finalTotal,
-  onProceed,
 }) {
-  const { address, setAddress, removeFromCart } = useApp() // ✅ use removeFromCart from context
+  const { address, setAddress, removeFromCart, clearCart, addRequest, user } = useApp()
   const [tempAddress, setTempAddress] = useState("")
   const [showAddressForm, setShowAddressForm] = useState(false)
+  const [showPayment, setShowPayment] = useState(false)  // ✅ new state
 
   const handleSaveAddress = () => {
     if (!tempAddress.trim()) return
-    setAddress(tempAddress) // ✅ update context + localStorage
+    setAddress(tempAddress)
+    localStorage.setItem("pluggy_address", tempAddress)
     setTempAddress("")
     setShowAddressForm(false)
+  }
+
+  const handleCheckout = () => {
+    if (!address || address.trim() === "") {
+      setShowAddressForm(true)
+      return
+    }
+    setShowPayment(true)   // ✅ open payment popup
   }
 
   if (!open) return null
@@ -78,7 +88,7 @@ export default function Cart({
                           <p className="text-sm text-gray-600">₹{item.price}</p>
                         </div>
                         <button
-                          onClick={() => removeFromCart(item.issue)} // ✅ remove from context
+                          onClick={() => removeFromCart(item.issue)}
                           className="text-red-600 hover:text-red-800"
                         >
                           Remove
@@ -107,7 +117,7 @@ export default function Cart({
                     </div>
                   ) : (
                     <p className="text-sm text-red-500">
-                      ⚠ Please select a delivery address
+                      ⚠ Please add your address
                     </p>
                   )}
 
@@ -158,13 +168,7 @@ export default function Cart({
                   {/* Proceed Button */}
                   <motion.button
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => {
-                      if (!address) {
-                        setShowAddressForm(true)
-                        return
-                      }
-                      onProceed()
-                    }}
+                    onClick={handleCheckout}
                     className="mt-4 w-full py-3 bg-[#1A2A49] text-white rounded-lg hover:bg-[#223a61]"
                   >
                     Proceed to Checkout
@@ -173,6 +177,30 @@ export default function Cart({
               )}
             </div>
           </motion.div>
+
+          {/* Payment Popup */}
+          <PaymentPopup
+            open={showPayment}
+            onClose={() => setShowPayment(false)}
+            amount={finalTotal}
+            onSuccess={() => {
+              const newRequest = {
+                id: Date.now(),
+                items,
+                issue: items.map(i => i.issue).join(", "),
+                service: items.map(i => i.service || "Service").join(", "),
+                address,
+                amount: finalTotal,
+                status: "Pending",
+                created_at: new Date().toLocaleString(),
+                name: user?.name || "Guest",
+              }
+              addRequest(newRequest)
+              clearCart()
+              setShowPayment(false)
+              onClose()
+            }}
+          />
         </>
       )}
     </AnimatePresence>

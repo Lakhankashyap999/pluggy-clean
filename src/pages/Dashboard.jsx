@@ -7,6 +7,7 @@ import FilterDrawer from "../components/FilterDrawer"
 import FilteredResults from "../components/FilteredResults"
 import CustomerReviews from "../components/CustomerReviews"
 import ExtraSections from "../components/ExtraSections"
+import MarqueeSection from "../components/MarqueeSection"   // ✅ import added
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { useApp } from "../AppContext"
@@ -91,8 +92,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* ❌ Duplicate Mobile Top Header removed */}
-
       {/* ✅ Desktop/Tablet Search Bar */}
       <motion.div
         initial={{ y: -60, opacity: 0 }}
@@ -269,7 +268,7 @@ export default function Dashboard() {
               />
             </section>
 
-            {/* ✅ Our Services (moved UP) */}
+            {/* Our Services */}
             <section className="px-4 sm:px-6 lg:px-12 py-10 bg-white">
               <h2 className="text-2xl sm:text-3xl font-bold text-[#1A2A49] mb-10 text-center relative">
                 Our Services
@@ -278,7 +277,7 @@ export default function Dashboard() {
               <OurServices />
             </section>
 
-            {/* ✅ Why Choose Us (moved DOWN) */}
+            {/* Why Choose Us */}
             <section className="px-4 sm:px-6 lg:px-12 py-10 bg-gray-50">
               <h2 className="text-2xl sm:text-3xl font-bold text-[#1A2A49] mb-10 text-center relative">
                 Why Choose Pluggy?
@@ -295,6 +294,11 @@ export default function Dashboard() {
             {/* Extra Sections */}
             <section className="px-4 sm:px-6 lg:px-12 py-10 bg-gray-50">
               <ExtraSections />
+            </section>
+
+            {/* ✅ Marquee Only on Homepage */}
+            <section>
+              <MarqueeSection />
             </section>
           </>
         )}

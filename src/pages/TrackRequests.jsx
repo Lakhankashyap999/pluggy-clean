@@ -7,7 +7,6 @@ import {
   Wrench,
   Clock,
   CheckCircle2,
-  Hammer,
 } from "lucide-react"
 import BackButton from "../components/BackButton"
 
@@ -66,7 +65,7 @@ export default function TrackRequests() {
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="font-semibold text-[#1A2A49] flex items-center gap-2 text-lg">
                     <Wrench size={20} className="text-[#F37021]" />
-                    {r.service}
+                    {r.service || "Service Request"}
                   </h3>
                   <span
                     className={`text-xs px-3 py-1 rounded-full font-medium ${
@@ -95,7 +94,7 @@ export default function TrackRequests() {
                   </p>
                   <p className="flex items-center gap-2">
                     <PackageSearch size={15} className="text-[#1A2A49]" />{" "}
-                    {r.issue}
+                    {r.issue || "No issue details"}
                   </p>
                   <p className="flex items-center gap-2">
                     <CircleDollarSign size={15} className="text-[#1A2A49]" /> ₹

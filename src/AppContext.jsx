@@ -16,7 +16,7 @@ export function AppProvider({ children }) {
     JSON.parse(localStorage.getItem("pluggy_engineer") || "null")
   )
 
-  // 📦 Cart state
+  // 🛒 Cart state
   const [cart, setCart] = useState(
     JSON.parse(localStorage.getItem("pluggy_cart") || "[]")
   )
@@ -54,7 +54,7 @@ export function AppProvider({ children }) {
     }
   }, [engineer])
 
-  // 📦 Update cart
+  // 🛒 Update cart
   useEffect(() => {
     localStorage.setItem("pluggy_cart", JSON.stringify(cart))
   }, [cart])
@@ -93,37 +93,63 @@ export function AppProvider({ children }) {
     setCart((prev) => prev.filter((item) => item.issue !== issueName))
   }
 
-  const clearCart = () => setCart([])
+  const clearCart = () => {
+    setCart([])
+    localStorage.setItem("pluggy_cart", "[]")
+  }
 
   // 📋 Request helpers
-  const addRequest = (req) => setRequests((prev) => [...prev, req])
-  const updateRequestStatus = (id, newStatus) =>
-    setRequests((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
-    )
+  const addRequest = (req) => {
+    setRequests((prev) => {
+      const updated = [...prev, req]
+      localStorage.setItem("pluggy_requests", JSON.stringify(updated))
+      return updated
+    })
+  }
+
+  const updateRequestStatus = (id, newStatus) => {
+    setRequests((prev) => {
+      const updated = prev.map((r) =>
+        r.id === id ? { ...r, status: newStatus } : r
+      )
+      localStorage.setItem("pluggy_requests", JSON.stringify(updated))
+      return updated
+    })
+  }
 
   return (
     <AppContext.Provider
       value={{
+        // 🌍 City
         city,
         setCity,
+
+        // 👤 User
         user,
         setUser,
         loginUser,
         logoutUser,
+
+        // 🛠️ Engineer
         engineer,
         setEngineer,
         loginEngineer,
         logoutEngineer,
+
+        // 🛒 Cart
         cart,
+        setCart,
         addToCart,
         removeFromCart,
         clearCart,
-        setCart,
+
+        // 📋 Requests
         requests,
+        setRequests,
         addRequest,
         updateRequestStatus,
-        setRequests,
+
+        // 🏠 Address
         address,
         setAddress,
       }}
