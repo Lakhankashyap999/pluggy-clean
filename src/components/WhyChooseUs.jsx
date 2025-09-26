@@ -11,9 +11,7 @@ const points = [
 export default function WhyChooseUs() {
   const container = {
     hidden: {},
-    visible: {
-      transition: { staggerChildren: 0.15 },
-    },
+    visible: { transition: { staggerChildren: 0.15 } },
   }
 
   const item = {
@@ -22,11 +20,11 @@ export default function WhyChooseUs() {
   }
 
   return (
-    <div className="text-center px-4 sm:px-6 lg:px-8">
+    <div className="max-w-6xl mx-auto text-center px-4 sm:px-6 lg:px-8">
       <h3 className="text-xs sm:text-sm font-semibold text-[#1A2A49] tracking-wide uppercase">
         Why Choose Us
       </h3>
-      <h2 className="text-2xl sm:text-3xl font-bold text-[#1A2A49] mt-2 mb-8 sm:mb-10">
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1A2A49] mt-2 mb-8 sm:mb-12">
         Pluggy Advantage
       </h2>
 
@@ -35,24 +33,24 @@ export default function WhyChooseUs() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 lg:gap-8"
       >
         {points.map((p, i) => (
           <motion.div
             key={i}
             variants={item}
             whileHover={{ scale: 1.05 }}
-            className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border hover:shadow-md transition flex flex-col items-center text-center"
+            className="bg-white p-6 lg:p-8 rounded-2xl shadow-md border hover:shadow-lg transition flex flex-col items-center text-center"
           >
-            <div className="flex justify-center mb-3 sm:mb-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#1A2A49]/10 flex items-center justify-center text-[#1A2A49]">
-                <p.icon size={22} className="sm:size-26" />
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#1A2A49]/10 flex items-center justify-center text-[#1A2A49]">
+                <p.icon size={26} />
               </div>
             </div>
-            <h4 className="text-base sm:text-lg font-semibold text-[#1A2A49]">
+            <h4 className="text-base sm:text-lg lg:text-xl font-semibold text-[#1A2A49]">
               {p.title}
             </h4>
-            <p className="text-xs sm:text-sm text-gray-600 mt-2 leading-relaxed">
+            <p className="text-xs sm:text-sm lg:text-base text-gray-600 mt-2 leading-relaxed">
               {p.desc}
             </p>
           </motion.div>

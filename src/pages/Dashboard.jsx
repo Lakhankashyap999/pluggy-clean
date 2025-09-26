@@ -202,11 +202,12 @@ export default function Dashboard() {
           <FilteredResults filters={appliedFilters} />
         ) : (
           <>
+            {/* Slider */}
             <section>
               <Slider />
             </section>
 
-            {/* Dussehra Banner */}
+            {/* Banner */}
             <section className="block sm:hidden mt-4 px-4">
               <div className="relative rounded-xl overflow-hidden shadow-lg">
                 <img
@@ -268,22 +269,22 @@ export default function Dashboard() {
               />
             </section>
 
-            {/* ✅ Why Choose Us */}
+            {/* Why Choose Us */}
             <section className="px-4 sm:px-6 lg:px-12 py-10 bg-white">
               <WhyChooseUs />
             </section>
 
-            {/* ✅ Our Services */}
+            {/* Our Services */}
             <section className="px-4 sm:px-6 lg:px-12 py-10 bg-gray-50">
               <OurServices />
             </section>
 
-            {/* ✅ Customer Reviews */}
+            {/* Customer Reviews */}
             <section className="px-4 sm:px-6 lg:px-12 py-10 bg-white">
               <CustomerReviews />
             </section>
 
-            {/* ✅ Extra Sections */}
+            {/* Extra Sections */}
             <section className="px-4 sm:px-6 lg:px-12 py-10 bg-gray-50">
               <ExtraSections />
             </section>
