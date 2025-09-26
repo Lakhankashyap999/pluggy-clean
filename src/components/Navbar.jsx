@@ -1,4 +1,3 @@
-// src/components/Navbar.jsx
 import {
   Phone,
   User,
@@ -19,7 +18,7 @@ export default function Navbar() {
   const navigate = useNavigate()
   const { user, logoutUser, cart, removeFromCart } = useApp()
   const [cartOpen, setCartOpen] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(null) // desktop dropdown
+  const [menuOpen, setMenuOpen] = useState(null)
   const [activeCategory, setActiveCategory] = useState(null)
 
   useEffect(() => {
@@ -39,7 +38,6 @@ export default function Navbar() {
     Appliances: ["Geyser Repair", "Fridge Service", "Washing Machine Repair"],
   }
 
-  // Animations
   const fadeDown = {
     hidden: { y: -20, opacity: 0 },
     visible: { y: 0, opacity: 1, transition: { duration: 0.35 } },
@@ -52,9 +50,9 @@ export default function Navbar() {
   }
 
   return (
-    <>
-      {/* ✅ Mobile Top Bar (simple, no hamburger) */}
-      <div className="md:hidden bg-[#1A2A49] text-white flex items-center justify-between px-4 py-3 sticky top-0 z-50">
+    <div className="sticky top-0 z-50">
+      {/* ✅ Mobile Navbar */}
+      <div className="md:hidden bg-[#1A2A49] text-white flex items-center justify-between px-4 py-3 shadow">
         <div className="flex items-center gap-2">
           <img
             src="/image/logos.png"
@@ -71,7 +69,7 @@ export default function Navbar() {
         variants={fadeDown}
         initial="hidden"
         animate="visible"
-        className="hidden md:block bg-[#1A2A49] shadow-sm sticky top-0 z-50"
+        className="hidden md:block bg-[#1A2A49] shadow-sm"
       >
         <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between text-white">
           {/* Logo */}
@@ -101,7 +99,6 @@ export default function Navbar() {
               <button className="flex items-center gap-2 hover:text-gray-300">
                 Services
               </button>
-
               <AnimatePresence>
                 {menuOpen === "services" && (
                   <motion.div
@@ -261,6 +258,6 @@ export default function Navbar() {
         onRemove={removeFromCart}
         onProceed={() => navigate("/request/ac-repair")}
       />
-    </>
+    </div>
   )
 }
