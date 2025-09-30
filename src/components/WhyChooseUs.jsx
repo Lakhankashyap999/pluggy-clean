@@ -20,42 +20,34 @@ export default function WhyChooseUs() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-      <h3 className="text-xs sm:text-sm font-semibold text-[#1A2A49] tracking-wide uppercase">
-        Why Choose Us
-      </h3>
-      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1A2A49] mt-2 mb-8 sm:mb-12">
-        Pluggy Advantage
-      </h2>
-
-      <motion.div
-        variants={container}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 lg:gap-8"
-      >
-        {points.map((p, i) => (
-          <motion.div
-            key={i}
-            variants={item}
-            whileHover={{ scale: 1.05 }}
-            className="bg-white p-6 lg:p-8 rounded-2xl shadow-md border hover:shadow-lg transition flex flex-col items-center text-center"
-          >
-            <div className="flex justify-center mb-4">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#1A2A49]/10 flex items-center justify-center text-[#1A2A49]">
-                <p.icon size={26} />
-              </div>
+    <motion.div
+      variants={container}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 lg:gap-8 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8"
+    >
+      {points.map((p, i) => (
+        <motion.div
+          key={i}
+          variants={item}
+          whileHover={{ y: -5, scale: 1.03 }}
+          transition={{ type: "spring", stiffness: 220 }}
+          className="bg-white p-6 lg:p-8 rounded-2xl shadow-md border border-gray-100 hover:shadow-xl transition flex flex-col items-center text-center"
+        >
+          <div className="flex justify-center mb-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#1A2A49]/10 flex items-center justify-center text-[#1A2A49]">
+              <p.icon size={26} />
             </div>
-            <h4 className="text-base sm:text-lg lg:text-xl font-semibold text-[#1A2A49]">
-              {p.title}
-            </h4>
-            <p className="text-xs sm:text-sm lg:text-base text-gray-600 mt-2 leading-relaxed">
-              {p.desc}
-            </p>
-          </motion.div>
-        ))}
-      </motion.div>
-    </div>
+          </div>
+          <h4 className="text-base sm:text-lg lg:text-xl font-semibold text-[#1A2A49]">
+            {p.title}
+          </h4>
+          <p className="text-xs sm:text-sm lg:text-base text-gray-600 mt-2 leading-relaxed">
+            {p.desc}
+          </p>
+        </motion.div>
+      ))}
+    </motion.div>
   )
 }

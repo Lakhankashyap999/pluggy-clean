@@ -41,24 +41,40 @@ footer {
   margin-top: auto;
 }
 
-/* ✅ Right → Left marquee (seamless) */
+/* ✅ Right → Left single marquee */
 @keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); } /* sirf half shift */
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
 }
 .animate-marquee {
-  display: inline-flex;
-  min-width: 200%; /* do tracks ek sath */
-  animation: marquee 18s linear infinite;
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 35s linear infinite;
 }
 
-/* ✅ Left → Right marquee (seamless) */
-@keyframes marquee-reverse {
-  0% { transform: translateX(-50%); }
-  100% { transform: translateX(0); }
+/* ✨ Gradient overlay for smooth edges */
+.marquee-wrapper {
+  position: relative;
+  overflow: hidden;
 }
-.animate-marquee-reverse {
-  display: inline-flex;
-  min-width: 200%;
-  animation: marquee-reverse 18s linear infinite;
+
+.marquee-wrapper::before,
+.marquee-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 60px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.marquee-wrapper::before {
+  left: 0;
+  background: linear-gradient(to right, white, transparent);
+}
+
+.marquee-wrapper::after {
+  right: 0;
+  background: linear-gradient(to left, white, transparent);
 }

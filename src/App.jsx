@@ -1,11 +1,14 @@
 // src/App.jsx
 import { Routes, Route, useLocation } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
+import { useState, useEffect } from "react"
+
 import Navbar from "./components/Navbar"
 import BottomNavbar from "./components/BottomNavbar"
 import Footer from "./components/Footer"
 import LocationGate from "./components/LocationGate"
 import ScrollToTop from "./components/ScrollToTop"
+import Preloader from "./components/Preloader"
 
 import Dashboard from "./pages/Dashboard"
 import Login from "./pages/Login"
@@ -24,8 +27,6 @@ import AddressPage from "./pages/AddressPage"
 import RecentPage from "./pages/RecentPage"
 import ChangePasswordPage from "./pages/ChangePasswordPage"
 import EditProfilePage from "./pages/EditProfilePage"
-
-// ✅ Newly added
 import CouponsPage from "./pages/CouponsPage"
 import NotificationsPage from "./pages/NotificationsPage"
 import ServicesPage from "./pages/ServicesPage"
@@ -36,21 +37,47 @@ export default function App() {
   const location = useLocation()
   const { city, setCity } = useApp()
 
-  if (!city) {
-    return <LocationGate onSelect={(c) => setCity(c)} />
-  }
+  // ✅ Preloader state
+  const [loading, setLoading] = useState(true)
 
-  // ✅ Auth/engineer pages par layout hide
-  const hideLayout = ["/login", "/signup", "/engineer-login"].includes(location.pathname)
+  useEffect(() => {
+    const handleLoad = () => setLoading(false)
+    window.addEventListener("load", handleLoad)
+    const timer = setTimeout(() => setLoading(false), 4500)
+    return () => {
+      window.removeEventListener("load", handleLoad)
+      clearTimeout(timer)
+    }
+  }, [])
+
+  // ✅ Show Preloader first
+  if (loading) return <Preloader />
+
+  // ✅ City gate
+  if (!city) return <LocationGate onSelect={(c) => setCity(c)} />
+
+  // ✅ Layout hide config
+  const hideNavbarRoutes = ["/login", "/signup", "/engineer-login"]
+  const hideFooterRoutes = [
+    "/login",
+    "/signup",
+    "/engineer-login",
+    "/services",
+    "/request"
+  ]
+
+  const hideNavbar = hideNavbarRoutes.includes(location.pathname)
+  const hideFooter = hideFooterRoutes.some((path) =>
+    location.pathname.startsWith(path)
+  )
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* ✅ Navbar */}
-      {!hideLayout && <Navbar />}
-      <ScrollToTop />
+      {!hideNavbar && <Navbar />}
 
-      {/* ✅ Main content */}
       <main className="flex-1">
+        <ScrollToTop />
+
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/login" element={<Login />} />
@@ -79,11 +106,8 @@ export default function App() {
         </Routes>
       </main>
 
-      {/* ✅ Bottom navbar only Home (mobile view) */}
-      {!hideLayout && location.pathname === "/" && <BottomNavbar />}
-
-      {/* ✅ Footer har jagah show hoga */}
-      {!hideLayout && <Footer />}
+      {!hideNavbar && location.pathname === "/" && <BottomNavbar />}
+      {!hideFooter && <Footer />}
 
       <Toaster position="top-right" />
       <div id="portal-root"></div>

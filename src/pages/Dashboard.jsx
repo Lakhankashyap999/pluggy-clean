@@ -7,7 +7,7 @@ import FilterDrawer from "../components/FilterDrawer"
 import FilteredResults from "../components/FilteredResults"
 import CustomerReviews from "../components/CustomerReviews"
 import ExtraSections from "../components/ExtraSections"
-import MarqueeSection from "../components/MarqueeSection"   // ✅ import added
+import MarqueeSection from "../components/MarqueeSection"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { useApp } from "../AppContext"
@@ -21,14 +21,7 @@ export default function Dashboard() {
   const [filterOpen, setFilterOpen] = useState(false)
   const [appliedFilters, setAppliedFilters] = useState(null)
   const [searchOpen, setSearchOpen] = useState(false)
-
-  // ✅ all services
-  const allServices = {
-    ac: ["AC Repair", "AC Installation", "AC Gas Refill"],
-    fan: ["Fan Motor Repair", "Ceiling Fan Installation", "Fan Regulator Fix"],
-    wiring: ["House Wiring", "Short Circuit Fix", "Switchboard Repair"],
-    electrical: ["Fuse Replacement", "MCB Repair", "New Electrical Fittings"],
-  }
+  const [seeMoreOpen, setSeeMoreOpen] = useState(false)
 
   // ✅ rotating placeholder
   const serviceSuggestions = [
@@ -57,7 +50,7 @@ export default function Dashboard() {
     setPlaceholder(serviceSuggestions[index])
   }, [index])
 
-  // ✅ filter suggestions
+  // ✅ search filter logic
   const handleChange = (e) => {
     const value = e.target.value.toLowerCase()
     setQuery(value)
@@ -66,15 +59,9 @@ export default function Dashboard() {
       return
     }
     let matches = []
-    Object.keys(allServices).forEach((key) => {
-      if (key.startsWith(value)) {
-        matches = [...matches, ...allServices[key]]
-      } else {
-        allServices[key].forEach((item) => {
-          if (item.toLowerCase().includes(value)) {
-            matches.push(item)
-          }
-        })
+    serviceSuggestions.forEach((item) => {
+      if (item.toLowerCase().includes(value)) {
+        matches.push(item)
       }
     })
     setSuggestions(matches)
@@ -109,7 +96,7 @@ export default function Dashboard() {
           />
           <button
             onClick={() => handleSearch()}
-            className="p-2 bg-[#1A2A49] text-white rounded-full hover:bg-[#223a61]"
+            className="p-2 bg-[#1A2A49] text-white rounded-full hover:bg-[#223a61] transition"
           >
             <Search size={18} />
           </button>
@@ -206,23 +193,6 @@ export default function Dashboard() {
               <Slider />
             </section>
 
-            {/* Banner */}
-            <section className="block sm:hidden mt-4 px-4">
-              <div className="relative rounded-xl overflow-hidden shadow-lg">
-                <img
-                  src="/dussehra-banner.jpg"
-                  alt="Happy Dussehra"
-                  className="w-full h-auto object-cover"
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none"
-                  }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white text-lg font-bold">
-                  🎉 Happy Dussehra 🎉
-                </div>
-              </div>
-            </section>
-
             {/* Hero Section */}
             <section className="bg-gray-50 px-4 sm:px-6 lg:px-12 py-10 flex flex-col lg:flex-row items-center justify-between gap-8">
               {/* Left */}
@@ -269,20 +239,29 @@ export default function Dashboard() {
             </section>
 
             {/* Our Services */}
-            <section className="px-4 sm:px-6 lg:px-12 py-10 bg-white">
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#1A2A49] mb-10 text-center relative">
-                Our Services
-                <span className="block w-16 h-1 bg-[#1A2A49] mx-auto mt-2 rounded"></span>
-              </h2>
+            <section className="px-4 sm:px-6 lg:px-12 py-12 bg-white">
+              <div className="flex justify-between items-center mb-10">
+                <h2 className="text-3xl font-bold text-[#1A2A49]">
+                  Our Services
+                </h2>
+                <button
+                  onClick={() => setSeeMoreOpen(true)}
+                  className="px-5 py-2 text-sm bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61] transition"
+                >
+                  See More
+                </button>
+              </div>
               <OurServices />
             </section>
 
-            {/* Why Choose Us */}
-            <section className="px-4 sm:px-6 lg:px-12 py-10 bg-gray-50">
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#1A2A49] mb-10 text-center relative">
+            {/* Why Choose Pluggy */}
+            <section className="px-4 sm:px-6 lg:px-12 py-12 bg-gray-50 text-center">
+              <h2 className="text-3xl font-bold text-[#1A2A49] mb-2">
                 Why Choose Pluggy?
-                <span className="block w-16 h-1 bg-[#1A2A49] mx-auto mt-2 rounded"></span>
               </h2>
+              <p className="text-gray-600 mb-10 text-sm sm:text-base">
+                Our Advantage – Trusted by thousands of happy customers
+              </p>
               <WhyChooseUs />
             </section>
 
@@ -296,13 +275,52 @@ export default function Dashboard() {
               <ExtraSections />
             </section>
 
-            {/* ✅ Marquee Only on Homepage */}
+            {/* ✅ Marquee */}
             <section>
               <MarqueeSection />
             </section>
           </>
         )}
       </div>
+
+      {/* ✅ See More Popup */}
+      <AnimatePresence>
+        {seeMoreOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]"
+          >
+            <motion.div
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.8 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white rounded-xl shadow-lg w-full max-w-2xl p-6 relative"
+            >
+              <button
+                onClick={() => setSeeMoreOpen(false)}
+                className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+              >
+                <X size={22} />
+              </button>
+
+              <h3 className="text-xl font-bold text-[#1A2A49] mb-4">More Services</h3>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-700">
+                <li>🔧 Geyser Repair</li>
+                <li>🚿 Water Purifier Installation</li>
+                <li>🧹 Deep Cleaning</li>
+                <li>🪟 Window Repair</li>
+                <li>📺 TV Wall Mount</li>
+                <li>🚪 Door Lock Fix</li>
+                <li>🛠️ Modular Kitchen Setup</li>
+                <li>💡 Smart Home Automation</li>
+              </ul>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

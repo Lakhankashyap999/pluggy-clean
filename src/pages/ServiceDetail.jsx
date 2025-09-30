@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom"
 import { ChevronLeft, Star, Wrench, Info } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Cart from "../components/Cart"
 import { useApp } from "../AppContext"
 
@@ -75,6 +75,11 @@ export default function ServiceDetail() {
   const [cartOpen, setCartOpen] = useState(false)
   const [address, setAddress] = useState("")
   const { addToCart } = useApp()
+
+  // ✅ FIX: jab bhi service id change ho -> page upar scroll ho
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }, [id])
 
   if (!service) {
     return (

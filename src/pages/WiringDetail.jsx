@@ -7,16 +7,15 @@ export default function WiringDetail() {
   const [selectedIssue, setSelectedIssue] = useState(null)
 
   const service = {
-    title: "Wiring & Switchboard",
-    desc: "Professional electrical wiring & switchboard services with safety.",
-    rating: "4.7",
-    basePrice: "₹299 onwards",
+    title: "Wiring Service",
+    desc: "House wiring, circuit fixes, and switchboard installation.",
+    rating: "4.5",
+    basePrice: "₹249 onwards",
     issues: [
-      { issue: "Switchboard Repair", price: 299 },
-      { issue: "Short Circuit Fix", price: 399 },
-      { issue: "New Wiring Setup", price: 799 },
-      { issue: "Fuse Replacement", price: 199 },
-      { issue: "MCB Installation", price: 499 },
+      { issue: "New Switchboard Installation", price: 299 },
+      { issue: "Short Circuit Repair", price: 399 },
+      { issue: "MCB Replacement", price: 349 },
+      { issue: "Complete House Wiring", price: 1999 },
     ],
   }
 
@@ -24,18 +23,22 @@ export default function WiringDetail() {
   const finalAmount = selectedIssue ? selectedIssue.price + labourCharge : null
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header */}
+      <div className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-gray-700 hover:text-[#1A2A49]">
             <ChevronLeft size={20} /> <span className="text-sm">Back</span>
           </button>
           <h2 className="font-bold text-[#1A2A49]">{service.title}</h2>
-          <button onClick={() => navigate("/")} className="text-sm text-[#1A2A49] hover:underline">Home</button>
+          <button onClick={() => navigate("/")} className="text-sm text-[#1A2A49] hover:underline">
+            Home
+          </button>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-8 grid md:grid-cols-2 gap-8">
+      {/* Body */}
+      <div className="flex-1 max-w-6xl mx-auto px-4 py-8 grid md:grid-cols-2 gap-8">
         <div>
           <h1 className="text-2xl font-bold text-[#1A2A49]">{service.title}</h1>
           <p className="text-gray-600 mt-2">{service.desc}</p>
@@ -48,7 +51,7 @@ export default function WiringDetail() {
             </span>
           </div>
           <button
-            onClick={() => navigate(`/request/wiring-switchboard`, { state: { selectedIssue, finalAmount } })}
+            onClick={() => navigate(`/request/wiring`, { state: { selectedIssue, finalAmount } })}
             disabled={!selectedIssue}
             className="mt-6 px-6 py-3 bg-[#1A2A49] text-white rounded-lg hover:bg-[#223a61] disabled:opacity-50"
           >
@@ -88,7 +91,9 @@ export default function WiringDetail() {
           </table>
           {selectedIssue && (
             <div className="mt-4 p-3 bg-gray-100 rounded-lg text-sm">
-              <p>Selected: <span className="font-semibold">{selectedIssue.issue}</span></p>
+              <p>
+                Selected: <span className="font-semibold">{selectedIssue.issue}</span>
+              </p>
               <p>Issue Charge: ₹{selectedIssue.price} + Labour: ₹{labourCharge}</p>
               <p className="font-bold text-[#1A2A49]">Total: ₹{finalAmount}</p>
             </div>
