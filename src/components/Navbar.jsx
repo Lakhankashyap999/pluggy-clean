@@ -1,21 +1,15 @@
-import {
-  Phone,
-  User,
-  LogOut,
-  ShoppingCart,
-  ListChecks,
-  Bell,
-  ChevronRight,
-} from "lucide-react"
-import { Link, useNavigate } from "react-router-dom"
+// src/components/Navbar.jsx
+import { useState, useEffect } from "react"
+import { Link, useNavigate, useLocation } from "react-router-dom"
+import { Phone, User, LogOut, ShoppingCart, ListChecks, Bell } from "lucide-react"
 import toast from "react-hot-toast"
-import Cart from "./Cart"
-import { useEffect, useState } from "react"
 import { useApp } from "../AppContext"
+import Cart from "./Cart"
 import { motion, AnimatePresence } from "framer-motion"
 
 export default function Navbar() {
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const { user, logoutUser, cart, removeFromCart } = useApp()
   const [cartOpen, setCartOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(null)
@@ -49,20 +43,51 @@ export default function Navbar() {
     exit: { opacity: 0, scale: 0.96, y: -6, transition: { duration: 0.15 } },
   }
 
+  // Dynamic Page Name (Mobile)
+  const getPageName = () => {
+    if (pathname === "/") return "Home"
+    if (pathname.startsWith("/account")) return "Account"
+    if (pathname.startsWith("/request")) return "Services"
+    if (pathname.startsWith("/cart")) return "Cart"
+    return ""
+  }
+
   return (
     <div className="sticky top-0 z-50">
-      {/* ✅ Mobile Navbar */}
-      <div className="md:hidden bg-[#1A2A49] text-white flex items-center justify-between px-4 py-3 shadow">
-        <div className="flex items-center gap-2">
-          <img
-            src="/image/logos.png"
-            alt="Pluggy"
-            className="h-7 w-7 object-contain filter brightness-0 invert"
-          />
-          <span className="text-lg font-bold">Pluggy</span>
-        </div>
-        <div className="text-sm font-medium">{user?.name || "Guest"}</div>
-      </div>
+      {/* ✅ Mobile Top Navbar */}
+    {/* ✅ Mobile Top Navbar */}
+<div className="md:hidden bg-[#1A2A49] text-white flex items-center justify-between px-4 py-4 shadow-lg">
+  {/* Left: Logo + Stylish Name */}
+  <div className="flex items-center gap-3">
+    <img
+      src="/image/logos.png"
+      alt="Pluggy"
+      className="h-10 w-10 object-contain filter brightness-0 invert" // white logo
+    />
+    <span className="text-2xl font-extrabold text-white tracking-wide" style={{ fontFamily: "'Poppins', sans-serif" }}>
+      Pluggy
+    </span>
+  </div>
+
+  {/* Right: Icons */}
+  <div className="flex items-center gap-4">
+    <motion.button
+      whileTap={{ scale: 0.9 }}
+      onClick={() => navigate("/account")}
+      className="relative text-white"
+    >
+      <User size={22} />
+    </motion.button>
+    <motion.a
+      whileTap={{ scale: 0.9 }}
+      href="tel:+919876543210"
+      className="relative text-white"
+    >
+      <Phone size={22} />
+    </motion.a>
+  </div>
+</div>
+
 
       {/* ✅ Desktop Navbar */}
       <motion.nav
@@ -82,7 +107,7 @@ export default function Navbar() {
               whileTap={{ scale: 0.98 }}
               transition={{ type: "spring", stiffness: 260, damping: 18 }}
             />
-            <span className="text-xl font-extrabold">Pluggy</span>
+            <span className="text-xl font-extrabold tracking-wider">Pluggy</span>
           </Link>
 
           {/* Menu Items */}
@@ -107,7 +132,6 @@ export default function Navbar() {
                     exit={{ opacity: 0, y: -10 }}
                     className="absolute left-0 top-full mt-2 bg-white text-black shadow-lg rounded-lg border z-50 flex"
                   >
-                    {/* Categories */}
                     <div className="w-48 border-r">
                       {Object.keys(servicesData).map((category) => (
                         <div
@@ -118,12 +142,9 @@ export default function Navbar() {
                           onMouseEnter={() => setActiveCategory(category)}
                         >
                           <span>{category}</span>
-                          <ChevronRight size={16} className="text-gray-500" />
                         </div>
                       ))}
                     </div>
-
-                    {/* Issues */}
                     {activeCategory && (
                       <motion.div
                         initial={{ opacity: 0, x: -10 }}
@@ -144,7 +165,6 @@ export default function Navbar() {
                             }}
                           >
                             <span>{item}</span>
-                            <ChevronRight size={14} className="text-gray-400" />
                           </div>
                         ))}
                       </motion.div>
@@ -154,7 +174,6 @@ export default function Navbar() {
               </AnimatePresence>
             </div>
 
-            {/* My Requests */}
             <motion.button
               onClick={() => navigate("/account/track")}
               className="flex items-center gap-2 hover:text-gray-300"
@@ -163,7 +182,6 @@ export default function Navbar() {
               <ListChecks size={18} /> My Requests
             </motion.button>
 
-            {/* My Cart */}
             <motion.button
               onClick={() => setCartOpen(true)}
               className="flex items-center gap-2 hover:text-gray-300"
@@ -172,7 +190,6 @@ export default function Navbar() {
               <ShoppingCart size={18} /> My Cart ({cart.length})
             </motion.button>
 
-            {/* Notifications */}
             <motion.button
               onClick={() => navigate("/account/notifications")}
               className="flex items-center gap-2 hover:text-gray-300"
@@ -181,7 +198,6 @@ export default function Navbar() {
               <Bell size={18} /> Notifications
             </motion.button>
 
-            {/* Call Us */}
             <motion.a
               href="tel:+919876543210"
               className="flex items-center gap-2 px-4 py-2 bg-white text-[#1A2A49] rounded-lg shadow hover:bg-gray-100"
@@ -190,7 +206,6 @@ export default function Navbar() {
               <Phone size={16} /> Call us
             </motion.a>
 
-            {/* User Menu */}
             {!user ? (
               <motion.button
                 onClick={() => navigate("/login")}
@@ -209,7 +224,6 @@ export default function Navbar() {
                   <User size={18} />
                   <span className="font-semibold">{user.name}</span>
                 </button>
-
                 <AnimatePresence>
                   {menuOpen === "user" && (
                     <motion.div
