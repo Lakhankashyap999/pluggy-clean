@@ -57,11 +57,12 @@ export default function App() {
   if (!city) return <LocationGate onSelect={(c) => setCity(c)} />
 
   // ✅ Layout hide config
-  const hideNavbarRoutes = ["/login", "/signup", "/engineer-login"]
+  const hideNavbarRoutes = ["/login", "/signup", "/engineer-login", "/engineer"]
   const hideFooterRoutes = [
     "/login",
     "/signup",
     "/engineer-login",
+    "/engineer",
     "/services",
     "/request"
   ]
@@ -73,6 +74,7 @@ export default function App() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      {/* ✅ User Navbar hidden on engineer pages */}
       {!hideNavbar && <Navbar />}
 
       <main className="flex-1">
@@ -106,7 +108,10 @@ export default function App() {
         </Routes>
       </main>
 
+      {/* Bottom Navbar only on home page */}
       {!hideNavbar && location.pathname === "/" && <BottomNavbar />}
+
+      {/* Footer hidden on engineer & auth pages */}
       {!hideFooter && <Footer />}
 
       <Toaster position="top-right" />
