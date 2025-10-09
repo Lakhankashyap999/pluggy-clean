@@ -2,38 +2,32 @@
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import toast from "react-hot-toast"
-import { Mail, Lock } from "lucide-react"
+import { Mail, Lock, Eye, EyeOff, ShieldCheck } from "lucide-react"
 import { useApp } from "../AppContext"
 
 export default function Login() {
   const navigate = useNavigate()
   const { loginUser, setUser } = useApp()
   const [form, setForm] = useState({ email: "", password: "" })
-
-  // Forgot password states
+  const [showPass, setShowPass] = useState(false)
   const [showForgot, setShowForgot] = useState(false)
   const [otpSent, setOtpSent] = useState(false)
   const [otp, setOtp] = useState("")
   const [newPass, setNewPass] = useState("")
   const [generatedOtp, setGeneratedOtp] = useState(null)
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
   // ✅ Normal login
   const handleSubmit = (e) => {
     e.preventDefault()
     const stored = localStorage.getItem("pluggy_user")
-    if (!stored) {
-      toast.error("No account found. Please sign up first.")
-      return
-    }
+    if (!stored) return toast.error("No account found. Please sign up first.")
     const userData = JSON.parse(stored)
     if (form.email === userData.email && form.password === userData.password) {
       loginUser(userData)
       toast.success(`Welcome back, ${userData.name}! 🎉`)
-      navigate("/") // ✅ homepage redirect
+      navigate("/")
     } else {
       toast.error("Invalid credentials ❌")
     }
@@ -41,20 +35,11 @@ export default function Login() {
 
   // ✅ Forgot Password Flow
   const sendOtp = () => {
-    if (!form.email) {
-      toast.error("Enter your email first ❌")
-      return
-    }
+    if (!form.email) return toast.error("Enter your email first ❌")
     const stored = localStorage.getItem("pluggy_user")
-    if (!stored) {
-      toast.error("No account found with this email ❌")
-      return
-    }
+    if (!stored) return toast.error("No account found with this email ❌")
     const userData = JSON.parse(stored)
-    if (userData.email !== form.email) {
-      toast.error("Email not registered ❌")
-      return
-    }
+    if (userData.email !== form.email) return toast.error("Email not registered ❌")
     const code = Math.floor(100000 + Math.random() * 900000).toString()
     setGeneratedOtp(code)
     setOtpSent(true)
@@ -62,15 +47,9 @@ export default function Login() {
   }
 
   const resetPassword = () => {
-    if (otp !== generatedOtp) {
-      toast.error("Invalid OTP ❌")
-      return
-    }
+    if (otp !== generatedOtp) return toast.error("Invalid OTP ❌")
     const stored = JSON.parse(localStorage.getItem("pluggy_user") || "null")
-    if (!stored) {
-      toast.error("No account found ❌")
-      return
-    }
+    if (!stored) return toast.error("No account found ❌")
     const updated = { ...stored, password: newPass }
     localStorage.setItem("pluggy_user", JSON.stringify(updated))
     setUser(updated)
@@ -82,38 +61,53 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-white px-4">
+      <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
         {!showForgot ? (
           <>
-            <h2 className="text-2xl font-bold text-[#1A2A49] mb-6 text-center">
-              Log in to Pluggy
-            </h2>
+            <div className="flex flex-col items-center mb-6">
+              <div className="bg-[#1A2A49] p-3 rounded-full mb-3 shadow-md">
+                <ShieldCheck size={28} className="text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-[#1A2A49] tracking-wide text-center">
+                Log in to Pluggy
+              </h2>
+              <p className="text-gray-500 text-sm mt-1 text-center">
+                Enter your credentials to continue
+              </p>
+            </div>
 
             <form className="space-y-4" onSubmit={handleSubmit}>
-              <div className="flex items-center border rounded-md px-3 py-2">
-                <Mail size={18} className="text-gray-400 mr-2" />
+              <div className="relative flex items-center border rounded-md px-3 py-2">
+                <Mail size={18} className="text-gray-400 absolute left-3" />
                 <input
                   type="email"
                   name="email"
                   placeholder="Email"
                   value={form.email}
                   onChange={handleChange}
-                  className="flex-1 outline-none text-sm"
+                  className="w-full pl-10 pr-4 py-2 text-sm outline-none"
                   required
                 />
               </div>
-              <div className="flex items-center border rounded-md px-3 py-2">
-                <Lock size={18} className="text-gray-400 mr-2" />
+
+              <div className="relative flex items-center border rounded-md px-3 py-2">
+                <Lock size={18} className="text-gray-400 absolute left-3" />
                 <input
-                  type="password"
+                  type={showPass ? "text" : "password"}
                   name="password"
                   placeholder="Password"
                   value={form.password}
                   onChange={handleChange}
-                  className="flex-1 outline-none text-sm"
+                  className="w-full pl-10 pr-10 py-2 text-sm outline-none"
                   required
                 />
+                <span
+                  onClick={() => setShowPass(!showPass)}
+                  className="absolute right-3 cursor-pointer"
+                >
+                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                </span>
               </div>
 
               <button
@@ -124,7 +118,6 @@ export default function Login() {
               </button>
             </form>
 
-            {/* Forgot password */}
             <p
               onClick={() => setShowForgot(true)}
               className="mt-3 text-sm text-[#1A2A49] text-center hover:underline cursor-pointer"
@@ -132,7 +125,6 @@ export default function Login() {
               Forgot your password?
             </p>
 
-            {/* Signup */}
             <p className="mt-4 text-sm text-gray-600 text-center">
               Don’t have an account?{" "}
               <Link to="/signup" className="text-[#1A2A49] font-medium hover:underline">
@@ -140,7 +132,6 @@ export default function Login() {
               </Link>
             </p>
 
-            {/* Engineer login link */}
             <p className="mt-2 text-sm text-gray-600 text-center">
               Are you an engineer?{" "}
               <Link to="/engineer-login" className="text-[#1A2A49] font-medium hover:underline">

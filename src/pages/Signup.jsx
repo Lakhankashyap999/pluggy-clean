@@ -2,7 +2,7 @@
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import toast from "react-hot-toast"
-import { User, Mail, Lock, Phone } from "lucide-react"
+import { User, Mail, Lock, Phone, Eye, EyeOff } from "lucide-react"
 import { useApp } from "../AppContext"
 
 export default function Signup() {
@@ -16,10 +16,10 @@ export default function Signup() {
     password: "",
     confirmPassword: "",
   })
+  const [showPass, setShowPass] = useState(false)
+  const [showConfirmPass, setShowConfirmPass] = useState(false)
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -52,76 +52,101 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
-        <h2 className="text-2xl font-bold text-[#1A2A49] mb-6 text-center">
-          Create Account
-        </h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-white px-4">
+      <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
+        <div className="flex flex-col items-center mb-6">
+          <div className="bg-[#1A2A49] p-3 rounded-full mb-3 shadow-md">
+            <User size={28} className="text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-[#1A2A49] tracking-wide text-center">
+            Create Account
+          </h2>
+          <p className="text-gray-500 text-sm mt-1 text-center">
+            Join Pluggy to manage your services easily
+          </p>
+        </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="flex items-center border rounded-md px-3 py-2">
-            <User size={18} className="text-gray-400 mr-2" />
+          {/* Name */}
+          <div className="relative flex items-center border rounded-md px-3 py-2">
+            <User size={18} className="text-gray-400 absolute left-3" />
             <input
               type="text"
               name="name"
               placeholder="Full Name"
               value={form.name}
               onChange={handleChange}
-              className="flex-1 outline-none text-sm"
+              className="w-full pl-10 pr-4 py-2 text-sm outline-none"
               required
             />
           </div>
 
-          <div className="flex items-center border rounded-md px-3 py-2">
-            <Mail size={18} className="text-gray-400 mr-2" />
+          {/* Email */}
+          <div className="relative flex items-center border rounded-md px-3 py-2">
+            <Mail size={18} className="text-gray-400 absolute left-3" />
             <input
               type="email"
               name="email"
               placeholder="Email Address"
               value={form.email}
               onChange={handleChange}
-              className="flex-1 outline-none text-sm"
+              className="w-full pl-10 pr-4 py-2 text-sm outline-none"
               required
             />
           </div>
 
-          <div className="flex items-center border rounded-md px-3 py-2">
-            <Phone size={18} className="text-gray-400 mr-2" />
+          {/* Phone */}
+          <div className="relative flex items-center border rounded-md px-3 py-2">
+            <Phone size={18} className="text-gray-400 absolute left-3" />
             <input
               type="tel"
               name="phone"
               placeholder="Phone Number"
               value={form.phone}
               onChange={handleChange}
-              className="flex-1 outline-none text-sm"
+              className="w-full pl-10 pr-4 py-2 text-sm outline-none"
               required
             />
           </div>
 
-          <div className="flex items-center border rounded-md px-3 py-2">
-            <Lock size={18} className="text-gray-400 mr-2" />
+          {/* Password */}
+          <div className="relative flex items-center border rounded-md px-3 py-2">
+            <Lock size={18} className="text-gray-400 absolute left-3" />
             <input
-              type="password"
+              type={showPass ? "text" : "password"}
               name="password"
               placeholder="Password"
               value={form.password}
               onChange={handleChange}
-              className="flex-1 outline-none text-sm"
+              className="w-full pl-10 pr-10 py-2 text-sm outline-none"
               required
             />
+            <span
+              onClick={() => setShowPass(!showPass)}
+              className="absolute right-3 cursor-pointer"
+            >
+              {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+            </span>
           </div>
 
-          <div className="flex items-center border rounded-md px-3 py-2">
-            <Lock size={18} className="text-gray-400 mr-2" />
+          {/* Confirm Password */}
+          <div className="relative flex items-center border rounded-md px-3 py-2">
+            <Lock size={18} className="text-gray-400 absolute left-3" />
             <input
-              type="password"
+              type={showConfirmPass ? "text" : "password"}
               name="confirmPassword"
               placeholder="Confirm Password"
               value={form.confirmPassword}
               onChange={handleChange}
-              className="flex-1 outline-none text-sm"
+              className="w-full pl-10 pr-10 py-2 text-sm outline-none"
               required
             />
+            <span
+              onClick={() => setShowConfirmPass(!showConfirmPass)}
+              className="absolute right-3 cursor-pointer"
+            >
+              {showConfirmPass ? <EyeOff size={18} /> : <Eye size={18} />}
+            </span>
           </div>
 
           <button
