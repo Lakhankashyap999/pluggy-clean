@@ -55,38 +55,36 @@ export default function Navbar() {
   return (
     <div className="sticky top-0 z-50">
       {/* ✅ Mobile Top Navbar */}
-    {/* ✅ Mobile Top Navbar */}
-<div className="md:hidden bg-[#1A2A49] text-white flex items-center justify-between px-4 py-4 shadow-lg">
-  {/* Left: Logo + Stylish Name */}
-  <div className="flex items-center gap-3">
+    {/* ✅ Compact Mobile Top Navbar */}
+<div className="md:hidden bg-[#1A2A49] text-white flex items-center justify-between px-4 py-2 shadow">
+  <div className="flex items-center gap-2">
     <img
       src="/image/logos.png"
       alt="Pluggy"
-      className="h-10 w-10 object-contain filter brightness-0 invert" // white logo
+      className="h-6 w-6 object-contain brightness-0 invert"
     />
-    <span className="text-2xl font-extrabold text-white tracking-wide" style={{ fontFamily: "'Poppins', sans-serif" }}>
+    <span className="text-base font-extrabold tracking-wide font-[Poppins]">
       Pluggy
     </span>
   </div>
-
-  {/* Right: Icons */}
-  <div className="flex items-center gap-4">
+  <div className="flex items-center gap-3">
     <motion.button
       whileTap={{ scale: 0.9 }}
       onClick={() => navigate("/account")}
       className="relative text-white"
     >
-      <User size={22} />
+      <User size={18} />
     </motion.button>
     <motion.a
       whileTap={{ scale: 0.9 }}
       href="tel:+919876543210"
       className="relative text-white"
     >
-      <Phone size={22} />
+      <Phone size={18} />
     </motion.a>
   </div>
 </div>
+
 
 
       {/* ✅ Desktop Navbar */}

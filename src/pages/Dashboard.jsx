@@ -213,11 +213,12 @@ export default function Dashboard() {
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 mt-4">
                   <button
-                    onClick={() => navigate("/services")}
-                    className="px-6 py-2 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61]"
-                  >
-                    Book a Service
-                  </button>
+  onClick={() => navigate("/book-service")}
+  className="px-6 py-2 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61]"
+>
+  Book a Service
+</button>
+
                   <a
                     href="tel:+919876543210"
                     className="px-6 py-2 border border-[#1A2A49] text-[#1A2A49] rounded-lg hover:bg-gray-50"

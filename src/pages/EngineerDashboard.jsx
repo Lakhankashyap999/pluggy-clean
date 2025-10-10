@@ -1,10 +1,11 @@
 // src/pages/EngineerDashboard.jsx
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useApp } from "../AppContext";
 import { Wrench, PlusCircle, CheckCircle, LogOut, Phone } from "lucide-react";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function EngineerDashboard() {
-  const { engineer, requests, setRequests, updateUserRequest } = useApp();
+  const { engineer, requests, setRequests, updateRequestStatus } = useApp();
 
   const [expandedRequest, setExpandedRequest] = useState(null);
   const [newIssue, setNewIssue] = useState("");
@@ -12,22 +13,15 @@ export default function EngineerDashboard() {
   const [toast, setToast] = useState("");
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
+  const [todayStats, setTodayStats] = useState({ total: 0, earnings: 0 });
 
-  // ✅ Toast
+  // ✅ Toast helper
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(""), 3000);
   };
 
-  // ✅ Update request status
-  const updateRequestStatus = (id, newStatus) => {
-    const updated = requests.map((req) =>
-      req.id === id ? { ...req, status: newStatus } : req
-    );
-    setRequests(updated);
-  };
-
-  // ✅ Add/Edit/Delete Issue
+  // ✅ Issue CRUD
   const handleAddIssue = (reqId) => {
     if (!newIssue || !newPrice) return showToast("Enter issue & price");
     const updated = requests.map((req) => {
@@ -38,14 +32,13 @@ export default function EngineerDashboard() {
         ];
         const newTotal =
           updatedIssues.reduce((sum, i) => sum + i.price, 0) + 50;
-        const updatedReq = { ...req, selectedIssues: updatedIssues, amount: newTotal };
-        if (updateUserRequest) updateUserRequest(reqId, updatedIssues, newTotal);
-        return updatedReq;
+        return { ...req, selectedIssues: updatedIssues, amount: newTotal };
       }
       return req;
     });
     setRequests(updated);
-    setNewIssue(""); setNewPrice("");
+    setNewIssue("");
+    setNewPrice("");
     showToast("✅ Issue added");
   };
 
@@ -56,9 +49,7 @@ export default function EngineerDashboard() {
         updatedIssues[index] = { issue: updatedIssue, price: parseInt(updatedPrice) };
         const newTotal =
           updatedIssues.reduce((sum, i) => sum + i.price, 0) + 50;
-        const updatedReq = { ...req, selectedIssues: updatedIssues, amount: newTotal };
-        if (updateUserRequest) updateUserRequest(reqId, updatedIssues, newTotal);
-        return updatedReq;
+        return { ...req, selectedIssues: updatedIssues, amount: newTotal };
       }
       return req;
     });
@@ -73,9 +64,7 @@ export default function EngineerDashboard() {
         updatedIssues.splice(index, 1);
         const newTotal =
           updatedIssues.reduce((sum, i) => sum + i.price, 0) + 50;
-        const updatedReq = { ...req, selectedIssues: updatedIssues, amount: newTotal };
-        if (updateUserRequest) updateUserRequest(reqId, updatedIssues, newTotal);
-        return updatedReq;
+        return { ...req, selectedIssues: updatedIssues, amount: newTotal };
       }
       return req;
     });
@@ -83,16 +72,17 @@ export default function EngineerDashboard() {
     showToast("🗑️ Issue removed");
   };
 
-  // ✅ Filtered & searched
+  // ✅ Filter & search
   const filteredRequests = useMemo(() => {
     return requests
       .filter((r) => (filterStatus === "All" ? true : r.status === filterStatus))
-      .filter(
-        (r) =>
-          r.name.toLowerCase().includes(search.toLowerCase()) ||
-          r.phone.includes(search) ||
-          r.service.toLowerCase().includes(search.toLowerCase())
-      );
+      .filter((r) => {
+        const name = r.userName?.toLowerCase() || "";
+        const phone = r.userPhone || "";
+        const service = r.service?.toLowerCase() || "";
+        const query = search.toLowerCase();
+        return name.includes(query) || phone.includes(search) || service.includes(query);
+      });
   }, [requests, search, filterStatus]);
 
   // ✅ Stats
@@ -105,7 +95,22 @@ export default function EngineerDashboard() {
     return { total, confirmed, inProgress, completed, earnings };
   }, [requests]);
 
-  // ✅ Engineer login check
+  // ✅ Today's stats
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    const todayReqs = requests.filter(r => r.date === today);
+    const total = todayReqs.length;
+    const earnings = todayReqs.reduce((sum, r) => sum + (r.amount || 0), 0);
+    setTodayStats({ total, earnings });
+  }, [requests]);
+
+  // ✅ Priority color
+  const getPriorityColor = (priority) => {
+    if (priority === "High") return "bg-red-200 text-red-800";
+    if (priority === "Medium") return "bg-yellow-200 text-yellow-800";
+    return "bg-green-200 text-green-800";
+  };
+
   if (!engineer) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">
@@ -114,12 +119,13 @@ export default function EngineerDashboard() {
     );
   }
 
-  // ✅ Priority color
-  const getPriorityColor = (priority) => {
-    if (priority === "High") return "bg-red-200 text-red-800";
-    if (priority === "Medium") return "bg-yellow-200 text-yellow-800";
-    return "bg-green-200 text-green-800";
-  };
+  const pieData = [
+    { name: "Confirmed", value: stats.confirmed },
+    { name: "In Progress", value: stats.inProgress },
+    { name: "Completed", value: stats.completed },
+  ];
+
+  const COLORS = ["#1A2A49", "#3B5998", "#00C49F"];
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8">
@@ -129,11 +135,9 @@ export default function EngineerDashboard() {
           <Wrench size={20} /> Engineer Dashboard
         </h1>
         <div className="flex items-center gap-4">
-          <span className="text-sm sm:text-base opacity-90">
-            Welcome, {engineer.name} 👨‍🔧
-          </span>
+          <span className="text-sm sm:text-base opacity-90">Welcome, {engineer.name} 👨‍🔧</span>
           <button
-            onClick={() => { localStorage.removeItem("engineer"); window.location.href = "/engineer-login"; }}
+            onClick={() => { localStorage.removeItem("pluggy_engineer"); window.location.href = "/engineer-login"; }}
             className="bg-white text-[#1A2A49] px-3 py-1 rounded-lg text-sm font-medium hover:bg-gray-100 flex items-center gap-1"
           >
             <LogOut size={16} /> Logout
@@ -141,24 +145,42 @@ export default function EngineerDashboard() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+      {/* Stats & Pie Chart */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white shadow p-4 rounded-lg text-center">
           <p className="text-gray-500 text-sm">Total Requests</p>
           <h2 className="text-2xl font-bold">{stats.total}</h2>
         </div>
         <div className="bg-white shadow p-4 rounded-lg text-center">
-          <p className="text-gray-500 text-sm">In Progress</p>
-          <h2 className="text-2xl font-bold">{stats.inProgress}</h2>
+          <p className="text-gray-500 text-sm">Today's Requests</p>
+          <h2 className="text-2xl font-bold">{todayStats.total}</h2>
         </div>
         <div className="bg-white shadow p-4 rounded-lg text-center">
-          <p className="text-gray-500 text-sm">Completed</p>
-          <h2 className="text-2xl font-bold">{stats.completed}</h2>
+          <p className="text-gray-500 text-sm">Today's Earnings</p>
+          <h2 className="text-2xl font-bold">₹{todayStats.earnings}</h2>
         </div>
-        <div className="bg-white shadow p-4 rounded-lg text-center">
-          <p className="text-gray-500 text-sm">Earnings</p>
-          <h2 className="text-2xl font-bold">₹{stats.earnings}</h2>
-        </div>
+      </div>
+
+      <div className="bg-white shadow rounded-lg p-4 mb-6 h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={pieData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={80}
+              fill="#8884d8"
+              label
+            >
+              {pieData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
       </div>
 
       {/* Search & Filter */}
@@ -182,7 +204,7 @@ export default function EngineerDashboard() {
         </select>
       </div>
 
-      {/* Requests Table / Cards */}
+      {/* Requests */}
       {filteredRequests.length === 0 ? (
         <div className="text-gray-600 text-center mt-12">No requests found.</div>
       ) : (
@@ -191,7 +213,7 @@ export default function EngineerDashboard() {
             <div key={r.id} className="bg-white p-4 rounded-lg shadow flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
               <div className="flex-1">
                 <h3 className="font-semibold text-[#1A2A49]">{r.service}</h3>
-                <p className="text-sm text-gray-500">{r.name} | {r.phone}</p>
+                <p className="text-sm text-gray-500">{r.userName} | {r.userPhone}</p>
                 <p className="mt-1 font-medium">Amount: ₹{r.amount || 0}</p>
                 <span className={`px-2 py-1 rounded text-xs ${getPriorityColor(r.priority || "Low")}`}>
                   {r.priority || "Low"}
@@ -213,7 +235,7 @@ export default function EngineerDashboard() {
                 >
                   {expandedRequest === r.id ? "Close" : "Manage Issues"}
                 </button>
-                <a href={`tel:${r.phone}`} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 flex items-center gap-1 text-sm">
+                <a href={`tel:${r.userPhone}`} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 flex items-center gap-1 text-sm">
                   <Phone size={14} /> Call
                 </a>
               </div>
@@ -225,7 +247,7 @@ export default function EngineerDashboard() {
             .filter((r) => r.id === expandedRequest)
             .map((req) => (
               <div key={req.id} className="bg-white p-4 rounded-lg shadow mt-2">
-                <h4 className="font-semibold text-[#1A2A49] mb-2">Issues for {req.name}</h4>
+                <h4 className="font-semibold text-[#1A2A49] mb-2">Issues for {req.userName}</h4>
                 {req.selectedIssues?.length > 0 ? req.selectedIssues.map((issue, idx) => (
                   <div key={idx} className="flex flex-col sm:flex-row gap-2 items-center mb-2">
                     <input

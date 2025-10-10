@@ -17,7 +17,7 @@ import {
 import toast from "react-hot-toast"
 
 export default function Account() {
-  const { user, logoutUser } = useApp()
+  const { user, logoutUser, bookings } = useApp()
   const navigate = useNavigate()
 
   if (!user) {
@@ -56,8 +56,7 @@ export default function Account() {
   return (
     <div className="main-container bg-gray-50 px-3 sm:px-6 py-6">
       <div className="max-w-3xl mx-auto">
-
-        {/* ✅ Top Header with Back button */}
+        {/* Top Header */}
         <div className="flex items-center gap-3 mb-6">
           <button
             onClick={() => navigate(-1)}
@@ -68,7 +67,7 @@ export default function Account() {
           </button>
         </div>
 
-        {/* ✅ Profile Header */}
+        {/* Profile Header */}
         <div className="bg-white rounded-2xl shadow p-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-8">
           <div className="h-20 w-20 rounded-full bg-[#1A2A49] text-white flex items-center justify-center text-2xl font-bold">
             {user.name?.charAt(0).toUpperCase() || <User size={28} />}
@@ -76,9 +75,7 @@ export default function Account() {
           <div className="flex-1 text-center sm:text-left">
             <h2 className="text-xl font-bold text-[#1A2A49]">{user.name}</h2>
             <p className="text-sm text-gray-600">{user.email}</p>
-            {user.phone && (
-              <p className="text-sm text-gray-500">📞 {user.phone}</p>
-            )}
+            {user.phone && <p className="text-sm text-gray-500">📞 {user.phone}</p>}
           </div>
           <button
             onClick={() => navigate("/account/edit")}
@@ -88,13 +85,32 @@ export default function Account() {
           </button>
         </div>
 
-        {/* ✅ My Orders */}
+        {/* My Bookings */}
+        <Section title="My Bookings">
+          {bookings.length > 0 ? (
+            bookings.map((b, i) => (
+              <div key={i} className="px-4 py-3 border-b hover:bg-gray-50">
+                <p className="text-gray-800 font-medium">{b.service}</p>
+                <p className="text-sm text-gray-500">
+                  {b.date} at {b.time}
+                </p>
+                {b.details && (
+                  <p className="text-xs text-gray-400 mt-1">{b.details}</p>
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="px-4 py-3 text-gray-500">No bookings yet.</p>
+          )}
+        </Section>
+
+        {/* My Orders */}
         <Section title="My Orders">
           <Item icon={ListChecks} label="Track Requests" path="/account/track" />
           <Item icon={ShoppingCart} label="My Cart" path="/account/cart" />
         </Section>
 
-        {/* ✅ Account Settings */}
+        {/* Account Settings */}
         <Section title="Account Settings">
           <Item icon={Lock} label="Login & Security" path="/account/security" />
           <Item icon={MapPin} label="Your Address" path="/account/address" />
@@ -102,14 +118,14 @@ export default function Account() {
           <Item icon={Key} label="Change Password" path="/account/password" />
         </Section>
 
-        {/* ✅ Others */}
+        {/* Others */}
         <Section title="Others">
           <Item icon={Bell} label="Notifications" path="/account/notifications" />
           <Item icon={TicketPercent} label="Coupons" path="/account/coupons" />
           <Item icon={Wrench} label="Services" path="/account/services" />
         </Section>
 
-        {/* ✅ Logout */}
+        {/* Logout */}
         <div className="bg-white rounded-xl shadow">
           <Item
             icon={LogOut}

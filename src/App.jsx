@@ -9,6 +9,7 @@ import Footer from "./components/Footer"
 import LocationGate from "./components/LocationGate"
 import ScrollToTop from "./components/ScrollToTop"
 import Preloader from "./components/Preloader"
+import BookService from "./pages/BookService"
 
 import Dashboard from "./pages/Dashboard"
 import Login from "./pages/Login"
@@ -82,6 +83,8 @@ export default function App() {
 
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/book-service" element={<BookService />} />
+
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 

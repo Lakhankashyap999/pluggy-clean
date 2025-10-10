@@ -31,6 +31,11 @@ export function AppProvider({ children }) {
     localStorage.getItem("pluggy_address") || ""
   )
 
+  // 📌 Bookings state
+  const [bookings, setBookings] = useState(
+    JSON.parse(localStorage.getItem("pluggy_bookings") || "[]")
+  )
+
   // 🌍 Update city
   useEffect(() => {
     if (city) localStorage.setItem("pluggy_city", city)
@@ -73,6 +78,11 @@ export function AppProvider({ children }) {
     }
   }, [address])
 
+  // 📌 Update bookings
+  useEffect(() => {
+    localStorage.setItem("pluggy_bookings", JSON.stringify(bookings))
+  }, [bookings])
+
   // 🔑 Auth helpers
   const loginUser = (data) => setUser(data)
   const logoutUser = () => setUser(null)
@@ -83,9 +93,9 @@ export function AppProvider({ children }) {
   // 🛒 Cart helpers
   const addToCart = (item) => {
     if (Array.isArray(item)) {
-      setCart((prev) => [...prev, ...item]) // ✅ array merge
+      setCart((prev) => [...prev, ...item])
     } else {
-      setCart((prev) => [...prev, item]) // ✅ single item
+      setCart((prev) => [...prev, item])
     }
   }
 
@@ -117,41 +127,37 @@ export function AppProvider({ children }) {
     })
   }
 
+  // 📌 Booking helper
+  const addBooking = (booking) => {
+    setBookings((prev) => [...prev, booking])
+  }
+
   return (
     <AppContext.Provider
       value={{
-        // 🌍 City
         city,
         setCity,
-
-        // 👤 User
         user,
         setUser,
         loginUser,
         logoutUser,
-
-        // 🛠️ Engineer
         engineer,
         setEngineer,
         loginEngineer,
         logoutEngineer,
-
-        // 🛒 Cart
         cart,
         setCart,
         addToCart,
         removeFromCart,
         clearCart,
-
-        // 📋 Requests
         requests,
         setRequests,
         addRequest,
         updateRequestStatus,
-
-        // 🏠 Address
         address,
         setAddress,
+        bookings,
+        addBooking,
       }}
     >
       {children}
