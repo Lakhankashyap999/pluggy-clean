@@ -65,7 +65,7 @@ export default function App() {
     "/engineer-login",
     "/engineer",
     "/services",
-    "/request"
+    "/request",
   ]
 
   const hideNavbar = hideNavbarRoutes.includes(location.pathname)

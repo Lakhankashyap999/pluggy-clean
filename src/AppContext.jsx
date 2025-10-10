@@ -1,3 +1,4 @@
+// src/AppContext.jsx
 import { createContext, useContext, useEffect, useState } from "react"
 
 const AppContext = createContext()
@@ -31,7 +32,7 @@ export function AppProvider({ children }) {
     localStorage.getItem("pluggy_address") || ""
   )
 
-  // 📌 Bookings state
+  // 📌 Bookings state (user view)
   const [bookings, setBookings] = useState(
     JSON.parse(localStorage.getItem("pluggy_bookings") || "[]")
   )
@@ -47,6 +48,7 @@ export function AppProvider({ children }) {
       localStorage.setItem("pluggy_activeUser", JSON.stringify(user))
     } else {
       localStorage.removeItem("pluggy_activeUser")
+      setBookings([]) // clear bookings on logout
     }
   }, [user])
 
@@ -110,21 +112,13 @@ export function AppProvider({ children }) {
 
   // 📋 Request helpers
   const addRequest = (req) => {
-    setRequests((prev) => {
-      const updated = [...prev, req]
-      localStorage.setItem("pluggy_requests", JSON.stringify(updated))
-      return updated
-    })
+    setRequests((prev) => [...prev, req])
   }
 
   const updateRequestStatus = (id, newStatus) => {
-    setRequests((prev) => {
-      const updated = prev.map((r) =>
-        r.id === id ? { ...r, status: newStatus } : r
-      )
-      localStorage.setItem("pluggy_requests", JSON.stringify(updated))
-      return updated
-    })
+    setRequests((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
+    )
   }
 
   // 📌 Booking helper

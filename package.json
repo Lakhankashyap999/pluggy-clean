@@ -22,6 +22,7 @@
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.30.1",
     "react-typed": "^2.0.12",
+    "recharts": "^3.2.1",
     "three": "^0.180.0",
     "typed.js": "^2.1.0"
   },
