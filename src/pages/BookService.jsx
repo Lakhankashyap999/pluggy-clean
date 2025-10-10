@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import { CheckCircle, Wrench, Plug, Droplet, Home } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useApp } from "../AppContext"
+import toast from "react-hot-toast"
 
 export default function BookService() {
   const { addBooking, addRequest, user } = useApp()
@@ -26,7 +27,6 @@ export default function BookService() {
   ]
 
   useEffect(() => {
-    // Auto-fill user info if logged in
     if (user) {
       setFormData(prev => ({
         ...prev,
@@ -36,8 +36,19 @@ export default function BookService() {
     }
   }, [user])
 
+  // ✅ Require login helper
+  const requireLogin = (callback) => {
+    if (!user) {
+      toast.error("Please log in first!")
+    } else {
+      callback()
+    }
+  }
+
   const handleNext = () => {
-    if (step === 1 && selectedService) setStep(2)
+    requireLogin(() => {
+      if (step === 1 && selectedService) setStep(2)
+    })
   }
 
   const handleFormChange = (e) => {
@@ -46,7 +57,7 @@ export default function BookService() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (!user) return alert("Please login first!")
+    if (!user) return toast.error("Please log in first!")
 
     const bookingObj = {
       id: Date.now(),
@@ -58,13 +69,10 @@ export default function BookService() {
       date: formData.date,
       time: formData.time,
       details: formData.details,
-      status: "Pending", // engineer completes it later
+      status: "Pending",
     }
 
-    // Add booking for user view
     addBooking(bookingObj)
-
-    // Add request for engineer view
     addRequest({
       ...bookingObj,
       selectedIssues: [],
@@ -101,7 +109,7 @@ export default function BookService() {
               <h2 className="text-xl font-semibold mb-4 text-gray-800 text-center">Choose a Service</h2>
               <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
                 {services.map(s => (
-                  <div key={s.id} onClick={() => setSelectedService(s)} className={`cursor-pointer border-2 rounded-xl p-4 flex flex-col items-center justify-center transition-all ${selectedService?.id === s.id ? "border-[#1A2A49] bg-blue-50" : "border-gray-200 hover:border-[#1A2A49]"}`}>
+                  <div key={s.id} onClick={() => requireLogin(() => setSelectedService(s))} className={`cursor-pointer border-2 rounded-xl p-4 flex flex-col items-center justify-center transition-all ${selectedService?.id === s.id ? "border-[#1A2A49] bg-blue-50" : "border-gray-200 hover:border-[#1A2A49]"}`}>
                     {s.icon}
                     <h3 className="font-medium mt-2 text-sm text-gray-800">{s.name}</h3>
                     <p className="text-xs text-gray-500">{s.desc}</p>

@@ -70,12 +70,13 @@ const serviceData = {
 export default function ServiceDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user, addToCart } = useApp() // ✅ get user
+
   const service = serviceData[id]
   const [selectedIssues, setSelectedIssues] = useState([])
   const [cartOpen, setCartOpen] = useState(false)
   const [address, setAddress] = useState("")
   const [openDropdown, setOpenDropdown] = useState(null)
-  const { addToCart } = useApp()
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" })
@@ -89,14 +90,26 @@ export default function ServiceDetail() {
     )
   }
 
+  // ✅ Helper for actions requiring login
+  const handleProtectedAction = (callback) => {
+    if (!user) {
+      alert("Please login first to perform this action!")
+      navigate("/login")
+      return
+    }
+    callback()
+  }
+
   const toggleIssue = (issue, price) => {
-    setSelectedIssues((prev) => {
-      const exists = prev.find((i) => i.issue === issue)
-      if (exists) {
-        return prev.map((i) => (i.issue === issue ? { ...i, price } : i))
-      } else {
-        return [...prev, { issue, price }]
-      }
+    handleProtectedAction(() => {
+      setSelectedIssues((prev) => {
+        const exists = prev.find((i) => i.issue === issue)
+        if (exists) {
+          return prev.map((i) => (i.issue === issue ? { ...i, price } : i))
+        } else {
+          return [...prev, { issue, price }]
+        }
+      })
     })
   }
 
@@ -206,7 +219,9 @@ export default function ServiceDetail() {
                     <div
                       className="flex items-center justify-between cursor-pointer"
                       onClick={() =>
-                        setOpenDropdown(openDropdown === i ? null : i)
+                        handleProtectedAction(() =>
+                          setOpenDropdown(openDropdown === i ? null : i)
+                        )
                       }
                     >
                       <span className="font-medium text-[#1A2A49]">
@@ -224,10 +239,7 @@ export default function ServiceDetail() {
                         {item.priceOptions.map((price, idx) => (
                           <div
                             key={idx}
-                            onClick={() => {
-                              toggleIssue(item.issue, price)
-                              setOpenDropdown(null)
-                            }}
+                            onClick={() => toggleIssue(item.issue, price)}
                             className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700"
                           >
                             ₹{price}
@@ -247,12 +259,12 @@ export default function ServiceDetail() {
               ❓ Not sure what’s wrong? Let our engineer inspect it for you.
             </p>
             <button
-              onClick={() => {
-                setSelectedIssues([
-                  { issue: "Engineer Visit for Diagnosis", price: 49 },
-                ])
-                setCartOpen(true)
-              }}
+              onClick={() =>
+                handleProtectedAction(() => {
+                  setSelectedIssues([{ issue: "Engineer Visit for Diagnosis", price: 49 }])
+                  setCartOpen(true)
+                })
+              }
               className="bg-[#1A2A49] text-white px-6 py-2 rounded-lg hover:bg-[#223a61] transition"
             >
               Request Engineer Visit – ₹49
@@ -288,7 +300,9 @@ export default function ServiceDetail() {
               {selectedIssues.length} selected | Total: ₹{finalTotal}
             </span>
             <button
-              onClick={() => setCartOpen(true)}
+              onClick={() =>
+                handleProtectedAction(() => setCartOpen(true))
+              }
               className="px-6 py-2 bg-[#1A2A49] text-white rounded-lg hover:bg-[#223a61]"
             >
               View Cart →
@@ -306,16 +320,18 @@ export default function ServiceDetail() {
         discount={discount}
         finalTotal={finalTotal}
         onRemove={removeIssue}
-        onProceed={() => {
-          if (!address) {
-            alert("Please enter service address")
-            return
-          }
-          addToCart(selectedIssues)
-          navigate(`/request/${id}`, {
-            state: { selectedIssues, finalTotal, address },
+        onProceed={() =>
+          handleProtectedAction(() => {
+            if (!address) {
+              alert("Please enter service address")
+              return
+            }
+            addToCart(selectedIssues)
+            navigate(`/request/${id}`, {
+              state: { selectedIssues, finalTotal, address },
+            })
           })
-        }}
+        }
       />
     </div>
   )

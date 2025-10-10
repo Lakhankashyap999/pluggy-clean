@@ -24,7 +24,6 @@ export default function Dashboard() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [seeMoreOpen, setSeeMoreOpen] = useState(false)
 
-  // ✅ rotating placeholder
   const serviceSuggestions = [
     "AC Repair",
     "AC Installation",
@@ -51,7 +50,6 @@ export default function Dashboard() {
     setPlaceholder(serviceSuggestions[index])
   }, [index])
 
-  // ✅ search filter logic
   const handleChange = (e) => {
     const value = e.target.value.toLowerCase()
     setQuery(value)
@@ -69,6 +67,11 @@ export default function Dashboard() {
   }
 
   const handleSearch = (text) => {
+    if (!user) {
+      alert("Please login first to search services!")
+      navigate("/login")
+      return
+    }
     const q = text || query
     if (q.trim()) {
       navigate(`/request/${q.replace(/\s+/g, "-").toLowerCase()}`)
@@ -78,9 +81,19 @@ export default function Dashboard() {
     }
   }
 
+  // ✅ Protected click handler for booking / service actions
+  const handleProtectedAction = (path) => {
+    if (!user) {
+      alert("Please login first to perform this action!")
+      navigate("/login")
+      return
+    }
+    navigate(path)
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
-      {/* ✅ Desktop/Tablet Search Bar */}
+      {/* Desktop/Tablet Search Bar */}
       <motion.div
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -108,7 +121,6 @@ export default function Dashboard() {
             <SlidersHorizontal size={18} className="text-[#1A2A49]" />
           </button>
 
-          {/* ✅ Suggestions dropdown */}
           {suggestions.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
               {suggestions.map((s, i) => (
@@ -125,7 +137,7 @@ export default function Dashboard() {
         </div>
       </motion.div>
 
-      {/* ✅ Mobile Search Drawer */}
+      {/* Mobile Search Drawer */}
       <AnimatePresence>
         {searchOpen && (
           <motion.div
@@ -173,7 +185,7 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
-      {/* ✅ Filter Drawer */}
+      {/* Filter Drawer */}
       <FilterDrawer
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
@@ -183,7 +195,7 @@ export default function Dashboard() {
         }}
       />
 
-      {/* ✅ Main Content */}
+      {/* Main Content */}
       <div className="flex-1">
         {appliedFilters ? (
           <FilteredResults filters={appliedFilters} />
@@ -196,7 +208,6 @@ export default function Dashboard() {
 
             {/* Hero Section */}
             <section className="bg-gray-50 px-4 sm:px-6 lg:px-12 py-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-              {/* Left */}
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -204,8 +215,7 @@ export default function Dashboard() {
                 className="flex flex-col items-center lg:items-start text-center lg:text-left flex-1 space-y-4"
               >
                 <h2 className="text-2xl sm:text-4xl font-bold text-[#1A2A49] leading-snug">
-                  Reliable Home Services,{" "}
-                  <br className="hidden sm:block" /> Anytime, Anywhere 🚀
+                  Reliable Home Services, <br className="hidden sm:block" /> Anytime, Anywhere 🚀
                 </h2>
                 <div className="flex flex-col gap-2 text-gray-700 text-sm">
                   <p>⭐ <span className="font-semibold">4.8/5</span> Average Rating</p>
@@ -214,7 +224,7 @@ export default function Dashboard() {
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 mt-4">
                   <button
-                    onClick={() => navigate("/book-service")}
+                    onClick={() => handleProtectedAction("/book-service")}
                     className="px-6 py-2 bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61]"
                   >
                     Book a Service
@@ -227,8 +237,6 @@ export default function Dashboard() {
                   </a>
                 </div>
               </motion.div>
-
-              {/* Right */}
               <motion.img
                 src="../image/Electrician-rafiki.png"
                 alt="Home Services"
@@ -242,24 +250,20 @@ export default function Dashboard() {
             {/* Our Services */}
             <section className="px-4 sm:px-6 lg:px-12 py-12 bg-white">
               <div className="flex justify-between items-center mb-10">
-                <h2 className="text-3xl font-bold text-[#1A2A49]">
-                  Our Services
-                </h2>
+                <h2 className="text-3xl font-bold text-[#1A2A49]">Our Services</h2>
                 <button
-                  onClick={() => setSeeMoreOpen(true)}
+                  onClick={() => handleProtectedAction("/book-service")}
                   className="px-5 py-2 text-sm bg-[#1A2A49] text-white rounded-lg shadow hover:bg-[#223a61] transition"
                 >
                   See More
                 </button>
               </div>
-              <OurServices />
+              <OurServices onClickService={(path) => handleProtectedAction(path)} />
             </section>
 
             {/* Why Choose Pluggy */}
             <section className="px-4 sm:px-6 lg:px-12 py-12 bg-gray-50 text-center">
-              <h2 className="text-3xl font-bold text-[#1A2A49] mb-2">
-                Why Choose Pluggy?
-              </h2>
+              <h2 className="text-3xl font-bold text-[#1A2A49] mb-2">Why Choose Pluggy?</h2>
               <p className="text-gray-600 mb-10 text-sm sm:text-base">
                 Our Advantage – Trusted by thousands of happy customers
               </p>
@@ -276,7 +280,7 @@ export default function Dashboard() {
               <ExtraSections />
             </section>
 
-            {/* ✅ Marquee */}
+            {/* Marquee */}
             <section>
               <MarqueeSection />
             </section>
@@ -284,7 +288,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* ✅ See More Popup */}
+      {/* See More Popup */}
       <AnimatePresence>
         {seeMoreOpen && (
           <motion.div

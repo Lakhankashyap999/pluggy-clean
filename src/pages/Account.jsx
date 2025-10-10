@@ -1,3 +1,4 @@
+// src/pages/Account.jsx
 import { useApp } from "../AppContext"
 import { useNavigate } from "react-router-dom"
 import {
@@ -22,7 +23,7 @@ export default function Account() {
 
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center main-container text-gray-600 gap-4">
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4 text-gray-600">
         <p>Please log in to view your account</p>
         <button
           onClick={() => navigate("/login")}
@@ -54,7 +55,7 @@ export default function Account() {
   )
 
   return (
-    <div className="main-container bg-gray-50 px-3 sm:px-6 py-6">
+    <div className="min-h-screen bg-gray-50 px-3 sm:px-6 py-6">
       <div className="max-w-3xl mx-auto">
         {/* Top Header */}
         <div className="flex items-center gap-3 mb-6">
@@ -106,23 +107,35 @@ export default function Account() {
 
         {/* My Orders */}
         <Section title="My Orders">
-          <Item icon={ListChecks} label="Track Requests" path="/account/track" />
-          <Item icon={ShoppingCart} label="My Cart" path="/account/cart" />
+          {user && (
+            <>
+              <Item icon={ListChecks} label="Track Requests" path="/account/track" />
+              <Item icon={ShoppingCart} label="My Cart" path="/account/cart" />
+            </>
+          )}
         </Section>
 
         {/* Account Settings */}
         <Section title="Account Settings">
-          <Item icon={Lock} label="Login & Security" path="/account/security" />
-          <Item icon={MapPin} label="Your Address" path="/account/address" />
-          <Item icon={Eye} label="Recently Viewed" path="/account/recent" />
-          <Item icon={Key} label="Change Password" path="/account/password" />
+          {user && (
+            <>
+              <Item icon={Lock} label="Login & Security" path="/account/security" />
+              <Item icon={MapPin} label="Your Address" path="/account/address" />
+              <Item icon={Eye} label="Recently Viewed" path="/account/recent" />
+              <Item icon={Key} label="Change Password" path="/account/password" />
+            </>
+          )}
         </Section>
 
         {/* Others */}
         <Section title="Others">
-          <Item icon={Bell} label="Notifications" path="/account/notifications" />
-          <Item icon={TicketPercent} label="Coupons" path="/account/coupons" />
-          <Item icon={Wrench} label="Services" path="/account/services" />
+          {user && (
+            <>
+              <Item icon={Bell} label="Notifications" path="/account/notifications" />
+              <Item icon={TicketPercent} label="Coupons" path="/account/coupons" />
+              <Item icon={Wrench} label="Services" path="/account/services" />
+            </>
+          )}
         </Section>
 
         {/* Logout */}

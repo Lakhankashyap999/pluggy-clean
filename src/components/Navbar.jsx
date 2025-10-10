@@ -23,7 +23,15 @@ export default function Navbar() {
   const finalTotal =
     cart.reduce((sum, i) => sum + i.price, 0) + (cart.length > 0 ? 50 : 0)
 
-  // ✅ Mobile Navbar fixed styling
+  // ✅ Show login alert if user tries to access cart or requests
+  const handleRequireLogin = (callback) => {
+    if (!user) {
+      toast.error("Please log in first!")
+    } else {
+      callback()
+    }
+  }
+
   return (
     <div className="sticky top-0 z-50">
       {/* Mobile Top Navbar */}
@@ -53,11 +61,11 @@ export default function Navbar() {
           </motion.a>
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => setCartOpen(true)}
+            onClick={() => handleRequireLogin(() => setCartOpen(true))}
             className="relative text-white p-1"
           >
             <ShoppingCart size={16} />
-            {cart.length > 0 && (
+            {cart.length > 0 && user && (
               <span className="absolute -top-1 -right-1 text-[10px] bg-red-500 rounded-full px-1">
                 {cart.length}
               </span>
@@ -84,21 +92,26 @@ export default function Navbar() {
 
           {/* Menu Items */}
           <div className="flex items-center gap-6 text-sm">
-            <motion.button
-              onClick={() => navigate("/account/track")}
-              className="flex items-center gap-2 hover:text-gray-300"
-              whileTap={{ scale: 0.97 }}
-            >
-              <ListChecks size={18} /> My Requests
-            </motion.button>
+            {/* Only show these if user is logged in */}
+            {user && (
+              <>
+                <motion.button
+                  onClick={() => navigate("/account/track")}
+                  className="flex items-center gap-2 hover:text-gray-300"
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <ListChecks size={18} /> My Requests
+                </motion.button>
 
-            <motion.button
-              onClick={() => setCartOpen(true)}
-              className="flex items-center gap-2 hover:text-gray-300"
-              whileTap={{ scale: 0.97 }}
-            >
-              <ShoppingCart size={18} /> Cart ({cart.length})
-            </motion.button>
+                <motion.button
+                  onClick={() => setCartOpen(true)}
+                  className="flex items-center gap-2 hover:text-gray-300"
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <ShoppingCart size={18} /> Cart ({cart.length})
+                </motion.button>
+              </>
+            )}
 
             {!user ? (
               <motion.button
@@ -153,14 +166,16 @@ export default function Navbar() {
 
       {/* Cart Popup */}
       <Cart
-        open={cartOpen}
+        open={cartOpen && !!user}
         onClose={() => setCartOpen(false)}
         items={cart}
         labourCharge={cart.length > 0 ? 50 : 0}
         discount={0}
         finalTotal={finalTotal}
         onRemove={removeFromCart}
-        onProceed={() => navigate("/request/ac-repair")}
+        onProceed={() =>
+          handleRequireLogin(() => navigate("/request/ac-repair"))
+        }
       />
     </div>
   )
