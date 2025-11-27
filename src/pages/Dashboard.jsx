@@ -24,6 +24,7 @@ export default function Dashboard() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [seeMoreOpen, setSeeMoreOpen] = useState(false)
 
+  // ✅ Service suggestions for search placeholder & autosuggest
   const serviceSuggestions = [
     "AC Repair",
     "AC Installation",
@@ -36,9 +37,11 @@ export default function Dashboard() {
     "MCB Repair",
     "New Electrical Fittings",
   ]
+
   const [placeholder, setPlaceholder] = useState(serviceSuggestions[0])
   const [index, setIndex] = useState(0)
 
+  // 🔁 Rotate search placeholder text
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % serviceSuggestions.length)
@@ -50,6 +53,7 @@ export default function Dashboard() {
     setPlaceholder(serviceSuggestions[index])
   }, [index])
 
+  // 🔍 Handle search typing & autosuggestions
   const handleChange = (e) => {
     const value = e.target.value.toLowerCase()
     setQuery(value)
@@ -57,15 +61,13 @@ export default function Dashboard() {
       setSuggestions([])
       return
     }
-    let matches = []
-    serviceSuggestions.forEach((item) => {
-      if (item.toLowerCase().includes(value)) {
-        matches.push(item)
-      }
-    })
+    const matches = serviceSuggestions.filter((s) =>
+      s.toLowerCase().includes(value)
+    )
     setSuggestions(matches)
   }
 
+  // 🚀 Perform search or redirect
   const handleSearch = (text) => {
     if (!user) {
       alert("Please login first to search services!")
@@ -81,7 +83,7 @@ export default function Dashboard() {
     }
   }
 
-  // ✅ Protected click handler for booking / service actions
+  // 🔐 Protected route handler
   const handleProtectedAction = (path) => {
     if (!user) {
       alert("Please login first to perform this action!")
@@ -93,7 +95,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Desktop/Tablet Search Bar */}
+      {/* ====== Search Bar (Desktop) ====== */}
       <motion.div
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -137,7 +139,7 @@ export default function Dashboard() {
         </div>
       </motion.div>
 
-      {/* Mobile Search Drawer */}
+      {/* ====== Search Drawer (Mobile) ====== */}
       <AnimatePresence>
         {searchOpen && (
           <motion.div
@@ -185,7 +187,7 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
-      {/* Filter Drawer */}
+      {/* ====== Filter Drawer ====== */}
       <FilterDrawer
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
@@ -195,18 +197,18 @@ export default function Dashboard() {
         }}
       />
 
-      {/* Main Content */}
+      {/* ====== Main Dashboard Content ====== */}
       <div className="flex-1">
         {appliedFilters ? (
           <FilteredResults filters={appliedFilters} />
         ) : (
           <>
-            {/* Slider */}
+            {/* Hero Slider */}
             <section>
               <Slider />
             </section>
 
-            {/* Hero Section */}
+            {/* ====== Hero Section ====== */}
             <section className="bg-gray-50 px-4 sm:px-6 lg:px-12 py-10 flex flex-col lg:flex-row items-center justify-between gap-8">
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
@@ -247,7 +249,7 @@ export default function Dashboard() {
               />
             </section>
 
-            {/* Our Services */}
+            {/* ====== Our Services Section ====== */}
             <section className="px-4 sm:px-6 lg:px-12 py-12 bg-white">
               <div className="flex justify-between items-center mb-10">
                 <h2 className="text-3xl font-bold text-[#1A2A49]">Our Services</h2>
@@ -258,10 +260,16 @@ export default function Dashboard() {
                   See More
                 </button>
               </div>
-              <OurServices onClickService={(path) => handleProtectedAction(path)} />
+
+              {/* 🔗 Connected with ServiceDetails */}
+              <OurServices
+                onClickService={(serviceKey) =>
+                  handleProtectedAction(`/service/${serviceKey}`)
+                }
+              />
             </section>
 
-            {/* Why Choose Pluggy */}
+            {/* ====== Why Choose Us ====== */}
             <section className="px-4 sm:px-6 lg:px-12 py-12 bg-gray-50 text-center">
               <h2 className="text-3xl font-bold text-[#1A2A49] mb-2">Why Choose Pluggy?</h2>
               <p className="text-gray-600 mb-10 text-sm sm:text-base">
@@ -270,17 +278,17 @@ export default function Dashboard() {
               <WhyChooseUs />
             </section>
 
-            {/* Customer Reviews */}
+            {/* ====== Customer Reviews ====== */}
             <section className="px-4 sm:px-6 lg:px-12 py-10 bg-white">
               <CustomerReviews />
             </section>
 
-            {/* Extra Sections */}
+            {/* ====== Extra Sections ====== */}
             <section className="px-4 sm:px-6 lg:px-12 py-10 bg-gray-50">
               <ExtraSections />
             </section>
 
-            {/* Marquee */}
+            {/* ====== Marquee Section ====== */}
             <section>
               <MarqueeSection />
             </section>
@@ -288,7 +296,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* See More Popup */}
+      {/* ====== See More Popup ====== */}
       <AnimatePresence>
         {seeMoreOpen && (
           <motion.div

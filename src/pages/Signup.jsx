@@ -62,7 +62,7 @@ export default function Signup() {
             Create Account
           </h2>
           <p className="text-gray-500 text-sm mt-1 text-center">
-            Join Pluggy to manage your services easily
+               ᴊᴏɪɴ ᴘʟᴜɢɢʏ ᴛᴏ ᴍᴀɴᴀɢᴇ ʏᴏᴜʀ ꜱᴇʀᴠɪᴄᴇꜱ ᴇᴀꜱɪʟʏ
           </p>
         </div>
 
