@@ -15,15 +15,15 @@
     />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
 
-    <!-- ✅ Dark Mode Initialization (Prevents Flash) -->
+    <!-- ✅ Dark Mode Script (Default = Dark) -->
     <script>
-      const theme = localStorage.getItem("pluggy_theme") || "light"
+      const theme = localStorage.getItem("pluggy_theme") || "dark"
       if (theme === "dark") {
         document.documentElement.classList.add("dark")
       }
     </script>
   </head>
-  <body class="bg-white dark:bg-[#0B1120] transition-colors duration-300">
+  <body class="bg-[#F4F6F9] dark:bg-[#0B1120] transition-colors duration-300">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

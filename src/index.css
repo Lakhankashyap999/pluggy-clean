@@ -78,3 +78,151 @@ footer {
   right: 0;
   background: linear-gradient(to left, white, transparent);
 }
+
+/* ============================================ */
+/* 🌙 DARK MODE GLOBAL OVERRIDES                */
+/* ============================================ */
+
+.dark {
+  color-scheme: dark;
+}
+
+/* Dark mode background for all white cards */
+.dark .bg-white {
+  background-color: #1E293B !important;
+}
+
+/* Dark mode for gray backgrounds */
+.dark .bg-gray-50 {
+  background-color: #0F172A !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: #1E293B !important;
+}
+
+/* Dark mode text colors */
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-gray-700 {
+  color: #94A3B8 !important;
+}
+
+.dark .text-gray-800,
+.dark .text-gray-900 {
+  color: #F1F5F9 !important;
+}
+
+.dark .text-\[\#1A2A49\] {
+  color: #FFFFFF !important;
+}
+
+/* Dark mode borders */
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-gray-300 {
+  border-color: #334155 !important;
+}
+
+/* Dark mode inputs */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #1E293B !important;
+  color: #FFFFFF !important;
+  border-color: #334155 !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748B !important;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  ring-color: #F37021 !important;
+  border-color: #F37021 !important;
+}
+
+/* Dark mode shadows */
+.dark .shadow-sm,
+.dark .shadow,
+.dark .shadow-md,
+.dark .shadow-lg,
+.dark .shadow-xl {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Dark mode toast notifications */
+.dark .go3958317564 {
+  background-color: #1E293B !important;
+  color: #FFFFFF !important;
+}
+
+/* Dark mode for modals/popups */
+.dark [role="dialog"] {
+  background-color: #1E293B !important;
+  color: #FFFFFF !important;
+}
+
+/* Dark mode for dropdowns */
+.dark .absolute.z-50 {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+}
+
+/* Dark mode hover states */
+.dark .hover\:bg-gray-50:hover {
+  background-color: #1E293B !important;
+}
+
+.dark .hover\:bg-gray-100:hover {
+  background-color: #334155 !important;
+}
+
+/* Dark mode marquee overlay fix */
+.dark .marquee-wrapper::before {
+  background: linear-gradient(to right, #0B1120, transparent) !important;
+}
+
+.dark .marquee-wrapper::after {
+  background: linear-gradient(to left, #0B1120, transparent) !important;
+}
+
+/* Dark mode slider buttons */
+.dark .bg-black\/30 {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .bg-black\/30:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Dark mode for filter drawer */
+.dark .filter-drawer {
+  background-color: #1E293B !important;
+}
+
+/* Dark mode for cards with gradient backgrounds */
+.dark .bg-gradient-to-br {
+  background-image: none !important;
+}
+
+/* Dark mode for brand specific elements */
+.dark .from-\[\#1A2A49\] {
+  --tw-gradient-from: #0F172A !important;
+}
+
+.dark .to-\[\#223a61\] {
+  --tw-gradient-to: #1E293B !important;
+}
+
+/* Dark mode for offer bar */
+.dark .bg-gradient-to-r.from-\[\#F37021\] {
+  --tw-gradient-from: #C2410C !important;
+}
+
+.dark .bg-gradient-to-r.to-\[\#FF8C42\] {
+  --tw-gradient-to: #EA580C !important;
+}
