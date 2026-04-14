@@ -36,10 +36,19 @@ import { useApp } from "./AppContext";
 
 export default function App() {
   const location = useLocation();
-  const { city, setCity } = useApp();
+  const { city, setCity, theme } = useApp();  // ✅ ADDED theme
 
   // Preloader
   const [loading, setLoading] = useState(true);
+
+  // ✅ DARK MODE INITIALIZATION
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [theme]);
 
   useEffect(() => {
     const handleLoad = () => setLoading(false);
@@ -74,7 +83,7 @@ export default function App() {
   );
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-white dark:bg-[#0B1120] transition-colors duration-300">
       {!hideNavbar && <Navbar />}
 
       <main className="flex-1">
@@ -121,7 +130,15 @@ export default function App() {
       {!hideNavbar && location.pathname === "/" && <BottomNavbar />}
       {!hideFooter && <Footer />}
 
-      <Toaster position="top-right" />
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: theme === "dark" ? "#1E293B" : "#FFFFFF",
+            color: theme === "dark" ? "#FFFFFF" : "#1F2937",
+          },
+        }}
+      />
       <div id="portal-root"></div>
     </div>
   );

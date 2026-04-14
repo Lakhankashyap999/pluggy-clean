@@ -1,5 +1,6 @@
 // src/AppContext.jsx
 import { createContext, useContext, useEffect, useState } from "react"
+import toast from "react-hot-toast"
 
 const AppContext = createContext()
 
@@ -15,6 +16,11 @@ export function AppProvider({ children }) {
   // 🛠️ Engineer state
   const [engineer, setEngineer] = useState(
     JSON.parse(localStorage.getItem("pluggy_engineer") || "null")
+  )
+
+  // 👔 Executive state
+  const [executive, setExecutive] = useState(
+    JSON.parse(localStorage.getItem("pluggy_executive") || "null")
   )
 
   // 🛒 Cart state
@@ -37,6 +43,16 @@ export function AppProvider({ children }) {
     JSON.parse(localStorage.getItem("pluggy_bookings") || "[]")
   )
 
+  // 🔔 Notifications state
+  const [notifications, setNotifications] = useState(
+    JSON.parse(localStorage.getItem("pluggy_notifications") || "[]")
+  )
+
+  // 🎨 Theme state
+  const [theme, setTheme] = useState(
+    localStorage.getItem("pluggy_theme") || "light"
+  )
+
   // 🌍 Update city
   useEffect(() => {
     if (city) localStorage.setItem("pluggy_city", city)
@@ -48,7 +64,6 @@ export function AppProvider({ children }) {
       localStorage.setItem("pluggy_activeUser", JSON.stringify(user))
     } else {
       localStorage.removeItem("pluggy_activeUser")
-      setBookings([]) // clear bookings on logout
     }
   }, [user])
 
@@ -60,6 +75,15 @@ export function AppProvider({ children }) {
       localStorage.removeItem("pluggy_engineer")
     }
   }, [engineer])
+
+  // 👔 Update executive
+  useEffect(() => {
+    if (executive) {
+      localStorage.setItem("pluggy_executive", JSON.stringify(executive))
+    } else {
+      localStorage.removeItem("pluggy_executive")
+    }
+  }, [executive])
 
   // 🛒 Update cart
   useEffect(() => {
@@ -85,12 +109,45 @@ export function AppProvider({ children }) {
     localStorage.setItem("pluggy_bookings", JSON.stringify(bookings))
   }, [bookings])
 
+  // 🔔 Update notifications
+  useEffect(() => {
+    localStorage.setItem("pluggy_notifications", JSON.stringify(notifications))
+  }, [notifications])
+
+  // 🎨 Theme toggle
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light"
+    setTheme(newTheme)
+    localStorage.setItem("pluggy_theme", newTheme)
+    if (newTheme === "dark") {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+    }
+  }
+
+  // Initialize theme on load
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark")
+    }
+  }, [])
+
   // 🔑 Auth helpers
   const loginUser = (data) => setUser(data)
-  const logoutUser = () => setUser(null)
+  const logoutUser = () => {
+    setUser(null)
+    setBookings([])
+    setRequests([])
+    setCart([])
+    setNotifications([])
+  }
 
   const loginEngineer = (data) => setEngineer(data)
   const logoutEngineer = () => setEngineer(null)
+
+  const loginExecutive = (data) => setExecutive(data)
+  const logoutExecutive = () => setExecutive(null)
 
   // 🛒 Cart helpers
   const addToCart = (item) => {
@@ -112,18 +169,125 @@ export function AppProvider({ children }) {
 
   // 📋 Request helpers
   const addRequest = (req) => {
-    setRequests((prev) => [...prev, req])
+    const newRequest = {
+      ...req,
+      id: req.id || Date.now(),
+      createdAt: req.createdAt || new Date().toISOString(),
+    }
+    setRequests((prev) => [...prev, newRequest])
   }
 
   const updateRequestStatus = (id, newStatus) => {
     setRequests((prev) =>
       prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
     )
+    setBookings((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, status: newStatus } : b))
+    )
+  }
+
+  // ❌ Cancel Request
+  const cancelRequest = (requestId, reason = "User cancelled") => {
+    setRequests((prev) =>
+      prev.map((r) => {
+        if (r.id === requestId) {
+          return {
+            ...r,
+            status: "CANCELLED",
+            cancelledAt: new Date().toISOString(),
+            cancelReason: reason
+          }
+        }
+        return r
+      })
+    )
+
+    setBookings((prev) =>
+      prev.map((b) => {
+        if (b.id === requestId) {
+          return { ...b, status: "CANCELLED" }
+        }
+        return b
+      })
+    )
+
+    addNotification({
+      id: Date.now(),
+      type: "CANCELLED",
+      title: "Booking Cancelled",
+      message: `Booking #${requestId} has been cancelled.`,
+      createdAt: new Date().toISOString(),
+      read: false
+    })
+
+    toast.success("Request cancelled successfully")
   }
 
   // 📌 Booking helper
   const addBooking = (booking) => {
-    setBookings((prev) => [...prev, booking])
+    const newBooking = {
+      ...booking,
+      id: booking.id || Date.now(),
+      createdAt: booking.createdAt || new Date().toISOString(),
+    }
+    setBookings((prev) => [...prev, newBooking])
+  }
+
+  // 🔔 Notification helpers
+  const addNotification = (notification) => {
+    setNotifications((prev) => [notification, ...prev])
+  }
+
+  const markNotificationRead = (id) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    )
+  }
+
+  const clearNotifications = () => {
+    setNotifications([])
+  }
+
+  // 👔 Assign Engineer
+  const assignEngineer = (requestId, engineerId, engineerName) => {
+    setRequests((prev) =>
+      prev.map((r) => {
+        if (r.id === requestId) {
+          return {
+            ...r,
+            status: "ENGINEER_ASSIGNED",
+            assignedEngineerId: engineerId,
+            assignedEngineer: engineerName,
+            assignedAt: new Date().toISOString()
+          }
+        }
+        return r
+      })
+    )
+
+    setBookings((prev) =>
+      prev.map((b) => {
+        if (b.id === requestId) {
+          return {
+            ...b,
+            status: "ENGINEER_ASSIGNED",
+            assignedEngineer: engineerName
+          }
+        }
+        return b
+      })
+    )
+
+    addNotification({
+      id: Date.now(),
+      type: "ASSIGNED",
+      title: "Engineer Assigned",
+      message: `${engineerName} has been assigned to your booking.`,
+      createdAt: new Date().toISOString(),
+      read: false
+    })
+
+    toast.success(`Engineer ${engineerName} assigned!`)
   }
 
   return (
@@ -139,6 +303,10 @@ export function AppProvider({ children }) {
         setEngineer,
         loginEngineer,
         logoutEngineer,
+        executive,
+        setExecutive,
+        loginExecutive,
+        logoutExecutive,
         cart,
         setCart,
         addToCart,
@@ -148,10 +316,18 @@ export function AppProvider({ children }) {
         setRequests,
         addRequest,
         updateRequestStatus,
+        cancelRequest,
         address,
         setAddress,
         bookings,
         addBooking,
+        notifications,
+        addNotification,
+        markNotificationRead,
+        clearNotifications,
+        assignEngineer,
+        theme,
+        toggleTheme,
       }}
     >
       {children}
