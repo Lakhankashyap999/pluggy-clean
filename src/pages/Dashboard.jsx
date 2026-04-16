@@ -420,18 +420,18 @@ export default function Dashboard() {
             </section>
 
             {/* ====== OUR SERVICES - PREMIUM CARDS ====== */}
-            <section className="px-4 sm:px-6 lg:px-12 py-8 sm:py-12">
-              <div className="flex justify-between items-center mb-4 sm:mb-6">
-                <div>
-                  <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#1A2A49]">Our Premium Services</h2>
-                  <p className="text-gray-500 text-xs sm:text-sm mt-0.5 sm:mt-1">Quality service at your doorstep</p>
-                </div>
-                <button onClick={() => handleProtectedAction("/book-service")} className="text-[#F37021] font-medium hover:underline flex items-center gap-1 text-sm">
-                  View All <span className="text-base">→</span>
-                </button>
-              </div>
-              <OurServices onClickService={(key) => handleProtectedAction(`/services/${key}`)} />
-            </section>
+           <section id="our-services" className="px-4 sm:px-6 lg:px-12 py-8 sm:py-12 scroll-mt-20">
+  <div className="flex justify-between items-center mb-4 sm:mb-6">
+    <div>
+      <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#1A2A49]">Our Premium Services</h2>
+      <p className="text-gray-500 text-xs sm:text-sm mt-0.5 sm:mt-1">Quality service at your doorstep</p>
+    </div>
+    <button onClick={() => handleProtectedAction("/book-service")} className="text-[#F37021] font-medium hover:underline flex items-center gap-1 text-sm">
+      View All <span className="text-base">→</span>
+    </button>
+  </div>
+  <OurServices onClickService={(key) => handleProtectedAction(`/services/${key}`)} />
+</section>
 
             {/* ====== TRENDING SERVICES - MOBILE PERFECT ====== */}
             <section className="px-4 sm:px-6 lg:px-12 py-6 sm:py-8 bg-gradient-to-r from-[#1A2A49]/5 to-[#F37021]/5">
