@@ -137,14 +137,14 @@ export default function Dashboard() {
   }
 
   const handleProtectedAction = (path) => {
-    if (!user) {
-      alert("Please login first to perform this action!")
-      navigate("/login")
-      return
-    }
-    navigate(path)
+  if (!user) {
+    alert("Please login first to perform this action!")
+    navigate("/login")
+    return
   }
-
+  navigate(path)
+  window.scrollTo({ top: 0, behavior: "instant" })
+}
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#F8FAFC] to-[#F1F5F9]">
       
