@@ -5,33 +5,43 @@ import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   User, Mail, Phone, Edit3, LogOut, Package, Shield, MapPin, CreditCard,
-  TicketPercent, Bell, Eye, HelpCircle, ChevronRight, Smartphone, Settings,
-  Moon, Sun, Copy, Check, Sparkles, Heart, Clock, Award
+  TicketPercent, Bell, Eye, HelpCircle, ChevronRight, Settings,
+  Moon, Sun, Award, Heart, Clock, Sparkles
 } from "lucide-react"
 import toast from "react-hot-toast"
 import BackButton from "../components/BackButton"
 
 export default function Account() {
-  const { user, logoutUser, theme, toggleTheme, bookings, cart } = useApp()
+  const { user, logoutUser, theme, toggleTheme, bookings, cart, requests } = useApp()
   const navigate = useNavigate()
   const [showLogoutModal, setShowLogoutModal] = useState(false)
 
+  // ✅ EARLY RETURN - Clean isolated view
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#F4F6F9] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#F4F6F9] via-white to-[#EDF0F3] flex items-center justify-center p-4">
         <motion.div 
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-white rounded-3xl shadow-2xl p-8 text-center max-w-md w-full"
+          className="bg-white rounded-3xl shadow-2xl p-8 text-center max-w-sm w-full"
         >
-          <div className="w-20 h-20 bg-gradient-to-br from-[#1A2A49] to-[#223a61] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+          <div className="w-20 h-20 bg-gradient-to-br from-[#1A2A49] to-[#F37021] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
             <User size={36} className="text-white" />
           </div>
           <h2 className="text-2xl font-bold text-[#1A2A49] mb-2">Login Required</h2>
-          <p className="text-gray-600 mb-8">Please login to access your account</p>
-          <button onClick={() => navigate("/login")} className="w-full py-3.5 bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white rounded-xl font-semibold">
+          <p className="text-gray-600 mb-6">Please login to access your account</p>
+          <button
+            onClick={() => navigate("/login")}
+            className="w-full py-3.5 bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white rounded-xl font-semibold hover:shadow-lg transition"
+          >
             Login to Continue
           </button>
+          <p className="text-xs text-gray-400 mt-4">
+            Don't have an account?{" "}
+            <button onClick={() => navigate("/login")} className="text-[#F37021] font-medium">
+              Sign up
+            </button>
+          </p>
         </motion.div>
       </div>
     )
@@ -43,7 +53,8 @@ export default function Account() {
     navigate("/")
   }
 
-  const activeBookings = bookings?.filter(b => !["COMPLETED", "CANCELLED"].includes(b.status)).length || 0
+  const activeBookings = requests?.filter(r => !["COMPLETED", "CANCELLED"].includes(r.status)).length || 0
+  const completedBookings = requests?.filter(r => r.status === "COMPLETED").length || 0
 
   // Amazon-style sections
   const sections = [
@@ -109,11 +120,11 @@ export default function Account() {
   return (
     <div className="min-h-screen bg-[#F4F6F9] font-inter">
       
-      {/* ====== HEADER ====== */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-30 safe-top">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <BackButton />
-          <h2 className="text-lg font-bold text-[#1A2A49]">Your Account</h2>
+          <h2 className="text-lg font-bold text-[#1A2A49] font-poppins">Your Account</h2>
           <button onClick={toggleTheme} className="p-2 hover:bg-gray-100 rounded-full transition">
             {theme === "dark" ? <Sun size={20} className="text-gray-600" /> : <Moon size={20} className="text-gray-600" />}
           </button>
@@ -122,7 +133,7 @@ export default function Account() {
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         
-        {/* ====== PROFILE CARD - AMAZON STYLE ====== */}
+        {/* Profile Card - Amazon Style */}
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -161,12 +172,16 @@ export default function Account() {
             </div>
             <div className="flex items-center gap-2">
               <Award size={18} className="text-[#F37021]" />
-              <span className="text-sm text-gray-600">Silver Member</span>
+              <span className="text-sm text-gray-600">{completedBookings} Completed</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Heart size={18} className="text-[#F37021]" />
+              <span className="text-sm text-gray-600">{cart?.length || 0} In Cart</span>
             </div>
           </div>
         </motion.div>
 
-        {/* ====== AMAZON STYLE GRID SECTIONS ====== */}
+        {/* Amazon Style Grid Sections */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {sections.map((section, index) => (
             <motion.div
@@ -197,7 +212,7 @@ export default function Account() {
           ))}
         </div>
 
-        {/* ====== ADDITIONAL OPTIONS ====== */}
+        {/* Additional Options */}
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -236,7 +251,7 @@ export default function Account() {
           </div>
         </motion.div>
 
-        {/* ====== LOGOUT BUTTON ====== */}
+        {/* Logout Button */}
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -248,10 +263,13 @@ export default function Account() {
         </motion.button>
 
         {/* Version */}
-        <p className="text-center text-xs text-gray-400 mt-6">Pluggy v1.0 • Made with ❤️ in India</p>
+        <p className="text-center text-xs text-gray-400 mt-6">
+          <Sparkles size={12} className="inline mr-1" />
+          Pluggy v1.0 • Made with ❤️ in India
+        </p>
       </div>
 
-      {/* ====== LOGOUT MODAL ====== */}
+      {/* Logout Modal */}
       <AnimatePresence>
         {showLogoutModal && (
           <motion.div

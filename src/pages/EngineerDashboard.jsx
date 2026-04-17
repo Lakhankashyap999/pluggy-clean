@@ -1,310 +1,214 @@
 // src/pages/EngineerDashboard.jsx
-import { useState, useMemo, useEffect } from "react";
-import { useApp } from "../AppContext";
-import { Wrench, PlusCircle, CheckCircle, LogOut, Phone } from "lucide-react";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { useState, useMemo } from "react"
+import { useApp } from "../AppContext"
+import { useNavigate } from "react-router-dom"
+import { motion } from "framer-motion"
+import {
+  Wrench, LogOut, Phone, MapPin, Calendar, Clock, CircleDollarSign,
+  CheckCircle2, User, Star, ChevronRight, Package, AlertCircle
+} from "lucide-react"
+import toast from "react-hot-toast"
 
 export default function EngineerDashboard() {
-  const { engineer, requests, setRequests, updateRequestStatus } = useApp();
+  const navigate = useNavigate()
+  const { engineer, logoutEngineer, requests, updateRequestStatus } = useApp()
+  
+  const [expandedId, setExpandedId] = useState(null)
 
-  const [expandedRequest, setExpandedRequest] = useState(null);
-  const [newIssue, setNewIssue] = useState("");
-  const [newPrice, setNewPrice] = useState("");
-  const [toast, setToast] = useState("");
-  const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState("All");
-  const [todayStats, setTodayStats] = useState({ total: 0, earnings: 0 });
-
-  // ✅ Toast helper
-  const showToast = (msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(""), 3000);
-  };
-
-  // ✅ Issue CRUD
-  const handleAddIssue = (reqId) => {
-    if (!newIssue || !newPrice) return showToast("Enter issue & price");
-    const updated = requests.map((req) => {
-      if (req.id === reqId) {
-        const updatedIssues = [
-          ...(req.selectedIssues || []),
-          { issue: newIssue, price: parseInt(newPrice) },
-        ];
-        const newTotal =
-          updatedIssues.reduce((sum, i) => sum + i.price, 0) + 50;
-        return { ...req, selectedIssues: updatedIssues, amount: newTotal };
-      }
-      return req;
-    });
-    setRequests(updated);
-    setNewIssue("");
-    setNewPrice("");
-    showToast("✅ Issue added");
-  };
-
-  const handleEditIssue = (reqId, index, updatedIssue, updatedPrice) => {
-    const updated = requests.map((req) => {
-      if (req.id === reqId) {
-        const updatedIssues = [...req.selectedIssues];
-        updatedIssues[index] = { issue: updatedIssue, price: parseInt(updatedPrice) };
-        const newTotal =
-          updatedIssues.reduce((sum, i) => sum + i.price, 0) + 50;
-        return { ...req, selectedIssues: updatedIssues, amount: newTotal };
-      }
-      return req;
-    });
-    setRequests(updated);
-    showToast("✏️ Issue updated");
-  };
-
-  const handleDeleteIssue = (reqId, index) => {
-    const updated = requests.map((req) => {
-      if (req.id === reqId) {
-        const updatedIssues = [...req.selectedIssues];
-        updatedIssues.splice(index, 1);
-        const newTotal =
-          updatedIssues.reduce((sum, i) => sum + i.price, 0) + 50;
-        return { ...req, selectedIssues: updatedIssues, amount: newTotal };
-      }
-      return req;
-    });
-    setRequests(updated);
-    showToast("🗑️ Issue removed");
-  };
-
-  // ✅ Filter & search
-  const filteredRequests = useMemo(() => {
+  // ✅ ONLY assigned jobs, not cancelled
+  const myJobs = useMemo(() => {
     return requests
-      .filter((r) => (filterStatus === "All" ? true : r.status === filterStatus))
-      .filter((r) => {
-        const name = r.userName?.toLowerCase() || "";
-        const phone = r.userPhone || "";
-        const service = r.service?.toLowerCase() || "";
-        const query = search.toLowerCase();
-        return name.includes(query) || phone.includes(search) || service.includes(query);
-      });
-  }, [requests, search, filterStatus]);
+      .filter(r => r.assignedEngineerId === engineer?.id && r.status !== "CANCELLED")
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  }, [requests, engineer])
 
-  // ✅ Stats
-  const stats = useMemo(() => {
-    const total = requests.length;
-    const confirmed = requests.filter((r) => r.status === "Confirmed").length;
-    const inProgress = requests.filter((r) => r.status === "In Progress").length;
-    const completed = requests.filter((r) => r.status === "Completed").length;
-    const earnings = requests.reduce((sum, r) => sum + (r.amount || 0), 0);
-    return { total, confirmed, inProgress, completed, earnings };
-  }, [requests]);
+  const todayJobs = myJobs.filter(j => {
+    const today = new Date().toDateString()
+    return new Date(j.createdAt).toDateString() === today
+  })
 
-  // ✅ Today's stats
-  useEffect(() => {
-    const today = new Date().toISOString().split("T")[0];
-    const todayReqs = requests.filter(r => r.date === today);
-    const total = todayReqs.length;
-    const earnings = todayReqs.reduce((sum, r) => sum + (r.amount || 0), 0);
-    setTodayStats({ total, earnings });
-  }, [requests]);
+  const todayEarnings = todayJobs.reduce((sum, j) => sum + (j.amount || 0), 0)
+  const completedJobs = myJobs.filter(j => j.status === "COMPLETED").length
 
-  // ✅ Priority color
-  const getPriorityColor = (priority) => {
-    if (priority === "High") return "bg-red-200 text-red-800";
-    if (priority === "Medium") return "bg-yellow-200 text-yellow-800";
-    return "bg-green-200 text-green-800";
-  };
+  const handleStatusUpdate = (jobId, newStatus) => {
+    updateRequestStatus(jobId, newStatus)
+    toast.success(`Status updated to ${newStatus}`)
+  }
 
   if (!engineer) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
-        Please log in as Engineer
-      </div>
-    );
-  }
-
-  const pieData = [
-    { name: "Confirmed", value: stats.confirmed },
-    { name: "In Progress", value: stats.inProgress },
-    { name: "Completed", value: stats.completed },
-  ];
-
-  const COLORS = ["#1A2A49", "#3B5998", "#00C49F"];
-
-  return (
-    <div className="min-h-screen bg-gray-50 px-4 py-8">
-      {/* Header */}
-      <div className="bg-[#1A2A49] text-white px-6 py-4 flex flex-col sm:flex-row justify-between items-center shadow-md rounded-lg mb-6 gap-4">
-        <h1 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
-          <Wrench size={20} /> Engineer Dashboard
-        </h1>
-        <div className="flex items-center gap-4">
-          <span className="text-sm sm:text-base opacity-90">Welcome, {engineer.name} 👨‍🔧</span>
-          <button
-            onClick={() => { localStorage.removeItem("pluggy_engineer"); window.location.href = "/engineer-login"; }}
-            className="bg-white text-[#1A2A49] px-3 py-1 rounded-lg text-sm font-medium hover:bg-gray-100 flex items-center gap-1"
-          >
-            <LogOut size={16} /> Logout
+      <div className="min-h-screen bg-[#F1F5F9] flex items-center justify-center p-4">
+        <div className="text-center">
+          <Wrench size={48} className="text-gray-400 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-[#1A2A49] mb-2">Access Denied</h2>
+          <p className="text-gray-500 mb-4">Please login as engineer</p>
+          <button onClick={() => navigate("/engineer-login")} className="px-6 py-3 bg-[#1A2A49] text-white rounded-xl">
+            Login
           </button>
         </div>
       </div>
+    )
+  }
 
-      {/* Stats & Pie Chart */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white shadow p-4 rounded-lg text-center">
-          <p className="text-gray-500 text-sm">Total Requests</p>
-          <h2 className="text-2xl font-bold">{stats.total}</h2>
-        </div>
-        <div className="bg-white shadow p-4 rounded-lg text-center">
-          <p className="text-gray-500 text-sm">Today's Requests</p>
-          <h2 className="text-2xl font-bold">{todayStats.total}</h2>
-        </div>
-        <div className="bg-white shadow p-4 rounded-lg text-center">
-          <p className="text-gray-500 text-sm">Today's Earnings</p>
-          <h2 className="text-2xl font-bold">₹{todayStats.earnings}</h2>
-        </div>
-      </div>
-
-      <div className="bg-white shadow rounded-lg p-4 mb-6 h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={pieData}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={80}
-              fill="#8884d8"
-              label
-            >
-              {pieData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Search & Filter */}
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
-        <input
-          type="text"
-          placeholder="Search by service, user, phone..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border p-2 rounded w-full sm:w-1/2"
-        />
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="border p-2 rounded w-full sm:w-1/4"
-        >
-          <option value="All">All Status</option>
-          <option value="Confirmed">Confirmed</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Completed">Completed</option>
-        </select>
-      </div>
-
-      {/* Requests */}
-      {filteredRequests.length === 0 ? (
-        <div className="text-gray-600 text-center mt-12">No requests found.</div>
-      ) : (
-        <div className="space-y-4">
-          {filteredRequests.map((r) => (
-            <div key={r.id} className="bg-white p-4 rounded-lg shadow flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
-              <div className="flex-1">
-                <h3 className="font-semibold text-[#1A2A49]">{r.service}</h3>
-                <p className="text-sm text-gray-500">{r.userName} | {r.userPhone}</p>
-                <p className="mt-1 font-medium">Amount: ₹{r.amount || 0}</p>
-                <span className={`px-2 py-1 rounded text-xs ${getPriorityColor(r.priority || "Low")}`}>
-                  {r.priority || "Low"}
-                </span>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2 items-center">
-                <select
-                  value={r.status}
-                  onChange={(e) => updateRequestStatus(r.id, e.target.value)}
-                  className="border rounded px-2 py-1 text-sm"
-                >
-                  <option>Confirmed</option>
-                  <option>In Progress</option>
-                  <option>Completed</option>
-                </select>
-                <button
-                  onClick={() => setExpandedRequest(expandedRequest === r.id ? null : r.id)}
-                  className="bg-[#1A2A49] text-white px-3 py-1 rounded hover:bg-[#223a61] text-sm"
-                >
-                  {expandedRequest === r.id ? "Close" : "Manage Issues"}
-                </button>
-                <a href={`tel:${r.userPhone}`} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 flex items-center gap-1 text-sm">
-                  <Phone size={14} /> Call
-                </a>
-              </div>
+  return (
+    <div className="min-h-screen bg-[#F1F5F9] font-inter pb-20">
+      
+      {/* Header */}
+      <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white pb-6 pt-4">
+        <div className="max-w-3xl mx-auto px-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-xl font-bold font-poppins">👨‍🔧 {engineer.name}</h1>
+              <p className="text-white/70 text-sm">Engineer ID: {engineer.id}</p>
             </div>
-          ))}
+            <button 
+              onClick={() => { logoutEngineer(); navigate("/engineer-login") }}
+              className="p-2 bg-white/10 rounded-xl active:bg-white/20"
+            >
+              <LogOut size={20} />
+            </button>
+          </div>
 
-          {/* Expanded Issues */}
-          {expandedRequest && filteredRequests
-            .filter((r) => r.id === expandedRequest)
-            .map((req) => (
-              <div key={req.id} className="bg-white p-4 rounded-lg shadow mt-2">
-                <h4 className="font-semibold text-[#1A2A49] mb-2">Issues for {req.userName}</h4>
-                {req.selectedIssues?.length > 0 ? req.selectedIssues.map((issue, idx) => (
-                  <div key={idx} className="flex flex-col sm:flex-row gap-2 items-center mb-2">
-                    <input
-                      type="text"
-                      value={issue.issue}
-                      onChange={(e) => handleEditIssue(req.id, idx, e.target.value, issue.price)}
-                      className="border p-2 rounded flex-1"
-                    />
-                    <input
-                      type="number"
-                      value={issue.price}
-                      onChange={(e) => handleEditIssue(req.id, idx, issue.issue, e.target.value)}
-                      className="border p-2 rounded w-24 text-center"
-                    />
-                    <button
-                      onClick={() => handleDeleteIssue(req.id, idx)}
-                      className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                )) : <p className="text-gray-500 italic">No issues added yet</p>}
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+              <p className="text-2xl font-bold">{myJobs.length}</p>
+              <p className="text-xs text-white/70">Total Jobs</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+              <p className="text-2xl font-bold">{todayJobs.length}</p>
+              <p className="text-xs text-white/70">Today</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+              <p className="text-2xl font-bold">₹{todayEarnings}</p>
+              <p className="text-xs text-white/70">Earnings</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-                {/* Add New Issue */}
-                <div className="flex flex-col sm:flex-row gap-2 mt-3">
-                  <input
-                    type="text"
-                    placeholder="Issue name"
-                    value={newIssue}
-                    onChange={(e) => setNewIssue(e.target.value)}
-                    className="border p-2 rounded flex-1"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Price"
-                    value={newPrice}
-                    onChange={(e) => setNewPrice(e.target.value)}
-                    className="border p-2 rounded w-24"
-                  />
-                  <button
-                    onClick={() => handleAddIssue(req.id)}
-                    className="bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 flex items-center gap-1"
+      {/* Jobs List */}
+      <div className="max-w-3xl mx-auto px-4 -mt-3">
+        {myJobs.length === 0 ? (
+          <div className="bg-white rounded-2xl p-10 text-center shadow-sm">
+            <Package size={40} className="text-gray-300 mx-auto mb-3" />
+            <h3 className="font-bold text-[#1A2A49] mb-1">No assigned jobs</h3>
+            <p className="text-gray-500 text-sm">New jobs will appear here</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {myJobs.map((job) => {
+              const isExpanded = expandedId === job.id
+              
+              return (
+                <motion.div
+                  key={job.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+                >
+                  {/* Job Header */}
+                  <div 
+                    className="p-4 cursor-pointer active:bg-gray-50"
+                    onClick={() => setExpandedId(isExpanded ? null : job.id)}
                   >
-                    <PlusCircle size={16} /> Add
-                  </button>
-                </div>
-              </div>
-          ))}
-        </div>
-      )}
+                    <div className="flex items-start gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-[#F37021]/20 to-[#FF8C42]/20 rounded-xl flex items-center justify-center">
+                        <Wrench size={22} className="text-[#F37021]" />
+                      </div>
+                      
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className="font-bold text-[#1A2A49]">{job.service}</h3>
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            job.status === "IN_PROGRESS" ? "bg-orange-100 text-orange-700" :
+                            job.status === "COMPLETED" ? "bg-green-100 text-green-700" :
+                            "bg-blue-100 text-blue-700"
+                          }`}>
+                            {job.status}
+                          </span>
+                        </div>
+                        
+                        <p className="text-gray-500 text-xs mb-2">{job.userName} • {job.userPhone}</p>
+                        
+                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                          <span className="flex items-center gap-1"><MapPin size={12} /> {job.address?.slice(0, 20)}...</span>
+                          <span className="flex items-center gap-1"><CircleDollarSign size={12} /> ₹{job.amount}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-      {/* Toast */}
-      {toast && (
-        <div className="fixed bottom-6 right-6 bg-[#1A2A49] text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-fadeIn">
-          <CheckCircle size={16} /> {toast}
+                  {/* Expanded Details */}
+                  {isExpanded && (
+                    <div className="border-t border-gray-100 bg-gray-50/50 p-4 space-y-4">
+                      
+                      {/* Customer Details */}
+                      <div className="bg-white p-3 rounded-lg">
+                        <h4 className="font-medium text-sm mb-2">Customer</h4>
+                        <p className="font-semibold">{job.userName}</p>
+                        <p className="text-sm text-gray-600">{job.userPhone}</p>
+                        <p className="text-sm text-gray-600 mt-1 flex items-start gap-1">
+                          <MapPin size={14} className="mt-0.5" /> {job.address}
+                        </p>
+                      </div>
+
+                      {/* Issue */}
+                      <div className="bg-white p-3 rounded-lg">
+                        <h4 className="font-medium text-sm mb-2">Issue</h4>
+                        <p className="text-sm">{job.issue || "General Service"}</p>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex flex-wrap gap-2">
+                        <a href={`tel:${job.userPhone}`} className="flex-1 py-3 bg-[#1A2A49] text-white rounded-xl text-sm font-medium flex items-center justify-center gap-2">
+                          <Phone size={16} /> Call
+                        </a>
+                        
+                        {job.status === "ENGINEER_ASSIGNED" && (
+                          <button 
+                            onClick={() => handleStatusUpdate(job.id, "IN_PROGRESS")}
+                            className="flex-1 py-3 bg-[#F37021] text-white rounded-xl text-sm font-medium"
+                          >
+                            Start Job
+                          </button>
+                        )}
+                        
+                        {job.status === "IN_PROGRESS" && (
+                          <button 
+                            onClick={() => handleStatusUpdate(job.id, "COMPLETED")}
+                            className="flex-1 py-3 bg-green-600 text-white rounded-xl text-sm font-medium"
+                          >
+                            Mark Complete
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-bottom">
+        <div className="flex justify-around py-2">
+          <button className="flex flex-col items-center p-2 text-[#F37021]">
+            <Wrench size={22} />
+            <span className="text-xs font-medium">Jobs</span>
+          </button>
+          <button className="flex flex-col items-center p-2 text-gray-500">
+            <CircleDollarSign size={22} />
+            <span className="text-xs">Earnings</span>
+          </button>
+          <button className="flex flex-col items-center p-2 text-gray-500">
+            <User size={22} />
+            <span className="text-xs">Profile</span>
+          </button>
         </div>
-      )}
+      </div>
     </div>
-  );
+  )
 }

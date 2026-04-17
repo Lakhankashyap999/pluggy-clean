@@ -301,20 +301,23 @@ export default function Dashboard() {
                   <motion.img
                     src="../image/Electrician-rafiki.png"
                     alt="Home Services"
-                    className="w-56 sm:w-64 rounded-2xl shadow-xl border-2 border-white"
-                    animate={{ y: [0, -5, 0] }}
+                    className="w-64 sm:w-72 md:w-80 rounded-2xl shadow-xl border-2 border-white"
+                    animate={{ y: [0, -6, 0] }}
                     transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                   />
-                  <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm rounded-full px-2.5 py-1 shadow-md">
+                  <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm rounded-full px-5 py-1.5 shadow-md">
                     <span className="flex items-center gap-1 text-xs font-medium">
                       <span className="text-yellow-500">⭐</span> 4.8
                     </span>
                   </div>
-                  <div className="flex justify-center -mt-3">
-                    <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white px-4 py-1.5 rounded-full shadow-lg text-xs sm:text-sm">
-                      <span className="flex items-center gap-1"><span className="text-yellow-400">⚡</span> 500+ Experts</span>
-                    </div>
-                  </div>
+                  <div className="absolute -bottom-6 left-1/2 -translate-x-1/2">
+          <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white px-5 py-2 rounded-full shadow-lg whitespace-nowrap">
+         <span className="flex items-center gap-1.5 text-sm font-medium">
+        <span className="text-yellow-400">⚡</span>
+                500+ Verified Experts
+                 </span>
+                </div>
+               </div>
                 </div>
               </motion.div>
 

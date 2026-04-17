@@ -36,12 +36,12 @@ import { useApp } from "./AppContext";
 
 export default function App() {
   const location = useLocation();
-  const { city, setCity, theme } = useApp();  // ✅ ADDED theme
+  const { city, setCity, theme } = useApp();
 
   // Preloader
   const [loading, setLoading] = useState(true);
 
-  // ✅ DARK MODE INITIALIZATION
+  // DARK MODE INITIALIZATION
   useEffect(() => {
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
@@ -67,7 +67,14 @@ export default function App() {
   if (!city) return <LocationGate onSelect={(c) => setCity(c)} />;
 
   // Hide nav/footer for certain routes
-  const hideNavbarRoutes = ["/login", "/signup", "/engineer-login", "/engineer"];
+  const hideNavbarRoutes = [
+    "/login", 
+    "/signup", 
+    "/engineer-login", 
+    "/engineer",
+    "/account"  // ✅ ADDED - Prevent content leak
+  ];
+  
   const hideFooterRoutes = [
     "/login",
     "/signup",
@@ -75,6 +82,7 @@ export default function App() {
     "/engineer",
     "/services",
     "/request",
+    "/account",  // ✅ ADDED - Prevent content leak
   ];
 
   const hideNavbar = hideNavbarRoutes.includes(location.pathname);
@@ -110,12 +118,8 @@ export default function App() {
           <Route path="/account/notifications" element={<NotificationsPage />} />
           <Route path="/account/services" element={<ServicesPage />} />
 
-          {/* =================== FIXED ROUTES =================== */}
-
-          {/* 1️⃣ old single param route */}
+          {/* Services */}
           <Route path="/services/:id" element={<ServiceDetail />} />
-
-          {/* 2️⃣ new category + subcategory route */}
           <Route path="/services/:category/:sub" element={<ServiceDetail />} />
 
           {/* Requests */}
@@ -130,12 +134,42 @@ export default function App() {
       {!hideNavbar && location.pathname === "/" && <BottomNavbar />}
       {!hideFooter && <Footer />}
 
-      <Toaster 
-        position="top-right"
+      <Toaster
+        position="bottom-center"
+        reverseOrder={false}
+        gutter={8}
+        containerStyle={{
+          bottom: 80,
+        }}
         toastOptions={{
+          duration: 3000,
           style: {
-            background: theme === "dark" ? "#1E293B" : "#FFFFFF",
-            color: theme === "dark" ? "#FFFFFF" : "#1F2937",
+            background: '#1A2A49',
+            color: '#fff',
+            borderRadius: '50px',
+            padding: '12px 20px',
+            fontSize: '14px',
+            fontWeight: '500',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+          },
+          success: {
+            style: {
+              background: '#10B981',
+            },
+            iconTheme: {
+              primary: 'white',
+              secondary: '#10B981',
+            },
+          },
+          error: {
+            style: {
+              background: '#EF4444',
+            },
+            iconTheme: {
+              primary: 'white',
+              secondary: '#EF4444',
+            },
+            duration: 4000,
           },
         }}
       />
