@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react"
+// src/components/BottomNavbar.jsx
+import { useState, useEffect } from "react"
 import { Home, Grid, ShoppingCart, User } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useApp } from "../AppContext"
@@ -8,7 +9,7 @@ export default function BottomNavbar() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const { cart } = useApp()
-
+  
   const [visible, setVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [servicesOpen, setServicesOpen] = useState(false)
@@ -16,15 +17,14 @@ export default function BottomNavbar() {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
-      if (currentScrollY > lastScrollY && currentScrollY > 60) {
-        setVisible(false) // niche → hide
-      } else {
-        setVisible(true) // upar → show
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setVisible(false)
+      } else if (currentScrollY < lastScrollY) {
+        setVisible(true)
       }
       setLastScrollY(currentScrollY)
     }
-
-    window.addEventListener("scroll", handleScroll)
+    window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [lastScrollY])
 
@@ -39,7 +39,6 @@ export default function BottomNavbar() {
     { id: "account", label: "Account", icon: User, onTap: () => navigate("/account") },
   ]
 
-  // ✅ Services Data
   const servicesData = {
     AC: ["AC Repair", "AC Installation", "AC Gas Refill"],
     Wiring: ["House Wiring", "Short Circuit Fix", "Switchboard Repair"],
@@ -49,15 +48,11 @@ export default function BottomNavbar() {
 
   return (
     <>
-      {/* ✅ Bottom Navbar (Mobile only) */}
-      <div
-        className={`sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50 transform transition-transform duration-300 ${
-          visible ? "translate-y-0" : "translate-y-full"
-        }`}
-      >
-        <div className="flex justify-around items-center py-2">
+      {/* Bottom Navbar - FIXED HEIGHT */}
+      <div className={`sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 transition-transform duration-300 ${visible ? 'translate-y-0' : 'translate-y-full'}`}>
+        <div className="flex justify-around items-center py-3">
           {navItems.map((item) => {
-            const isActive =
+            const isActive = 
               (item.id === "home" && pathname === "/") ||
               (item.id === "services" && pathname.startsWith("/services")) ||
               (item.id === "account" && pathname.startsWith("/account")) ||
@@ -67,9 +62,7 @@ export default function BottomNavbar() {
               <button
                 key={item.id}
                 onClick={item.onTap}
-                className={`flex flex-col items-center text-xs ${
-                  isActive ? "text-[#1A2A49] font-semibold" : "text-gray-500"
-                }`}
+                className={`flex flex-col items-center text-xs ${isActive ? "text-[#F37021] font-semibold" : "text-gray-500"}`}
               >
                 <div className="relative">
                   <item.icon size={22} />
@@ -79,14 +72,14 @@ export default function BottomNavbar() {
                     </span>
                   )}
                 </div>
-                {item.label}
+                <span className="mt-0.5">{item.label}</span>
               </button>
             )
           })}
         </div>
       </div>
 
-      {/* ✅ Services Drawer */}
+      {/* Services Drawer */}
       <AnimatePresence>
         {servicesOpen && (
           <motion.div
@@ -96,33 +89,21 @@ export default function BottomNavbar() {
             transition={{ duration: 0.3 }}
             className="fixed bottom-0 left-0 right-0 bg-white shadow-lg rounded-t-2xl z-50 max-h-[70vh] overflow-y-auto"
           >
-            {/* Header */}
             <div className="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">
               <h2 className="text-lg font-bold text-[#1A2A49]">Services</h2>
-              <button
-                onClick={() => setServicesOpen(false)}
-                className="text-gray-500 hover:text-black text-xl"
-              >
-                ✕
-              </button>
+              <button onClick={() => setServicesOpen(false)} className="text-gray-500 hover:text-black text-xl">✕</button>
             </div>
-
-            {/* Services List */}
-            <div className="p-4 space-y-6">
+            <div className="p-4 space-y-6 pb-8">
               {Object.keys(servicesData).map((category) => (
                 <div key={category}>
-                  <h3 className="font-semibold text-[#1A2A49] mb-2">
-                    {category}
-                  </h3>
+                  <h3 className="font-semibold text-[#1A2A49] mb-2">{category}</h3>
                   <div className="space-y-2">
                     {servicesData[category].map((service) => (
                       <div
                         key={service}
                         className="px-3 py-2 rounded-lg hover:bg-gray-100 cursor-pointer"
                         onClick={() => {
-                          navigate(
-                            `/request/${service.replace(/\s+/g, "-").toLowerCase()}`
-                          )
+                          navigate(`/request/${service.replace(/\s+/g, "-").toLowerCase()}`)
                           setServicesOpen(false)
                         }}
                       >

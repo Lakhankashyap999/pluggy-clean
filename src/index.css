@@ -10,6 +10,7 @@ html, body {
   width: 100%;
   height: 100%;
   overflow-x: hidden;
+  overflow-y: auto !important;  /* ✅ FORCE SCROLL */
   scroll-behavior: smooth;
   font-family: 'Inter', sans-serif;
 }
@@ -18,9 +19,9 @@ html, body {
   box-sizing: border-box;
 }
 
-/* App wrapper */
+/* App wrapper - FIXED */
 #root {
-  min-height: 100vh;
+  min-height: 100%;  /* ✅ 100vh se 100% */
   display: flex;
   flex-direction: column;
 }
@@ -33,7 +34,7 @@ main {
 /* ✅ Bottom navbar ke liye padding fix */
 .main-container {
   min-height: 100vh;
-  padding-bottom: 72px; /* Bottom navbar ki height */
+  padding-bottom: 72px;
 }
 
 /* ✅ Footer styles */
@@ -225,4 +226,12 @@ footer {
 
 .dark .bg-gradient-to-r.to-\[\#FF8C42\] {
   --tw-gradient-to: #EA580C !important;
+}
+
+/* ✅ MOBILE FIX - Prevent body scroll lock */
+@media (max-width: 768px) {
+  body {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
 }

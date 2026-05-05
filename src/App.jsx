@@ -72,7 +72,7 @@ export default function App() {
     "/signup", 
     "/engineer-login", 
     "/engineer",
-    "/account"  // ✅ ADDED - Prevent content leak
+    "/account"
   ];
   
   const hideFooterRoutes = [
@@ -82,7 +82,7 @@ export default function App() {
     "/engineer",
     "/services",
     "/request",
-    "/account",  // ✅ ADDED - Prevent content leak
+    "/account",
   ];
 
   const hideNavbar = hideNavbarRoutes.includes(location.pathname);
@@ -94,7 +94,8 @@ export default function App() {
     <div className="flex flex-col min-h-screen bg-white dark:bg-[#0B1120] transition-colors duration-300">
       {!hideNavbar && <Navbar />}
 
-      <main className="flex-1">
+      {/* ✅ ADDED PADDING - Mobile 120px, Desktop 72px */}
+      <main className="flex-1 pt-[120px] md:pt-[72px]">
         <ScrollToTop />
 
         <Routes>
@@ -134,45 +135,39 @@ export default function App() {
       {!hideNavbar && location.pathname === "/" && <BottomNavbar />}
       {!hideFooter && <Footer />}
 
-      <Toaster
-        position="bottom-center"
-        reverseOrder={false}
-        gutter={8}
-        containerStyle={{
-          bottom: 80,
-        }}
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: '#1A2A49',
-            color: '#fff',
-            borderRadius: '50px',
-            padding: '12px 20px',
-            fontSize: '14px',
-            fontWeight: '500',
-            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
-          },
-          success: {
-            style: {
-              background: '#10B981',
-            },
-            iconTheme: {
-              primary: 'white',
-              secondary: '#10B981',
-            },
-          },
-          error: {
-            style: {
-              background: '#EF4444',
-            },
-            iconTheme: {
-              primary: 'white',
-              secondary: '#EF4444',
-            },
-            duration: 4000,
-          },
-        }}
-      />
+      // Line ~130 - Toaster component
+
+<Toaster
+  position="bottom-center"
+  reverseOrder={false}
+  gutter={8}
+  containerStyle={{
+    bottom: 85,  // ✅ Changed from 80 to 85
+  }}
+  toastOptions={{
+    duration: 3000,
+    style: {
+      background: '#1A2A49',
+      color: '#fff',
+      borderRadius: '50px',
+      padding: '10px 16px',  // ✅ Smaller padding
+      fontSize: '13px',
+      fontWeight: '500',
+      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+      maxWidth: '300px',  // ✅ Max width
+    },
+    success: {
+      style: { background: '#10B981' },
+      iconTheme: { primary: 'white', secondary: '#10B981' },
+    },
+    error: {
+      style: { background: '#EF4444' },
+      iconTheme: { primary: 'white', secondary: '#EF4444' },
+      duration: 4000,
+    },
+  }}
+/>
+      
       <div id="portal-root"></div>
     </div>
   );
