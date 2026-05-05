@@ -141,7 +141,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9]">
+    <div className="min-h-screen bg-[#F4F6F9]" style={{ paddingTop: '100px' }}>
       
       {/* Offer Bar */}
       <AnimatePresence>

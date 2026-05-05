@@ -10,11 +10,15 @@ import {
 } from "lucide-react"
 import toast from "react-hot-toast"
 import BackButton from "../components/BackButton"
+// ✅ IMPORT PaymentMethodsCard
+import PaymentMethodsCard from "../components/account/PaymentMethodsCard"
 
 export default function Account() {
   const { user, logoutUser, theme, toggleTheme, bookings, cart, requests } = useApp()
   const navigate = useNavigate()
   const [showLogoutModal, setShowLogoutModal] = useState(false)
+  // ✅ NEW STATE - Track which section is expanded
+  const [expandedSection, setExpandedSection] = useState(null)
 
   // ✅ EARLY RETURN - Clean isolated view
   if (!user) {
@@ -59,6 +63,7 @@ export default function Account() {
   // Amazon-style sections
   const sections = [
     {
+      id: "bookings",
       title: "My Bookings",
       subtitle: "Track active & past service requests",
       icon: Package,
@@ -67,6 +72,7 @@ export default function Account() {
       color: "bg-blue-50 text-blue-600",
     },
     {
+      id: "security",
       title: "Login & Security",
       subtitle: "Password, 2FA, privacy settings",
       icon: Shield,
@@ -74,6 +80,7 @@ export default function Account() {
       color: "bg-green-50 text-green-600",
     },
     {
+      id: "address",
       title: "Your Addresses",
       subtitle: "Home, Office, Other",
       icon: MapPin,
@@ -81,13 +88,15 @@ export default function Account() {
       color: "bg-orange-50 text-orange-600",
     },
     {
+      id: "payment",  // ✅ ADDED ID
       title: "Payment Methods",
       subtitle: "Saved cards & UPI",
       icon: CreditCard,
-      link: "/account/payment",
+      // ✅ NO link - will expand inline instead
       color: "bg-purple-50 text-purple-600",
     },
     {
+      id: "coupons",
       title: "Coupons",
       subtitle: "Available offers & discounts",
       icon: TicketPercent,
@@ -95,6 +104,7 @@ export default function Account() {
       color: "bg-pink-50 text-pink-600",
     },
     {
+      id: "notifications",
       title: "Notifications",
       subtitle: "Push, SMS, Email preferences",
       icon: Bell,
@@ -102,6 +112,7 @@ export default function Account() {
       color: "bg-yellow-50 text-yellow-600",
     },
     {
+      id: "recent",
       title: "Recently Viewed",
       subtitle: "Services you checked",
       icon: Eye,
@@ -109,6 +120,7 @@ export default function Account() {
       color: "bg-cyan-50 text-cyan-600",
     },
     {
+      id: "support",
       title: "Help & Support",
       subtitle: "FAQs, Chat, Call us",
       icon: HelpCircle,
@@ -181,34 +193,54 @@ export default function Account() {
           </div>
         </motion.div>
 
-        {/* Amazon Style Grid Sections */}
+        {/* ✅ Amazon Style Grid Sections - WITH INLINE EXPAND */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {sections.map((section, index) => (
-            <motion.div
-              key={section.title}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.03 }}
-              whileHover={{ y: -2, boxShadow: "0 8px 20px rgba(0,0,0,0.06)" }}
-              onClick={() => navigate(section.link)}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 cursor-pointer hover:border-[#F37021]/50 transition-all group"
-            >
-              <div className="flex items-start gap-4">
-                <div className={`w-12 h-12 rounded-xl ${section.color} flex items-center justify-center group-hover:scale-110 transition`}>
-                  <section.icon size={24} />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-semibold text-[#1A2A49] text-base">{section.title}</h4>
-                    {section.badge && (
-                      <span className="bg-[#F37021] text-white text-xs px-2 py-0.5 rounded-full">{section.badge}</span>
-                    )}
+            <div key={section.id}>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.03 }}
+                whileHover={{ y: -2, boxShadow: "0 8px 20px rgba(0,0,0,0.06)" }}
+                onClick={() => {
+                  // ✅ Payment Methods = expand inline, others = navigate
+                  if (section.id === "payment") {
+                    setExpandedSection(expandedSection === section.id ? null : section.id)
+                  } else if (section.link) {
+                    navigate(section.link)
+                  }
+                }}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 cursor-pointer hover:border-[#F37021]/50 transition-all group"
+              >
+                <div className="flex items-start gap-4">
+                  <div className={`w-12 h-12 rounded-xl ${section.color} flex items-center justify-center group-hover:scale-110 transition`}>
+                    <section.icon size={24} />
                   </div>
-                  <p className="text-gray-500 text-sm mt-0.5">{section.subtitle}</p>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold text-[#1A2A49] text-base">{section.title}</h4>
+                      {section.badge && (
+                        <span className="bg-[#F37021] text-white text-xs px-2 py-0.5 rounded-full">{section.badge}</span>
+                      )}
+                    </div>
+                    <p className="text-gray-500 text-sm mt-0.5">{section.subtitle}</p>
+                  </div>
+                  <ChevronRight size={20} className="text-gray-400 group-hover:text-[#F37021] group-hover:translate-x-1 transition-all" />
                 </div>
-                <ChevronRight size={20} className="text-gray-400 group-hover:text-[#F37021] group-hover:translate-x-1 transition-all" />
-              </div>
-            </motion.div>
+              </motion.div>
+
+              {/* ✅ INLINE EXPAND - Payment Methods Card */}
+              {section.id === "payment" && expandedSection === section.id && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-2 bg-white rounded-xl shadow-sm border border-gray-200 p-5"
+                >
+                  <PaymentMethodsCard />
+                </motion.div>
+              )}
+            </div>
           ))}
         </div>
 

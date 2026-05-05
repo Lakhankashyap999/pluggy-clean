@@ -10,7 +10,6 @@ export default function LocationPopup({ open, onClose, onSelect }) {
   const [recentLocations, setRecentLocations] = useState([])
   const [savedAddresses, setSavedAddresses] = useState([])
 
-  // Load saved addresses from localStorage
   useEffect(() => {
     const addresses = JSON.parse(localStorage.getItem("pluggy_addresses") || "[]")
     setSavedAddresses(addresses.slice(0, 2))
@@ -47,12 +46,11 @@ export default function LocationPopup({ open, onClose, onSelect }) {
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        // In real app, reverse geocode to get address
         setTimeout(() => {
           const detected = "Andheri East, Mumbai"
           chooseCity(detected)
           setDetecting(false)
-          toast.success("Location detected!")
+          toast.success("📍 Location detected!")
         }, 1500)
       },
       (error) => {
@@ -65,7 +63,6 @@ export default function LocationPopup({ open, onClose, onSelect }) {
   const chooseCity = (city) => {
     localStorage.setItem("pluggy_city", city)
     
-    // Save to recent locations
     const recent = JSON.parse(localStorage.getItem("pluggy_recent_locations") || "[]")
     const updated = [city, ...recent.filter(c => c !== city)].slice(0, 5)
     localStorage.setItem("pluggy_recent_locations", JSON.stringify(updated))
@@ -73,11 +70,6 @@ export default function LocationPopup({ open, onClose, onSelect }) {
     onSelect?.(city)
     onClose?.()
     toast.success(`📍 ${city}`)
-  }
-
-  const saveAddress = (type) => {
-    const address = type === "home" ? "Home - Andheri East" : "Office - Bandra West"
-    toast.success(`${address} selected`)
   }
 
   if (!open) return null
@@ -91,10 +83,7 @@ export default function LocationPopup({ open, onClose, onSelect }) {
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
         >
-          <div 
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm" 
-            onClick={onClose} 
-          />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
           <motion.div
             initial={{ y: "100%" }}
@@ -109,13 +98,12 @@ export default function LocationPopup({ open, onClose, onSelect }) {
             {/* Header */}
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <MapPin size={20} className="text-[#F37021]" />
+                <div className="w-8 h-8 bg-gradient-to-br from-[#1A2A49] to-[#F37021] rounded-lg flex items-center justify-center">
+                  <MapPin size={16} className="text-white" />
+                </div>
                 <h2 className="text-lg font-bold text-[#1A2A49] font-poppins">Select Location</h2>
               </div>
-              <button 
-                onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-full transition"
-              >
+              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition">
                 <X size={20} className="text-gray-500" />
               </button>
             </div>
@@ -127,9 +115,11 @@ export default function LocationPopup({ open, onClose, onSelect }) {
               <button
                 onClick={detectLocation}
                 disabled={detecting}
-                className="w-full flex items-center gap-4 p-4 bg-gradient-to-r from-[#F37021]/5 to-[#FF8C42]/5 rounded-2xl border border-[#F37021]/20 hover:border-[#F37021]/40 transition group"
+                className="w-full flex items-center gap-4 p-4 bg-gradient-to-r from-[#1A2A49]/5 to-[#F37021]/5 rounded-2xl border border-[#1A2A49]/20 hover:border-[#F37021]/40 transition group"
               >
-                <div className="w-12 h-12 bg-[#F37021] rounded-full flex items-center justify-center group-hover:scale-105 transition">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center group-hover:scale-105 transition ${
+                  detecting ? "bg-[#F37021] animate-pulse" : "bg-[#1A2A49]"
+                }`}>
                   <Navigation size={22} className="text-white" />
                 </div>
                 <div className="flex-1 text-left">
@@ -149,15 +139,15 @@ export default function LocationPopup({ open, onClose, onSelect }) {
               {savedAddresses.length > 0 && (
                 <div>
                   <p className="text-sm font-medium text-gray-500 mb-2 flex items-center gap-1">
-                    <Star size={14} className="text-yellow-500" /> Saved Addresses
+                    <Star size={14} className="text-[#F37021]" /> Saved Addresses
                   </p>
                   <div className="space-y-2">
                     <button
-                      onClick={() => saveAddress("home")}
+                      onClick={() => chooseCity("Andheri East, Mumbai")}
                       className="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition"
                     >
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <Home size={18} className="text-blue-600" />
+                      <div className="w-10 h-10 bg-[#1A2A49]/10 rounded-full flex items-center justify-center">
+                        <Home size={18} className="text-[#1A2A49]" />
                       </div>
                       <div className="flex-1 text-left">
                         <p className="font-medium text-[#1A2A49]">Home</p>
@@ -167,11 +157,11 @@ export default function LocationPopup({ open, onClose, onSelect }) {
                     </button>
                     
                     <button
-                      onClick={() => saveAddress("office")}
+                      onClick={() => chooseCity("Bandra West, Mumbai")}
                       className="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition"
                     >
-                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                        <Briefcase size={18} className="text-purple-600" />
+                      <div className="w-10 h-10 bg-[#F37021]/10 rounded-full flex items-center justify-center">
+                        <Briefcase size={18} className="text-[#F37021]" />
                       </div>
                       <div className="flex-1 text-left">
                         <p className="font-medium text-[#1A2A49]">Office</p>
@@ -192,8 +182,7 @@ export default function LocationPopup({ open, onClose, onSelect }) {
                     placeholder="Search for area, street name..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3.5 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#F37021] text-base"
-                    autoFocus={false}
+                    className="w-full pl-12 pr-4 py-3.5 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1A2A49] text-base"
                   />
                 </div>
               </div>
@@ -211,7 +200,7 @@ export default function LocationPopup({ open, onClose, onSelect }) {
                         onClick={() => chooseCity(loc)}
                         className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition"
                       >
-                        <MapPin size={18} className="text-gray-400" />
+                        <MapPin size={18} className="text-[#F37021]" />
                         <span className="text-gray-700">{loc}</span>
                       </button>
                     ))}
@@ -231,7 +220,7 @@ export default function LocationPopup({ open, onClose, onSelect }) {
                           onClick={() => chooseCity(city)}
                           className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition"
                         >
-                          <MapPin size={18} className="text-gray-400" />
+                          <MapPin size={18} className="text-[#F37021]" />
                           <span className="text-gray-700">{city}</span>
                         </button>
                       ))}
@@ -242,7 +231,7 @@ export default function LocationPopup({ open, onClose, onSelect }) {
                 </div>
               )}
 
-              {/* Popular Cities (when no search) */}
+              {/* Popular Locations */}
               {!query && (
                 <div>
                   <p className="text-sm font-medium text-gray-500 mb-2">Popular Locations</p>
@@ -253,7 +242,7 @@ export default function LocationPopup({ open, onClose, onSelect }) {
                         onClick={() => chooseCity(city)}
                         className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition"
                       >
-                        <MapPin size={18} className="text-gray-400" />
+                        <MapPin size={18} className="text-[#F37021]" />
                         <span className="text-gray-700">{city}</span>
                       </button>
                     ))}
@@ -265,7 +254,7 @@ export default function LocationPopup({ open, onClose, onSelect }) {
             {/* Footer */}
             <div className="p-4 border-t border-gray-100 bg-gray-50">
               <p className="text-xs text-gray-500 text-center">
-                📍 Your location helps us show available services
+                📍 Your location helps us show available services near you
               </p>
             </div>
           </motion.div>

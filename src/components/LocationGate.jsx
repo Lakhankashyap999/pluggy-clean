@@ -1,7 +1,7 @@
 // src/components/LocationGate.jsx
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { motion } from "framer-motion"
-import { MapPin, Navigation, Search, Sparkles, TrendingUp, ChevronRight } from "lucide-react"
+import { MapPin, Navigation, Search, Sparkles, ChevronRight } from "lucide-react"
 import toast from "react-hot-toast"
 
 export default function LocationGate({ onSelect }) {
@@ -11,19 +11,13 @@ export default function LocationGate({ onSelect }) {
 
   const popularCities = [
     "Andheri East, Mumbai",
-    "Bandra West, Mumbai", 
+    "Bandra West, Mumbai",
     "Powai, Mumbai",
     "Juhu, Mumbai",
     "Borivali, Mumbai",
     "Thane, Mumbai",
     "Navi Mumbai",
     "Ghatkopar, Mumbai"
-  ]
-
-  const trendingAreas = [
-    { name: "Andheri East", count: "2.5k+ services" },
-    { name: "Bandra West", count: "1.8k+ services" },
-    { name: "Powai", count: "1.2k+ services" }
   ]
 
   const filteredCities = popularCities.filter(c => 
@@ -81,8 +75,8 @@ export default function LocationGate({ onSelect }) {
         {/* Logo Section */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-3">
-            <div className="w-14 h-14 bg-gradient-to-br from-[#1A2A49] to-[#F37021] rounded-2xl flex items-center justify-center shadow-xl">
-              <MapPin size={28} className="text-white" />
+            <div className="w-16 h-16 bg-gradient-to-br from-[#1A2A49] to-[#F37021] rounded-2xl flex items-center justify-center shadow-xl">
+              <MapPin size={30} className="text-white" />
             </div>
           </div>
           <h1 className="text-3xl font-bold font-poppins">
@@ -116,7 +110,7 @@ export default function LocationGate({ onSelect }) {
                 {detecting ? "Detecting your location..." : "Use current location"}
               </p>
               <p className="text-sm text-gray-500">
-                {detecting ? "Please wait a moment" : "We'll find the best experts near you"}
+                {detecting ? "Please wait a moment" : "We'll find experts near you"}
               </p>
             </div>
             {detecting ? (
@@ -141,10 +135,9 @@ export default function LocationGate({ onSelect }) {
           </div>
 
           {/* Content Area */}
-          <div className="p-5 max-h-[300px] overflow-y-auto">
+          <div className="p-5 max-h-[250px] overflow-y-auto">
             
             {query ? (
-              // Search Results
               <div className="space-y-2">
                 <p className="text-sm font-medium text-gray-500 mb-2">Search Results</p>
                 {filteredCities.length > 0 ? (
@@ -179,36 +172,11 @@ export default function LocationGate({ onSelect }) {
                   </div>
                 )}
 
-                {/* Trending Areas */}
-                <div className="mb-4">
-                  <p className="text-sm font-medium text-gray-500 mb-2 flex items-center gap-1">
-                    <TrendingUp size={14} className="text-[#F37021]" />
-                    Trending Areas
-                  </p>
-                  <div className="space-y-2">
-                    {trendingAreas.map((area, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setSelectedCity(`${area.name}, Mumbai`)}
-                        className="w-full flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition group"
-                      >
-                        <div className="flex items-center gap-3">
-                          <MapPin size={18} className="text-gray-400 group-hover:text-[#F37021]" />
-                          <span className="text-gray-700">{area.name}</span>
-                        </div>
-                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                          {area.count}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
                 {/* Popular Areas */}
                 <div>
-                  <p className="text-sm font-medium text-gray-500 mb-2">Popular Areas</p>
+                  <p className="text-sm font-medium text-gray-500 mb-3">Popular Areas</p>
                   <div className="flex flex-wrap gap-2">
-                    {popularCities.slice(0, 6).map((city, i) => (
+                    {popularCities.slice(0, 8).map((city, i) => (
                       <button
                         key={i}
                         onClick={() => setSelectedCity(city)}
