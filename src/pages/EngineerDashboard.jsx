@@ -117,7 +117,7 @@ export default function EngineerDashboard() {
   return (
     <div className="min-h-screen bg-[#F4F6F9] pb-24 font-inter">
       {/* ================= DEDICATED ENGINEER TERMINAL TOP BAR ================= */}
-      <header className="sticky top-0 z-40 bg-gradient-to-r from-[#121E36] via-[#1A2A49] to-[#223a61] text-white shadow-lg border-b-2 border-[#F37021]">
+      <header className="lg:sticky top-0 z-40 bg-gradient-to-r from-[#121E36] via-[#1A2A49] to-[#223a61] text-white shadow-lg border-b-2 border-[#F37021]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
@@ -175,11 +175,11 @@ export default function EngineerDashboard() {
           </div>
 
           {/* Engineer Personal KPI Strip */}
-          <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-white/10">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-3 pt-3 sm:mt-4 sm:pt-4 border-t border-white/10">
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/10"
+              className="bg-white/10 backdrop-blur-sm rounded-2xl p-2.5 sm:p-3 border border-white/10"
             >
               <p className="text-xl sm:text-2xl font-extrabold text-amber-300">
                 {activeAssignedJobs.length}
@@ -192,7 +192,7 @@ export default function EngineerDashboard() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
-              className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/10"
+              className="bg-white/10 backdrop-blur-sm rounded-2xl p-2.5 sm:p-3 border border-white/10"
             >
               <p className="text-xl sm:text-2xl font-extrabold text-white">
                 {(engineer.completedCount || 0) + completedJobs.length}
@@ -205,7 +205,7 @@ export default function EngineerDashboard() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/10"
+              className="bg-white/10 backdrop-blur-sm rounded-2xl p-2.5 sm:p-3 border border-white/10"
             >
               <p className="text-xl sm:text-2xl font-extrabold text-emerald-300">
                 ₹{engineer.walletBalance || totalEarnings}
@@ -224,34 +224,34 @@ export default function EngineerDashboard() {
         <div className="grid grid-cols-3 gap-2 bg-white p-1.5 rounded-2xl shadow-sm border border-gray-200/80 mb-6">
           <button
             onClick={() => setActiveTab("jobs")}
-            className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition ${
+            className={`py-2 px-1 sm:py-2.5 sm:px-3 rounded-xl text-[11px] sm:text-sm font-extrabold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-center leading-tight transition ${
               activeTab === "jobs"
                 ? "bg-[#1A2A49] text-white shadow-sm"
                 : "text-gray-600 hover:bg-gray-50"
             }`}
           >
-            <Wrench size={16} /> My Assigned Jobs ({activeAssignedJobs.length})
+            <Wrench size={16} /> Jobs ({activeAssignedJobs.length})
           </button>
           <button
             onClick={() => setActiveTab("earnings")}
-            className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition ${
+            className={`py-2 px-1 sm:py-2.5 sm:px-3 rounded-xl text-[11px] sm:text-sm font-extrabold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-center leading-tight transition ${
               activeTab === "earnings"
                 ? "bg-[#F37021] text-white shadow-sm"
                 : "text-gray-600 hover:bg-gray-50"
             }`}
           >
-            <CircleDollarSign size={16} /> Earnings & History (
+            <CircleDollarSign size={16} /> Earnings (
             {completedJobs.length})
           </button>
           <button
             onClick={() => setActiveTab("profile")}
-            className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition ${
+            className={`py-2 px-1 sm:py-2.5 sm:px-3 rounded-xl text-[11px] sm:text-sm font-extrabold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-center leading-tight transition ${
               activeTab === "profile"
                 ? "bg-[#1A2A49] text-white shadow-sm"
                 : "text-gray-600 hover:bg-gray-50"
             }`}
           >
-            <User size={16} /> My ID Card & Kit
+            <User size={16} /> ID Card
           </button>
         </div>
 
@@ -338,7 +338,7 @@ export default function EngineerDashboard() {
                         <motion.div
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
-                          className="border-t border-gray-100 bg-[#F4F6F9]/60 p-5 space-y-4"
+                          className="border-t border-gray-100 bg-[#F4F6F9]/60 p-3.5 sm:p-5 space-y-3 sm:space-y-4"
                         >
                           {/* Pre-Departure Checklist & Customer Info */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

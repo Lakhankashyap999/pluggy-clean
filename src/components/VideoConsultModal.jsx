@@ -6,6 +6,7 @@ import {
   PhoneCall, CheckCircle2, Camera, MapPin, Sparkles, Clock
 } from "lucide-react"
 import { useApp } from "../AppContext"
+import FaultMediaUpload from "./FaultMediaUpload"
 import { useNavigate } from "react-router-dom"
 import { EVENT_STANDBY_PACKAGES } from "../data/servicesCatalog"
 import toast from "react-hot-toast"
@@ -176,11 +177,11 @@ export default function VideoConsultModal({ open, onClose, initialTab = "sos" })
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.92, y: 24, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-gray-100"
+            className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[92vh] overflow-hidden border border-gray-100"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Top Header */}
-            <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white p-5 flex items-center justify-between">
+            <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white p-4 sm:p-5 flex items-center justify-between">
               <div>
                 <span className="text-[11px] uppercase tracking-wider font-bold text-[#F37021] bg-white/10 px-2.5 py-1 rounded-full">
                   ⚡ Pluggy Exclusive Smart Services
@@ -222,7 +223,12 @@ export default function VideoConsultModal({ open, onClose, initialTab = "sos" })
             </div>
 
             {/* Tab Content */}
-            <div className="p-5 sm:p-6 max-h-[68vh] overflow-y-auto">
+            <div className="p-4 sm:p-6 max-h-[62vh] sm:max-h-[68vh] overflow-y-auto">
+              {(activeTab === "sos" || activeTab === "voice") && (
+                <div className="mb-4">
+                  <FaultMediaUpload />
+                </div>
+              )}
               {/* TAB 1: 15-MIN SOS */}
               {activeTab === "sos" && (
                 <form onSubmit={handleSOSSubmit} className="space-y-4">
@@ -434,21 +440,6 @@ export default function VideoConsultModal({ open, onClose, initialTab = "sos" })
                     >
                       <Mic size={20} />
                       {isRecording ? "Recording Voice Note..." : "Tap to Record 10-Sec Voice Note"}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIssueText((prev) =>
-                          prev
-                            ? `${prev} [Appliance Photo Attached]`
-                            : "[Appliance Photo Attached] Switchboard / Appliance fault"
-                        )
-                        toast.success("Appliance photo attached!")
-                      }}
-                      className="py-4 px-5 rounded-2xl border-2 border-dashed border-gray-300 text-gray-700 font-semibold text-sm flex items-center justify-center gap-2 hover:border-[#F37021]"
-                    >
-                      <Camera size={18} className="text-[#F37021]" /> Attach Photo
                     </button>
                   </div>
 
