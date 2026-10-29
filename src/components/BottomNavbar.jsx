@@ -21,27 +21,11 @@ export default function BottomNavbar() {
   const { pathname } = useLocation()
   const { cart, requests } = useApp()
 
-  const [visible, setVisible] = useState(true)
-  const [lastScrollY, setLastScrollY] = useState(0)
   const [servicesOpen, setServicesOpen] = useState(false)
 
   const activeBookingsCount = (requests || []).filter(
-    (r) => r.status !== "Completed" && r.status !== "Cancelled"
+    (r) => !["Completed", "COMPLETED", "Cancelled", "CANCELLED"].includes(r.status)
   ).length
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY
-      if (currentScrollY > lastScrollY && currentScrollY > 90) {
-        setVisible(false)
-      } else if (currentScrollY < lastScrollY) {
-        setVisible(true)
-      }
-      setLastScrollY(currentScrollY)
-    }
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [lastScrollY])
 
   const openCartPopup = () => {
     window.dispatchEvent(new Event("pluggy:open-cart"))
@@ -60,11 +44,7 @@ export default function BottomNavbar() {
   return (
     <>
       {/* Mobile Bottom App Bar (md:hidden) */}
-      <div
-        className={`md:hidden fixed bottom-0 left-0 right-0 bg-[#1A2A49] text-white border-t border-white/15 shadow-2xl z-50 transition-transform duration-300 ${
-          visible ? "translate-y-0" : "translate-y-full"
-        }`}
-      >
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#1A2A49] text-white border-t border-white/15 shadow-2xl z-50">
         <div className="grid grid-cols-5 items-center h-16 px-1">
           {/* 1. Home */}
           <button
@@ -232,7 +212,7 @@ export default function BottomNavbar() {
                         <div>
                           <h3 className="font-extrabold text-sm text-[#1A2A49]">{cat.name}</h3>
                           <p className="text-[11px] text-gray-500">
-                            Starts ₹{cat.startingPrice} • {cat.subCategories?.length || 4} Sub-Categories
+                            Starts ₹{cat.startingPrice} • {cat.subcategories?.length || 4} Sub-Categories
                           </p>
                         </div>
                       </div>
@@ -240,7 +220,7 @@ export default function BottomNavbar() {
                     </button>
 
                     <div className="p-2.5 flex flex-wrap gap-1.5 bg-white">
-                      {cat.subCategories?.map((sub) => (
+                      {cat.subcategories?.map((sub) => (
                         <button
                           key={sub.id}
                           onClick={() => {

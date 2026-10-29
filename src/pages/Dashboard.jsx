@@ -145,7 +145,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] pt-[128px] md:pt-[136px]">
+    <div className="min-h-screen bg-[#F4F6F9] pt-[124px] md:pt-[136px]">
       {/* Top Offer Ribbon */}
       <AnimatePresence>
         {showOfferBar && (
@@ -155,23 +155,25 @@ export default function Dashboard() {
             exit={{ height: 0, opacity: 0 }}
             className="bg-gradient-to-r from-[#F37021] via-[#e66417] to-[#FF8C42] text-white overflow-hidden"
           >
-            <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex items-center justify-between text-xs sm:text-sm">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Sparkles size={14} className="animate-pulse hidden sm:block" />
-                <span className="font-bold">⚡ Summer Season Special: Flat 25% OFF on AC & Electrical</span>
-                <span className="bg-white/20 px-2 py-0.5 rounded text-[11px] font-mono font-bold">
+            <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex items-center justify-between gap-2 text-xs sm:text-sm">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Sparkles size={13} className="animate-pulse shrink-0" />
+                <span className="font-extrabold truncate">
+                  ⚡ Flat 25% OFF on AC & Wiring
+                </span>
+                <span className="bg-white/25 px-1.5 py-0.5 rounded text-[10px] sm:text-[11px] font-mono font-extrabold shrink-0">
                   SUMMER25
                 </span>
                 <span className="hidden lg:inline text-white/90 text-xs">
                   • 100% Fixed Spare Part Rate Card • 30-Day Warranty
                 </span>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   onClick={handleClaimSummerOffer}
-                  className="bg-white text-[#F37021] px-3 py-1 rounded-full text-xs font-bold hover:bg-gray-100 transition shadow-sm"
+                  className="bg-white text-[#F37021] px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-extrabold hover:bg-gray-100 transition shadow-xs"
                 >
-                  Claim Offer
+                  Claim
                 </button>
                 <button
                   onClick={() => setShowOfferBar(false)}
@@ -212,26 +214,24 @@ export default function Dashboard() {
           {/* ===================================================================
               1. 4-PILLAR PLUGGY EXCLUSIVE ACTION STRIP (Emergency / Function / Video / Voice)
              =================================================================== */}
-          <section className="bg-white border-b border-gray-200 shadow-sm">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+          <section className="bg-white border-b border-gray-200 shadow-xs">
+            <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
                 {/* 15-Min SOS */}
                 <motion.button
                   whileHover={{ y: -2 }}
                   onClick={() => openConsultModal("sos")}
-                  className="flex items-center gap-3 p-2.5 sm:p-3 rounded-xl bg-red-50 hover:bg-red-100/80 border border-red-200 text-left transition group"
+                  className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl bg-red-50 hover:bg-red-100/80 border border-red-200 text-left transition group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-                    <AlertTriangle size={20} className="animate-pulse" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <AlertTriangle size={17} className="animate-pulse" />
                   </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs sm:text-sm font-extrabold text-red-700 truncate">
-                        15-Min Emergency SOS
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-red-600/90 truncate">
-                      Sparking, MCB Trip, Blackout
+                    <span className="text-[11px] sm:text-sm font-extrabold text-red-700 block truncate">
+                      15-Min SOS
+                    </span>
+                    <p className="text-[10px] sm:text-[11px] text-red-600/90 truncate">
+                      MCB Trip, Sparking
                     </p>
                   </div>
                 </motion.button>
@@ -240,17 +240,17 @@ export default function Dashboard() {
                 <motion.button
                   whileHover={{ y: -2 }}
                   onClick={() => openConsultModal("event")}
-                  className="flex items-center gap-3 p-2.5 sm:p-3 rounded-xl bg-amber-50 hover:bg-amber-100/80 border border-amber-200 text-left transition group"
+                  className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl bg-amber-50 hover:bg-amber-100/80 border border-amber-200 text-left transition group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-[#F37021] text-white flex items-center justify-center shrink-0 shadow-sm">
-                    <PartyPopper size={20} />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#F37021] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <PartyPopper size={17} />
                   </div>
                   <div className="min-w-0">
-                    <span className="text-xs sm:text-sm font-extrabold text-[#1A2A49] block truncate">
-                      Function / Shaadi Guard
+                    <span className="text-[11px] sm:text-sm font-extrabold text-[#1A2A49] block truncate">
+                      Shaadi Guard
                     </span>
-                    <p className="text-[11px] text-gray-600 truncate">
-                      Dedicated Standby Electrician
+                    <p className="text-[10px] sm:text-[11px] text-gray-600 truncate">
+                      Event Standby Tech
                     </p>
                   </div>
                 </motion.button>
@@ -259,17 +259,17 @@ export default function Dashboard() {
                 <motion.button
                   whileHover={{ y: -2 }}
                   onClick={() => openConsultModal("video")}
-                  className="flex items-center gap-3 p-2.5 sm:p-3 rounded-xl bg-blue-50 hover:bg-blue-100/80 border border-blue-200 text-left transition group"
+                  className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl bg-blue-50 hover:bg-blue-100/80 border border-blue-200 text-left transition group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-[#1A2A49] text-white flex items-center justify-center shrink-0 shadow-sm">
-                    <Video size={20} />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#1A2A49] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Video size={17} />
                   </div>
                   <div className="min-w-0">
-                    <span className="text-xs sm:text-sm font-extrabold text-[#1A2A49] block truncate">
-                      ₹29 Video Diagnosis
+                    <span className="text-[11px] sm:text-sm font-extrabold text-[#1A2A49] block truncate">
+                      ₹29 Video Call
                     </span>
-                    <p className="text-[11px] text-gray-600 truncate">
-                      Show fault on video & save visit fee
+                    <p className="text-[10px] sm:text-[11px] text-gray-600 truncate">
+                      Live Fault Check
                     </p>
                   </div>
                 </motion.button>
@@ -278,17 +278,17 @@ export default function Dashboard() {
                 <motion.button
                   whileHover={{ y: -2 }}
                   onClick={() => openConsultModal("voice")}
-                  className="flex items-center gap-3 p-2.5 sm:p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 text-left transition group"
+                  className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 text-left transition group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-                    <Mic size={20} />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Mic size={17} />
                   </div>
                   <div className="min-w-0">
-                    <span className="text-xs sm:text-sm font-extrabold text-[#1A2A49] block truncate">
-                      Bolo & Book Karo 🎙️
+                    <span className="text-[11px] sm:text-sm font-extrabold text-[#1A2A49] block truncate">
+                      Bolo & Book 🎙️
                     </span>
-                    <p className="text-[11px] text-gray-600 truncate">
-                      Hindi Voice Note + Photo Booking
+                    <p className="text-[10px] sm:text-[11px] text-gray-600 truncate">
+                      Voice + Photo Book
                     </p>
                   </div>
                 </motion.button>
@@ -299,51 +299,53 @@ export default function Dashboard() {
           {/* ===================================================================
               2. DESKTOP HERO SPLIT: SLIDER + 8-CATEGORY QUICK DOCK (LEFT) & SMART FAULT ESTIMATOR (RIGHT)
              =================================================================== */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          <section className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
               {/* LEFT 7 COLUMNS: What Are You Looking For + Promo Slider */}
-              <div className="lg:col-span-7 flex flex-col justify-between gap-5">
+              <div className="lg:col-span-7 flex flex-col justify-between gap-4 sm:gap-5">
                 {/* Hero Headline + Category Quick Box */}
-                <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-gray-200/80">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-xs border border-gray-200/80">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                     <div>
                       {user && (
                         <p className="text-[#F37021] font-bold text-xs uppercase tracking-wider mb-0.5">
                           👋 Namaste, {user.name?.split(" ")[0] || "Member"}!
                         </p>
                       )}
-                      <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#1A2A49] leading-tight">
+                      <h1 className="text-lg sm:text-2xl lg:text-3xl font-extrabold text-[#1A2A49] leading-tight">
                         Ghar Ki Har Electrical & Appliance Dikkat Ka{" "}
                         <span className="text-[#F37021]">Instant Solution</span>
                       </h1>
                     </div>
-                    <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full shrink-0 self-start">
+                    <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full shrink-0 self-start">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                      <span className="text-xs font-bold text-emerald-800">18 Engineers Nearby</span>
+                      <span className="text-[11px] font-bold text-emerald-800">
+                        18 Techs Nearby
+                      </span>
                     </div>
                   </div>
 
-                  <p className="text-xs sm:text-sm text-gray-500 mb-4">
-                    No carrying heavy appliances to the market! Select a category below to explore sub-categories, fixed spare part rates & instant doorstep booking:
+                  <p className="text-xs sm:text-sm text-gray-500 mb-3.5">
+                    Select any category below for fixed spare part rates & instant doorstep booking:
                   </p>
 
                   {/* 8-Category Icon Dock Grid */}
-                  <div className="grid grid-cols-4 sm:grid-cols-4 gap-2.5 sm:gap-3">
+                  <div className="grid grid-cols-4 gap-2 sm:gap-3">
                     {CATEGORIES_CATALOG.map((cat) => (
                       <motion.button
                         key={cat.slug}
                         whileHover={{ y: -3, scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                        whileTap={{ scale: 0.96 }}
                         onClick={() => navigate(`/services/${cat.slug}`)}
-                        className="flex flex-col items-center text-center p-2.5 sm:p-3 rounded-xl bg-[#F4F6F9] hover:bg-[#1A2A49] text-[#1A2A49] hover:text-white border border-gray-200/60 transition-all group"
+                        className="flex flex-col items-center text-center p-2 sm:p-3 rounded-xl bg-[#F4F6F9] hover:bg-[#1A2A49] text-[#1A2A49] hover:text-white border border-gray-200/70 transition-all group"
                       >
-                        <span className="text-2xl sm:text-3xl mb-1.5 group-hover:scale-110 transition-transform">
+                        <span className="text-2xl sm:text-3xl mb-1 group-hover:scale-110 transition-transform">
                           {cat.emoji}
                         </span>
-                        <span className="text-[11px] sm:text-xs font-bold leading-tight line-clamp-1">
+                        <span className="text-[11px] sm:text-xs font-extrabold leading-tight line-clamp-1">
                           {cat.shortName}
                         </span>
-                        <span className="text-[10px] text-gray-500 group-hover:text-amber-300 mt-0.5">
+                        <span className="hidden sm:block text-[10px] text-gray-500 group-hover:text-amber-300 mt-0.5">
                           {cat.subcategories.length} Sub-Types
                         </span>
                       </motion.button>
@@ -351,24 +353,24 @@ export default function Dashboard() {
                   </div>
 
                   {/* Trust Badges Footer inside Left Card */}
-                  <div className="mt-5 pt-4 border-t border-gray-100 grid grid-cols-3 gap-2 text-center">
-                    <div className="bg-[#F4F6F9] rounded-xl py-2 px-2">
-                      <p className="text-xs sm:text-sm font-extrabold text-[#1A2A49]">⭐ 4.8 / 5</p>
-                      <p className="text-[10px] text-gray-500">12,400+ Verified Reviews</p>
+                  <div className="mt-4 pt-3.5 border-t border-gray-100 grid grid-cols-3 gap-1.5 sm:gap-2 text-center">
+                    <div className="bg-[#F4F6F9] rounded-xl py-2 px-1.5">
+                      <p className="text-[11px] sm:text-sm font-extrabold text-[#1A2A49]">⭐ 4.8/5</p>
+                      <p className="text-[9px] sm:text-[10px] text-gray-500">12.4k+ Reviews</p>
                     </div>
-                    <div className="bg-[#F4F6F9] rounded-xl py-2 px-2">
-                      <p className="text-xs sm:text-sm font-extrabold text-[#F37021]">₹0 Hidden Cost</p>
-                      <p className="text-[10px] text-gray-500">App-Controlled Rate Card</p>
+                    <div className="bg-[#F4F6F9] rounded-xl py-2 px-1.5">
+                      <p className="text-[11px] sm:text-sm font-extrabold text-[#F37021]">Fixed MRP</p>
+                      <p className="text-[9px] sm:text-[10px] text-gray-500">App Rate Card</p>
                     </div>
-                    <div className="bg-[#F4F6F9] rounded-xl py-2 px-2">
-                      <p className="text-xs sm:text-sm font-extrabold text-emerald-700">30-Day Warranty</p>
-                      <p className="text-[10px] text-gray-500">Free Re-Visit Guarantee</p>
+                    <div className="bg-[#F4F6F9] rounded-xl py-2 px-1.5">
+                      <p className="text-[11px] sm:text-sm font-extrabold text-emerald-700">30-Day</p>
+                      <p className="text-[9px] sm:text-[10px] text-gray-500">QR Warranty</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Promotional Banner Slider */}
-                <div className="rounded-2xl overflow-hidden shadow-sm border border-gray-200/80 bg-white">
+                <div className="rounded-2xl overflow-hidden shadow-xs border border-gray-200/80 bg-white">
                   <Slider />
                 </div>
               </div>
@@ -378,33 +380,33 @@ export default function Dashboard() {
                 <div className="bg-white rounded-2xl shadow-md border-2 border-[#1A2A49]/10 overflow-hidden h-full flex flex-col justify-between">
                   <div>
                     {/* Estimator Header */}
-                    <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white p-5">
+                    <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white p-4 sm:p-5">
                       <div className="flex items-center justify-between mb-1">
                         <span className="px-2.5 py-0.5 rounded-full bg-[#F37021] text-white text-[10px] font-extrabold uppercase tracking-wider">
                           Smart AI Estimator
                         </span>
                         <button
                           onClick={() => openRateCardModal(currentAppliance.categorySlug)}
-                          className="text-xs text-amber-300 hover:underline flex items-center gap-1 font-medium"
+                          className="text-xs text-amber-300 hover:underline flex items-center gap-1 font-bold"
                         >
-                          <FileText size={13} /> Official Spare Rate Card
+                          <FileText size={13} /> Official Rate Card
                         </button>
                       </div>
-                      <h2 className="text-lg sm:text-xl font-bold mt-1">
+                      <h2 className="text-base sm:text-xl font-extrabold mt-1">
                         🔍 Check Kya Kharab Hai & Kitna Kharcha Aayega
                       </h2>
-                      <p className="text-white/75 text-xs mt-0.5">
+                      <p className="text-white/80 text-xs mt-0.5">
                         Select your appliance & symptom to see exact cause and upfront cost before booking
                       </p>
                     </div>
 
-                    <div className="p-5 space-y-4">
+                    <div className="p-4 sm:p-5 space-y-4">
                       {/* Step 1: Select Appliance */}
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
+                        <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-500 mb-2">
                           1. Select Appliance / System
                         </label>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                           {SYMPTOM_ESTIMATOR_DATA.map((item, idx) => (
                             <button
                               key={item.appliance}
@@ -412,13 +414,13 @@ export default function Dashboard() {
                                 setSelectedApplianceIdx(idx)
                                 setSelectedSymptomIdx(0)
                               }}
-                              className={`p-2 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition ${
+                              className={`p-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition ${
                                 selectedApplianceIdx === idx
-                                  ? "bg-[#1A2A49] text-white border-[#1A2A49] shadow-sm"
+                                  ? "bg-[#1A2A49] text-white border-[#1A2A49] shadow-xs"
                                   : "bg-[#F4F6F9] text-[#1A2A49] border-gray-200 hover:border-[#F37021]"
                               }`}
                             >
-                              <span className="text-base">{item.icon}</span>
+                              <span className="text-base shrink-0">{item.icon}</span>
                               <span className="truncate">{item.appliance}</span>
                             </button>
                           ))}
@@ -564,7 +566,7 @@ export default function Dashboard() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
               {popularServices.map((srv) => {
                 const inCart = cart.some((item) => item.id === srv.id)
                 return (
@@ -572,25 +574,28 @@ export default function Dashboard() {
                     key={srv.id}
                     whileHover={{ y: -4 }}
                     onClick={() => navigate(`/services/${srv.categorySlug}?sub=${srv.subCategoryId}`)}
-                    className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg border border-gray-200/80 flex flex-col justify-between cursor-pointer transition-all"
+                    className="bg-white rounded-2xl p-3 sm:p-4 shadow-xs hover:shadow-lg border border-gray-200/80 flex flex-col justify-between cursor-pointer transition-all"
                   >
                     <div>
-                      <div className="flex items-center justify-between gap-2 mb-2.5">
-                        <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#F4F6F9] text-[#1A2A49] flex items-center gap-1">
-                          <span>{srv.categoryEmoji}</span> {srv.subCategoryName}
+                      <div className="flex items-center justify-between gap-1 mb-2">
+                        <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-[#F4F6F9] text-[#1A2A49] flex items-center gap-1 truncate max-w-[115px] sm:max-w-none">
+                          <span>{srv.categoryEmoji}</span>
+                          <span className="truncate">{srv.subCategoryName}</span>
                         </span>
-                        <span className="flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
-                          <Star size={11} className="fill-amber-500 text-amber-500" /> {srv.rating}
+                        <span className="flex items-center gap-0.5 text-[10px] sm:text-xs font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full shrink-0">
+                          <Star size={10} className="fill-amber-500 text-amber-500" /> {srv.rating}
                         </span>
                       </div>
 
-                      <h3 className="font-bold text-[#1A2A49] text-sm sm:text-base leading-snug mb-1.5">
+                      <h3 className="font-extrabold text-[#1A2A49] text-xs sm:text-base leading-snug mb-1 line-clamp-2">
                         {srv.name}
                       </h3>
-                      <p className="text-xs text-gray-500 line-clamp-2 mb-3">{srv.desc}</p>
+                      <p className="text-[11px] sm:text-xs text-gray-500 line-clamp-2 mb-2.5">
+                        {srv.desc}
+                      </p>
 
                       {/* Included Bullets */}
-                      <div className="space-y-1 mb-3">
+                      <div className="hidden sm:block space-y-1 mb-3">
                         {srv.included?.slice(0, 2).map((inc, idx) => (
                           <div key={idx} className="flex items-center gap-1.5 text-[11px] text-gray-600">
                             <CheckCircle2 size={12} className="text-emerald-600 shrink-0" />
@@ -600,18 +605,18 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
+                    <div className="pt-2.5 sm:pt-3 border-t border-gray-100 flex items-center justify-between gap-1.5">
                       <div>
-                        <div className="flex items-baseline gap-1.5">
-                          <span className="text-base sm:text-lg font-extrabold text-[#1A2A49]">
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-sm sm:text-lg font-extrabold text-[#1A2A49]">
                             ₹{srv.price}
                           </span>
-                          <span className="text-xs text-gray-400 line-through">
+                          <span className="text-[10px] sm:text-xs text-gray-400 line-through">
                             ₹{srv.originalPrice}
                           </span>
                         </div>
-                        <span className="text-[10px] text-emerald-700 font-semibold block">
-                          🛡️ {srv.warranty} Warranty
+                        <span className="text-[9px] sm:text-[10px] text-emerald-700 font-semibold block truncate">
+                          🛡️ {srv.warranty}
                         </span>
                       </div>
 
@@ -629,7 +634,7 @@ export default function Dashboard() {
                           })
                           toast.success(`${srv.name} added to cart!`)
                         }}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition ${
+                        className={`px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-extrabold flex items-center gap-1 transition shrink-0 ${
                           inCart
                             ? "bg-emerald-600 text-white"
                             : "bg-[#1A2A49] text-white hover:bg-[#F37021]"
@@ -637,11 +642,11 @@ export default function Dashboard() {
                       >
                         {inCart ? (
                           <>
-                            <Check size={14} /> Added
+                            <Check size={13} /> Added
                           </>
                         ) : (
                           <>
-                            <Plus size={14} /> Add
+                            <Plus size={13} /> Add
                           </>
                         )}
                       </button>

@@ -295,11 +295,21 @@ export default function WhyChooseUs() {
                 </div>
                 <div className="col-span-12 sm:col-span-4 bg-emerald-50/90 border border-emerald-200 rounded-xl p-2.5 sm:p-3 flex items-start gap-2">
                   <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
-                  <span className="text-xs font-bold text-emerald-950">{row.pluggy}</span>
+                  <span className="text-xs font-bold text-emerald-950">
+                    <span className="sm:hidden text-emerald-700 uppercase tracking-wider text-[10px] block mb-0.5">
+                      ✓ Pluggy 2.0 Guarantee
+                    </span>
+                    {row.pluggy}
+                  </span>
                 </div>
                 <div className="col-span-12 sm:col-span-4 bg-red-50/70 border border-red-100 rounded-xl p-2.5 sm:p-3 flex items-start gap-2">
                   <XCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
-                  <span className="text-xs text-red-900">{row.local}</span>
+                  <span className="text-xs text-red-900">
+                    <span className="sm:hidden text-red-700 font-bold uppercase tracking-wider text-[10px] block mb-0.5">
+                      ✕ Local Mechanic
+                    </span>
+                    {row.local}
+                  </span>
                 </div>
               </div>
             ))}

@@ -42,11 +42,8 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    document.documentElement.classList.remove("dark");
+    localStorage.setItem("pluggy_theme", "light");
   }, [theme]);
 
   useEffect(() => {

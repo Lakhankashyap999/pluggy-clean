@@ -4,7 +4,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom"
 import {
   User, LogOut, ShoppingCart, MapPin, ChevronDown, Search, Bell,
   Zap, FileText, ShieldCheck, Wrench, LayoutDashboard, Wallet,
-  ChevronRight, Sparkles, Plus, Check, PhoneCall, Video
+  ChevronRight, Sparkles, Plus, Check, PhoneCall, Video, Menu, X
 } from "lucide-react"
 import toast from "react-hot-toast"
 import { useApp } from "../AppContext"
@@ -49,9 +49,9 @@ export default function Navbar() {
   const [hoveredCategory, setHoveredCategory] = useState(null)
   const [hoveredSubId, setHoveredSubId] = useState(null)
 
-  // Mobile Scroll Detection
-  const [visible, setVisible] = useState(true)
-  const [lastScrollY, setLastScrollY] = useState(0)
+  // Mobile Drawer State
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
+  const [mobileExpandedCat, setMobileExpandedCat] = useState("ac-repair")
 
   const allServices = useMemo(() => getAllServicesFlat(), [])
 
@@ -76,26 +76,13 @@ export default function Navbar() {
     }
   }, [])
 
-  // Close Mega-Menu on route change
+  // Close Mega-Menu & Mobile Drawer on route change
   useEffect(() => {
     setHoveredCategory(null)
     setSearchFocused(false)
     setMenuOpen(null)
+    setMobileDrawerOpen(false)
   }, [location.pathname, location.search])
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY
-      if (currentScrollY > lastScrollY && currentScrollY > 60) {
-        setVisible(false)
-      } else if (currentScrollY < lastScrollY) {
-        setVisible(true)
-      }
-      setLastScrollY(currentScrollY)
-    }
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [lastScrollY])
 
   const unreadCount = (notifications || []).filter((n) => !n.read).length
   const itemsTotal = cart.reduce((sum, i) => sum + Number(i.price || 0), 0)
@@ -178,92 +165,358 @@ export default function Navbar() {
   return (
     <>
       {/* ===================================================================== */}
-      {/* 📱 MOBILE NAVBAR                                                       */}
+      {/* 📱 MOBILE NAVBAR (ALWAYS VISIBLE, HIGH-CONTRAST NAVY & ORANGE)        */}
       {/* ===================================================================== */}
-      <div
-        className={`md:hidden fixed top-0 left-0 right-0 bg-white z-50 transition-transform duration-300 shadow-sm ${
-          visible ? "translate-y-0" : "-translate-y-full"
-        }`}
-      >
-        {/* Top Mobile Utility Strip */}
-        <div className="bg-[#1A2A49] text-white px-3 py-1.5 flex items-center justify-between text-[11px]">
-          <button
-            onClick={() => {
-              setConsultInitialTab("sos")
-              setConsultModalOpen(true)
-            }}
-            className="flex items-center gap-1 font-bold text-[#F37021]"
-          >
-            <Zap size={12} /> 15-Min SOS
-          </button>
-          <div className="flex items-center gap-3">
-            <button onClick={() => setRateCardOpen(true)} className="text-white/90 hover:text-white">
-              📋 Rate Card
+      <div className="md:hidden fixed top-0 left-0 right-0 bg-[#1A2A49] text-white z-50 shadow-lg border-b border-white/10">
+        {/* ROW 1 (48px): Hamburger + Pluggy Logo + City Pill + SOS + Cart + Profile */}
+        <div className="h-12 px-3 flex items-center justify-between gap-2">
+          {/* Left: Menu + Brand + City */}
+          <div className="flex items-center gap-2 min-w-0">
+            <button
+              onClick={() => setMobileDrawerOpen(true)}
+              className="w-8 h-8 rounded-lg bg-white/10 active:bg-white/20 flex items-center justify-center text-white shrink-0"
+              aria-label="Open Menu"
+            >
+              <Menu size={18} />
             </button>
-            <button onClick={() => navigate("/admin")} className="text-white/90 hover:text-white">
-              🎛️ Admin
+
+            <Link to="/" className="flex items-center gap-1.5 shrink-0">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#F37021] to-[#FF8C42] p-1 flex items-center justify-center shadow">
+                <img
+                  src="/image/logos.png"
+                  alt="Pluggy"
+                  className="h-full w-full object-contain filter brightness-0 invert"
+                />
+              </div>
+              <span className="font-extrabold text-base tracking-tight text-white">
+                Pluggy
+              </span>
+            </Link>
+
+            <button
+              onClick={() => setLocationOpen(true)}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#223a61] border border-white/15 text-[11px] font-bold text-white truncate max-w-[110px]"
+            >
+              <MapPin size={12} className="text-[#F37021] shrink-0" />
+              <span className="truncate">{city || "City"}</span>
+              <ChevronDown size={11} className="text-gray-300 shrink-0" />
             </button>
           </div>
-        </div>
 
-        {/* Location & Icons Row */}
-        <div className="px-4 py-2 flex items-center justify-between">
-          <button onClick={() => setLocationOpen(true)} className="flex items-center gap-1">
-            <MapPin size={16} className="text-[#F37021]" />
-            <span className="font-semibold text-[#1A2A49] text-sm truncate max-w-[160px]">
-              {city || "Select Location"}
-            </span>
-            <ChevronDown size={14} className="text-gray-400" />
-          </button>
-
-          <div className="flex items-center gap-2">
-            <button onClick={() => navigate("/account/notifications")} className="p-1.5 relative">
-              <Bell size={18} className="text-[#1A2A49]" />
-              {unreadCount > 0 && (
-                <span className="absolute top-0.5 right-0.5 bg-[#F37021] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                  {unreadCount}
-                </span>
-              )}
+          {/* Right: SOS + Cart + Account */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={() => {
+                setConsultInitialTab("sos")
+                setConsultModalOpen(true)
+              }}
+              className="px-2.5 py-1.5 rounded-lg bg-[#F37021] text-white font-extrabold text-[11px] flex items-center gap-1 shadow-sm"
+            >
+              <Zap size={12} /> SOS
             </button>
-            <button onClick={() => setCartOpen(true)} className="p-1.5 relative">
-              <ShoppingCart size={18} className="text-[#1A2A49]" />
+
+            <button
+              onClick={() => setCartOpen(true)}
+              className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center relative"
+              aria-label="Cart"
+            >
+              <ShoppingCart size={16} className="text-white" />
               {cart.length > 0 && (
-                <span className="absolute top-0.5 right-0.5 bg-[#F37021] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                <span className="absolute -top-1 -right-1 bg-[#F37021] text-white text-[10px] font-extrabold w-4 h-4 flex items-center justify-center rounded-full">
                   {cart.length}
                 </span>
               )}
             </button>
-            <button onClick={() => navigate(user ? "/account" : "/login")} className="p-1.5">
-              <User size={18} className="text-[#1A2A49]" />
+
+            <button
+              onClick={() => navigate(user ? "/account" : "/login")}
+              className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center relative"
+              aria-label="Account"
+            >
+              <User size={16} className="text-white" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-emerald-500 text-white text-[9px] font-extrabold w-3.5 h-3.5 flex items-center justify-center rounded-full">
+                  {unreadCount}
+                </span>
+              )}
             </button>
           </div>
         </div>
 
-        {/* Search Trigger */}
-        <div className="px-4 pb-2">
+        {/* ROW 2 (40px): High-Contrast Search Trigger + ₹29 Video Pill + Rate Card */}
+        <div className="px-3 pb-2 flex items-center gap-1.5">
           <button
             onClick={() => setSearchOpen(true)}
-            className="w-full flex items-center gap-2 bg-[#F4F6F9] border border-gray-200 rounded-full px-4 py-2 text-gray-500"
+            className="flex-1 h-9 flex items-center gap-2 bg-white rounded-xl px-3 text-gray-600 shadow-inner min-w-0"
           >
-            <Search size={16} className="text-[#F37021]" />
-            <span className="text-xs sm:text-sm">Search AC, MCB, Fan, Geyser, RO...</span>
+            <Search size={15} className="text-[#F37021] shrink-0" />
+            <span className="text-xs font-medium text-gray-500 truncate">
+              Search AC, MCB, Fan, Geyser, RO...
+            </span>
+          </button>
+
+          <button
+            onClick={() => {
+              setConsultInitialTab("video")
+              setConsultModalOpen(true)
+            }}
+            className="h-9 px-2.5 rounded-xl bg-[#223a61] border border-white/15 text-emerald-300 font-extrabold text-[11px] flex items-center gap-1 shrink-0"
+          >
+            <Video size={13} /> ₹29
+          </button>
+
+          <button
+            onClick={() => setRateCardOpen(true)}
+            className="h-9 px-2.5 rounded-xl bg-[#223a61] border border-white/15 text-amber-300 font-extrabold text-[11px] flex items-center gap-1 shrink-0"
+          >
+            <FileText size={13} /> Rates
           </button>
         </div>
 
-        {/* Mobile Quick Category Horizontal Strip */}
-        <div className="flex gap-2 overflow-x-auto px-3 pb-2 scrollbar-hide border-b border-gray-200">
-          {CATEGORIES_CATALOG.map((cat) => (
-            <button
-              key={cat.slug}
-              onClick={() => navigate(`/services/${cat.slug}`)}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F4F6F9] text-[#1A2A49] text-xs font-medium whitespace-nowrap active:bg-[#1A2A49] active:text-white transition"
-            >
-              <span>{cat.icon}</span>
-              <span>{cat.shortName}</span>
-            </button>
-          ))}
+        {/* ROW 3 (36px): Touch-Scrollable 8-Category Bar */}
+        <div className="h-9 bg-[#132038] flex items-center gap-1.5 overflow-x-auto px-3 no-scrollbar border-t border-white/10">
+          {CATEGORIES_CATALOG.map((cat) => {
+            const isCurr = location.pathname === `/services/${cat.slug}`
+            return (
+              <button
+                key={cat.slug}
+                onClick={() => navigate(`/services/${cat.slug}`)}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold whitespace-nowrap shrink-0 transition ${
+                  isCurr
+                    ? "bg-[#F37021] text-white"
+                    : "bg-[#223a61] text-white/90 active:bg-[#F37021]"
+                }`}
+              >
+                <span>{cat.emoji || cat.icon}</span>
+                <span>{cat.shortName}</span>
+              </button>
+            )
+          })}
         </div>
       </div>
+
+      {/* 📱 MOBILE HAMBURGER SLIDE-OVER MENU DRAWER (ALL CATEGORIES & SUBCATEGORIES) */}
+      <AnimatePresence>
+        {mobileDrawerOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[60] md:hidden flex"
+            onClick={() => setMobileDrawerOpen(false)}
+          >
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 26, stiffness: 280 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-[86vw] max-w-[340px] bg-white h-full overflow-y-auto flex flex-col justify-between shadow-2xl"
+            >
+              <div>
+                {/* Drawer Header */}
+                <div className="bg-[#1A2A49] text-white p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-[#F37021] text-white font-extrabold flex items-center justify-center text-base">
+                      {user ? user.name?.charAt(0).toUpperCase() : "⚡"}
+                    </div>
+                    <div>
+                      <p className="font-extrabold text-sm text-white">
+                        {user ? `Hi, ${user.name}` : "Welcome to Pluggy 2.0"}
+                      </p>
+                      <p className="text-[11px] text-amber-300 font-semibold">
+                        {user ? `Wallet Balance: ₹${walletBalance}` : "100% Fixed Rate Home Services"}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setMobileDrawerOpen(false)}
+                    className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* 4 Quick Emergency & Smart Tools */}
+                <div className="p-3 bg-[#F4F6F9] border-b border-gray-200 grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => {
+                      setMobileDrawerOpen(false)
+                      setConsultInitialTab("sos")
+                      setConsultModalOpen(true)
+                    }}
+                    className="p-2.5 rounded-xl bg-red-600 text-white text-left flex items-center gap-2 shadow-xs"
+                  >
+                    <Zap size={16} className="shrink-0" />
+                    <div>
+                      <p className="text-[11px] font-extrabold leading-tight">15-Min SOS</p>
+                      <p className="text-[9px] text-white/80">Rapid Dispatch</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setMobileDrawerOpen(false)
+                      setRateCardOpen(true)
+                    }}
+                    className="p-2.5 rounded-xl bg-[#1A2A49] text-white text-left flex items-center gap-2 shadow-xs"
+                  >
+                    <FileText size={16} className="text-[#F37021] shrink-0" />
+                    <div>
+                      <p className="text-[11px] font-extrabold leading-tight">Rate Card</p>
+                      <p className="text-[9px] text-gray-300">Fixed MRP Parts</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setMobileDrawerOpen(false)
+                      setConsultInitialTab("video")
+                      setConsultModalOpen(true)
+                    }}
+                    className="p-2.5 rounded-xl bg-white border border-gray-200 text-[#1A2A49] text-left flex items-center gap-2"
+                  >
+                    <Video size={16} className="text-[#F37021] shrink-0" />
+                    <div>
+                      <p className="text-[11px] font-extrabold leading-tight">₹29 Video</p>
+                      <p className="text-[9px] text-gray-500">Live Fault Check</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setMobileDrawerOpen(false)
+                      setConsultInitialTab("event")
+                      setConsultModalOpen(true)
+                    }}
+                    className="p-2.5 rounded-xl bg-white border border-gray-200 text-[#1A2A49] text-left flex items-center gap-2"
+                  >
+                    <Sparkles size={16} className="text-[#F37021] shrink-0" />
+                    <div>
+                      <p className="text-[11px] font-extrabold leading-tight">Shaadi Guard</p>
+                      <p className="text-[9px] text-gray-500">Event Standby</p>
+                    </div>
+                  </button>
+                </div>
+
+                {/* Expandable 8 Categories & 32+ Sub-Categories Accordion */}
+                <div className="p-3">
+                  <p className="text-[11px] font-extrabold uppercase tracking-wider text-gray-400 px-1 mb-2">
+                    Shop By Department & Sub-Category
+                  </p>
+                  <div className="space-y-1.5">
+                    {CATEGORIES_CATALOG.map((cat) => {
+                      const isExpanded = mobileExpandedCat === cat.slug
+                      return (
+                        <div
+                          key={cat.slug}
+                          className="rounded-xl border border-gray-200 overflow-hidden bg-white"
+                        >
+                          <div className="flex items-center justify-between px-3 py-2.5 bg-[#F4F6F9]/70">
+                            <button
+                              onClick={() =>
+                                setMobileExpandedCat(isExpanded ? null : cat.slug)
+                              }
+                              className="flex items-center gap-2.5 flex-1 text-left"
+                            >
+                              <span className="text-lg">{cat.emoji || cat.icon}</span>
+                              <div>
+                                <p className="text-xs font-extrabold text-[#1A2A49]">
+                                  {cat.name}
+                                </p>
+                                <p className="text-[10px] text-gray-500">
+                                  {cat.subcategories.length} Sub-Categories • From ₹{cat.startingPrice}
+                                </p>
+                              </div>
+                            </button>
+                            <button
+                              onClick={() =>
+                                setMobileExpandedCat(isExpanded ? null : cat.slug)
+                              }
+                              className="p-1 text-[#1A2A49]"
+                            >
+                              <ChevronDown
+                                size={15}
+                                className={`transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                              />
+                            </button>
+                          </div>
+
+                          {isExpanded && (
+                            <div className="p-2 bg-white border-t border-gray-100 space-y-1">
+                              {cat.subcategories.map((sub) => (
+                                <button
+                                  key={sub.id}
+                                  onClick={() => {
+                                    setMobileDrawerOpen(false)
+                                    navigate(`/services/${cat.slug}?sub=${sub.id}`)
+                                  }}
+                                  className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-[#F4F6F9] flex items-center justify-between text-xs font-semibold text-[#1A2A49]"
+                                >
+                                  <span className="flex items-center gap-2">
+                                    <span>{sub.icon}</span>
+                                    <span>{sub.name}</span>
+                                  </span>
+                                  <ChevronRight size={13} className="text-[#F37021]" />
+                                </button>
+                              ))}
+                              <button
+                                onClick={() => {
+                                  setMobileDrawerOpen(false)
+                                  navigate(`/services/${cat.slug}`)
+                                }}
+                                className="w-full text-center py-1.5 mt-1 rounded-lg bg-[#FFF3EC] text-[#F37021] text-[11px] font-extrabold"
+                              >
+                                View All {cat.shortName} Services →
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Drawer Footer: Portals & Account */}
+              <div className="p-3 bg-[#F4F6F9] border-t border-gray-200 space-y-1.5">
+                <button
+                  onClick={() => {
+                    setMobileDrawerOpen(false)
+                    navigate("/track")
+                  }}
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-extrabold text-[#1A2A49] flex items-center justify-between"
+                >
+                  <span className="flex items-center gap-2">
+                    <ShieldCheck size={15} className="text-emerald-600" /> Track Bookings & Dual-PINs
+                  </span>
+                  <ChevronRight size={14} />
+                </button>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    onClick={() => {
+                      setMobileDrawerOpen(false)
+                      navigate("/engineer")
+                    }}
+                    className="px-2.5 py-2 rounded-xl bg-[#1A2A49] text-white text-[11px] font-bold flex items-center justify-center gap-1.5"
+                  >
+                    <Wrench size={13} className="text-[#F37021]" /> Engineer App
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMobileDrawerOpen(false)
+                      navigate("/admin")
+                    }}
+                    className="px-2.5 py-2 rounded-xl bg-[#1A2A49] text-white text-[11px] font-bold flex items-center justify-center gap-1.5"
+                  >
+                    <LayoutDashboard size={13} className="text-amber-400" /> Admin Desk
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ===================================================================== */}
       {/* 🖥️ DESKTOP 3-TIER HEADER & FLIPKART/AMAZON HOVER MEGA-MENU             */}
