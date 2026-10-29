@@ -1,11 +1,14 @@
+// src/pages/EditProfilePage.jsx
 import { useState } from "react"
 import { useApp } from "../AppContext"
+import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
 import { User, Mail, Phone } from "lucide-react"
 import BackButton from "../components/BackButton"
 
 export default function EditProfilePage() {
-  const { user, setUser } = useApp()
+  const { user, updateUser } = useApp()
+  const navigate = useNavigate()
   const [form, setForm] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -22,10 +25,9 @@ export default function EditProfilePage() {
       toast.error("Name and Email are required ❌")
       return
     }
-    const updated = { ...user, ...form }
-    localStorage.setItem("pluggy_user", JSON.stringify(updated))
-    setUser(updated)
+    updateUser(form)
     toast.success("Profile updated successfully ✅")
+    navigate("/account")
   }
 
   return (
@@ -33,13 +35,11 @@ export default function EditProfilePage() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
         <BackButton />
         {/* Header */}
-        <div className="mb-6 text-center">
+        <div className="mb-6 text-center mt-2">
           <div className="h-20 w-20 mx-auto rounded-full bg-[#1A2A49] text-white flex items-center justify-center text-2xl font-bold">
             {form.name ? form.name.charAt(0).toUpperCase() : <User size={28} />}
           </div>
-          <h2 className="text-xl font-bold text-[#1A2A49] mt-3">
-            Edit Profile
-          </h2>
+          <h2 className="text-xl font-bold text-[#1A2A49] mt-3">Edit Profile</h2>
           <p className="text-sm text-gray-500">
             Update your personal information below
           </p>

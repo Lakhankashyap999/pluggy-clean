@@ -1,7 +1,7 @@
 // src/pages/ServiceDetail.jsx
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  ChevronLeft, Star, Wrench, Info, ChevronDown, Home,
+  ChevronLeft, Star, Info, ChevronDown, Home,
   Shield, Clock, Award, Sparkles, CheckCircle2, MapPin,
   Tag, ShoppingBag
 } from "lucide-react";
@@ -132,46 +132,49 @@ function findOriginalPrice(issue, categoryKey) {
   return GENERIC_ORIGINAL;
 }
 
-// ========================= COMPONENT START =========================
 export default function ServiceDetail() {
-  const { category, sub } = useParams();
+  const params = useParams();
+  const category = params.category || params.id;
+  const sub = params.sub;
   const navigate = useNavigate();
-  const { user, addToCart, removeFromCart, cart } = useApp();
+  const { user, addToCart, removeFromCart, cart, address: savedAddress, setAddress: setGlobalAddress, addRecent } = useApp();
 
   const defaultCategory = allServiceKeys[0];
-  const [currentCategory, setCurrentCategory] = useState(defaultCategory);
+  const [currentCategory, setCurrentCategory] = useState(
+    category && serviceData[category] ? category : defaultCategory
+  );
   const [currentSubcategory, setCurrentSubcategory] = useState(null);
   const [selectedItems, setSelectedItems] = useState([]);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [cartOpen, setCartOpen] = useState(false);
-  const [address, setAddress] = useState("");
+  const [address, setAddress] = useState(savedAddress || "");
+
+  useEffect(() => {
+    if (savedAddress && !address) {
+      setAddress(savedAddress);
+    }
+  }, [savedAddress]);
 
   useEffect(() => {
     if (category && serviceData[category]) {
       setCurrentCategory(category);
-      setCurrentSubcategory(null);
+      addRecent(serviceData[category].title);
+      const subList = Object.keys(categoryTree[category]?.subcategories || {});
       if (sub) {
-        const subList = Object.keys(categoryTree[category]?.subcategories || {});
         const cleaned = subList.find(
           s => s.toLowerCase().replace(/ /g, "-") === sub.toLowerCase()
         );
-        if (cleaned) setCurrentSubcategory(cleaned);
+        setCurrentSubcategory(cleaned || subList[0] || null);
+      } else {
+        // Auto-select first subcategory so user immediately sees issues
+        setCurrentSubcategory(subList[0] || null);
       }
     }
   }, [category, sub]);
 
-  // Force scroll to top on mount
-useEffect(() => {
-  window.scrollTo({ top: 0, behavior: "instant" });
-}, []);
-
-// Scroll to top when category/subcategory changes
-useEffect(() => {
-  window.scrollTo({ top: 0, behavior: "instant" });
-  setTimeout(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, 10);
-}, [currentCategory, currentSubcategory]);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [currentCategory, currentSubcategory]);
 
   const currentService = serviceData[currentCategory];
   if (!currentService) {
@@ -286,12 +289,13 @@ useEffect(() => {
   const subtotal = selectedItems.reduce((sum, i) => sum + i.price, 0);
   const originalSubtotal = selectedItems.reduce((sum, i) => sum + findOriginalPrice(i.issue, i.categoryKey), 0);
   const savings = originalSubtotal - subtotal;
-  const discount = selectedItems.length >= 3 ? subtotal * 0.15 : selectedItems.length === 2 ? subtotal * 0.1 : 0;
+  const discount = selectedItems.length >= 3 ? Math.round(subtotal * 0.15) : selectedItems.length === 2 ? Math.round(subtotal * 0.1) : 0;
   const finalTotal = subtotal + labourCharge - discount;
 
   const handleCategoryChange = (key) => {
     setCurrentCategory(key);
-    setCurrentSubcategory(null);
+    const subList = Object.keys(categoryTree[key]?.subcategories || {});
+    setCurrentSubcategory(subList[0] || null);
     navigate(`/services/${key}`);
   };
 
@@ -301,24 +305,24 @@ useEffect(() => {
   };
 
   const handleBack = () => {
-    if (currentSubcategory) {
-      setCurrentSubcategory(null);
-      navigate(`/services/${currentCategory}`);
-    } else {
-      navigate("/");
-      setTimeout(() => {
-        document.getElementById("our-services")?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
-    }
+    navigate("/");
   };
 
   const handleProceed = () => {
     protect(() => {
-      if (!address) {
-        toast.error("Please enter address!");
+      if (!address.trim()) {
+        toast.error("Please enter service address!");
         return;
       }
-      navigate(`/request/${currentCategory}`, { state: { selectedItems, finalTotal, address } });
+      setGlobalAddress(address.trim());
+      navigate(`/request/${currentCategory}`, {
+        state: {
+          selectedItems,
+          selectedIssue: selectedItems.map(i => i.issue).join(", "),
+          finalTotal,
+          address: address.trim(),
+        },
+      });
     });
   };
 
@@ -450,7 +454,7 @@ useEffect(() => {
             </motion.div>
 
             {/* Issues Section */}
-            {currentSubcategory && (
+            {currentSubcategory && categoryTree[currentCategory]?.subcategories?.[currentSubcategory] && (
               <motion.div 
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
@@ -484,7 +488,7 @@ useEffect(() => {
                         transition={{ delay: idx * 0.03 }}
                         className="flex items-center justify-between p-2.5 sm:p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition"
                       >
-                        <div className="flex items-center gap-2 sm:gap-3">
+                        <label className="flex items-center gap-2 sm:gap-3 cursor-pointer flex-1">
                           <input
                             type="checkbox"
                             className="w-4 h-4 sm:w-5 sm:h-5 accent-[#F37021] rounded"
@@ -492,7 +496,7 @@ useEffect(() => {
                             onChange={() => toggleSelectIssue(currentCategory, currentSubcategory, issueName)}
                           />
                           <span className="text-gray-800 font-medium text-xs sm:text-sm">{issueName}</span>
-                        </div>
+                        </label>
                         
                         <div className="relative flex items-center gap-1.5 sm:gap-2">
                           <span className="text-[10px] sm:text-xs text-gray-400 line-through hidden sm:inline">₹{originalPrice}</span>
@@ -542,11 +546,16 @@ useEffect(() => {
               <button
                 onClick={() => protect(() => {
                   const issueName = "Engineer Visit for Diagnosis";
+                  if (selectedItems.some(s => s.issue === issueName)) {
+                    toast.success("Engineer visit already added");
+                    return;
+                  }
                   addToCart({
                     categoryKey: currentCategory,
                     subcategory: currentSubcategory || "General",
                     issue: issueName,
                     price: 49,
+                    originalPrice: 99,
                     service: serviceData[currentCategory].title
                   });
                   setSelectedItems(prev => [...prev, {
@@ -620,7 +629,7 @@ useEffect(() => {
                       {discount > 0 && (
                         <div className="flex justify-between text-green-600">
                           <span>Bulk Discount</span>
-                          <span>-₹{Math.round(discount)}</span>
+                          <span>-₹{discount}</span>
                         </div>
                       )}
                       <div className="flex justify-between font-bold text-[#1A2A49] text-sm sm:text-base pt-2 border-t">
@@ -721,5 +730,5 @@ useEffect(() => {
       {/* Cart Popup */}
       <Cart open={cartOpen} onClose={() => setCartOpen(false)} />
     </div>
-  )
+  );
 }

@@ -1,5 +1,5 @@
 // src/App.jsx
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useState, useEffect } from "react";
 
@@ -51,7 +51,7 @@ export default function App() {
   useEffect(() => {
     const handleLoad = () => setLoading(false);
     window.addEventListener("load", handleLoad);
-    const timer = setTimeout(() => setLoading(false), 4500);
+    const timer = setTimeout(() => setLoading(false), 1800);
     return () => {
       window.removeEventListener("load", handleLoad);
       clearTimeout(timer);
@@ -90,11 +90,13 @@ export default function App() {
           <Route path="/account/coupons" element={<CouponsPage />} />
           <Route path="/account/notifications" element={<NotificationsPage />} />
           <Route path="/account/services" element={<ServicesPage />} />
-          <Route path="/services/:id" element={<ServiceDetail />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/services/:category" element={<ServiceDetail />} />
           <Route path="/services/:category/:sub" element={<ServiceDetail />} />
           <Route path="/request/:service" element={<RequestForm />} />
           <Route path="/engineer-login" element={<EngineerLogin />} />
           <Route path="/engineer" element={<EngineerDashboard />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
@@ -108,7 +110,7 @@ export default function App() {
         containerStyle={{ bottom: 85 }}
         toastOptions={{
           duration: 3000,
-          style: { background: '#1A2A49', color: '#fff', borderRadius: '50px', padding: '10px 16px', fontSize: '13px', fontWeight: '500', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)', maxWidth: '300px' },
+          style: { background: '#1A2A49', color: '#fff', borderRadius: '50px', padding: '10px 16px', fontSize: '13px', fontWeight: '500', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)', maxWidth: '320px' },
           success: { style: { background: '#10B981' }, iconTheme: { primary: 'white', secondary: '#10B981' } },
           error: { style: { background: '#EF4444' }, iconTheme: { primary: 'white', secondary: '#EF4444' }, duration: 4000 },
         }}

@@ -1,13 +1,43 @@
 // src/components/account/SupportCard.jsx
 import { motion } from "framer-motion"
 import { HelpCircle, MessageCircle, FileText, Phone, ExternalLink } from "lucide-react"
+import toast from "react-hot-toast"
 
 export default function SupportCard() {
   const supportOptions = [
-    { icon: HelpCircle, label: "Help Center", desc: "FAQs and guides", color: "text-blue-600" },
-    { icon: MessageCircle, label: "Live Chat", desc: "Usually replies in 5 mins", color: "text-green-600", badge: "Online" },
-    { icon: FileText, label: "Raise a Ticket", desc: "Get email support", color: "text-purple-600" },
-    { icon: Phone, label: "Call Support", desc: "+91 98765 43210", color: "text-orange-600" },
+    {
+      icon: HelpCircle,
+      label: "Help Center",
+      desc: "FAQs and guides",
+      color: "text-blue-600",
+      action: () => toast("All services include a 30-day Pluggy warranty!", { icon: "💡" }),
+    },
+    {
+      icon: MessageCircle,
+      label: "Live Chat",
+      desc: "Usually replies in 5 mins",
+      color: "text-green-600",
+      badge: "Online",
+      action: () => toast.success("Connecting you to a Pluggy support agent..."),
+    },
+    {
+      icon: FileText,
+      label: "Raise a Ticket",
+      desc: "support@pluggy.in",
+      color: "text-purple-600",
+      action: () => {
+        window.location.href = "mailto:support@pluggy.in?subject=Pluggy%20Support%20Request"
+      },
+    },
+    {
+      icon: Phone,
+      label: "Call Support",
+      desc: "+91 98765 43210",
+      color: "text-orange-600",
+      action: () => {
+        window.location.href = "tel:+919876543210"
+      },
+    },
   ]
 
   return (
@@ -18,6 +48,7 @@ export default function SupportCard() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.05 }}
+          onClick={option.action}
           className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition"
         >
           <div className="flex items-center gap-3">

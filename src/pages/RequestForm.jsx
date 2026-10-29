@@ -12,44 +12,61 @@ export default function RequestForm() {
   const { service } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
-  const { user, addRequest } = useApp()
+  const { user, addRequest, address: savedAddress, setAddress: setGlobalAddress, clearCart } = useApp()
 
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [paymentOpen, setPaymentOpen] = useState(false)
-  const cleanService = service.replace(/-/g, " ")
+  const cleanService = (service || "Home Service").replace(/-/g, " ")
+
+  const initialIssue =
+    (Array.isArray(location.state?.selectedItems) && location.state.selectedItems.length > 0
+      ? location.state.selectedItems.map((i) => i.issue).join(", ")
+      : "") ||
+    location.state?.selectedIssue?.issue ||
+    (typeof location.state?.selectedIssue === "string" ? location.state.selectedIssue : "") ||
+    cleanService
+
+  const resolvedAmount =
+    location.state?.finalTotal ||
+    location.state?.finalAmount ||
+    249
 
   const [form, setForm] = useState({
     name: user?.name || "",
     email: user?.email || "",
     phone: user?.phone || "",
-    issue:
-      location.state?.selectedIssue?.issue ||
-      location.state?.selectedIssue ||
-      "",
-    address: location.state?.address || "", // ✅ address from ServiceDetail
+    issue: initialIssue,
+    address: location.state?.address || savedAddress || "",
   })
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  const saveRequest = async () => {
-    const created_at = new Date().toLocaleString()
+  const saveRequest = async (transactionId) => {
+    const createdAt = new Date().toISOString()
+    if (form.address) setGlobalAddress(form.address)
+
     const newReq = {
       id: Date.now(),
-      service: cleanService,
-      name: form.name,
-      email: form.email,
-      phone: form.phone,
+      transactionId: transactionId || `PLG${String(Date.now()).slice(-8)}`,
+      service: cleanService.replace(/\b\w/g, (c) => c.toUpperCase()),
+      userName: form.name,
+      userEmail: form.email,
+      userPhone: form.phone,
       issue: form.issue,
-      amount: location.state?.finalTotal || 0,
-      address: form.address, // ✅ save address
-      status: "Confirmed",
-      created_at,
+      amount: resolvedAmount,
+      address: form.address,
+      userAddress: form.address,
+      status: "PENDING_EXECUTIVE",
+      createdAt,
     }
 
     addRequest(newReq)
+    if (Array.isArray(location.state?.selectedItems) && location.state.selectedItems.length > 0) {
+      clearCart()
+    }
 
     try {
       await sendRequestEmail({
@@ -60,12 +77,12 @@ export default function RequestForm() {
         issue: form.issue,
         amount: newReq.amount,
         address: form.address,
-        created_at,
+        created_at: new Date(createdAt).toLocaleString(),
       })
-      toast.success("Request submitted & emailed ✅")
+      toast.success("Booking confirmed! ✅")
     } catch (err) {
       console.error(err)
-      toast.error("Request saved but email failed ❌")
+      toast.success("Booking saved! ✅")
     } finally {
       setSubmitted(true)
     }
@@ -73,11 +90,11 @@ export default function RequestForm() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (!form.issue) {
-      toast.error("Please select an issue first ❌")
+    if (!form.issue.trim()) {
+      toast.error("Please describe your issue first ❌")
       return
     }
-    if (!form.address) {
+    if (!form.address.trim()) {
       toast.error("Please enter service address ❌")
       return
     }
@@ -85,7 +102,7 @@ export default function RequestForm() {
     setTimeout(() => {
       setLoading(false)
       setPaymentOpen(true)
-    }, 800)
+    }, 500)
   }
 
   // ✅ Success Page
@@ -101,20 +118,20 @@ export default function RequestForm() {
           </h2>
           <p className="text-gray-600 mt-2">
             Your request for{" "}
-            <span className="font-semibold">{cleanService}</span> has been
+            <span className="font-semibold capitalize">{cleanService}</span> has been
             received.
           </p>
 
           <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={() => navigate("/account/track")}
-              className="px-5 py-2 rounded-lg bg-[#1A2A49] text-white hover:bg-[#223a61]"
+              className="px-5 py-2.5 rounded-xl bg-[#1A2A49] text-white hover:bg-[#223a61] font-medium"
             >
               Track your request
             </button>
             <button
               onClick={() => navigate("/")}
-              className="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+              className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
             >
               Back to Home
             </button>
@@ -180,7 +197,7 @@ export default function RequestForm() {
       {/* Form Section */}
       <div className="max-w-6xl mx-auto px-4 py-6 sm:py-10 grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Info Box */}
-        <div className="bg-white rounded-2xl shadow-sm border p-5 sm:p-6">
+        <div className="bg-white rounded-2xl shadow-sm border p-5 sm:p-6 h-fit">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-[#1A2A49] text-white flex items-center justify-center">
               <AlarmClock size={20} />
@@ -189,7 +206,7 @@ export default function RequestForm() {
               <h2 className="text-lg font-semibold text-[#1A2A49]">
                 Raise a Request
               </h2>
-              <p className="text-xs text-gray-500">{cleanService}</p>
+              <p className="text-xs text-gray-500 capitalize">{cleanService}</p>
             </div>
           </div>
           <div className="mt-6 space-y-3">
@@ -202,7 +219,7 @@ export default function RequestForm() {
             <div className="flex items-start gap-3">
               <Info size={18} className="text-[#1A2A49]" />
               <p className="text-sm text-gray-600">
-                Please describe the issue clearly.
+                Estimated Total: <span className="font-bold text-[#1A2A49]">₹{resolvedAmount}</span> (incl. visit/labour charges)
               </p>
             </div>
           </div>
@@ -213,7 +230,7 @@ export default function RequestForm() {
           <h3 className="text-lg font-semibold text-[#1A2A49] mb-4">
             Your Details
           </h3>
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <input
               name="name"
               value={form.name}
@@ -227,9 +244,8 @@ export default function RequestForm() {
               type="email"
               value={form.email}
               onChange={handleChange}
-              placeholder="Email Address"
+              placeholder="Email Address (Optional)"
               className="w-full rounded-lg border px-4 py-3 text-sm"
-              required
             />
             <input
               name="phone"
@@ -248,7 +264,7 @@ export default function RequestForm() {
                 value={form.address}
                 onChange={handleChange}
                 placeholder="Service Address"
-                className="flex-1 outline-none text-sm"
+                className="flex-1 outline-none text-sm py-1"
                 required
               />
             </div>
@@ -263,11 +279,6 @@ export default function RequestForm() {
               required
             />
 
-            <div className="text-xs text-gray-500 -mt-2">
-              Note: Labour charge ₹50 will be added to the selected issue
-              charge at payment step.
-            </div>
-
             <div className="flex justify-end gap-3 pt-4 border-t">
               <button
                 type="button"
@@ -279,9 +290,9 @@ export default function RequestForm() {
               <button
                 type="submit"
                 disabled={loading}
-                className="px-5 py-2 rounded-lg bg-[#1A2A49] text-white hover:bg-[#223a61] disabled:opacity-60"
+                className="px-5 py-2 rounded-lg bg-[#1A2A49] text-white hover:bg-[#223a61] disabled:opacity-60 font-medium"
               >
-                {loading ? "Submitting..." : "Submit Request"}
+                {loading ? "Processing..." : `Proceed to Pay ₹${resolvedAmount}`}
               </button>
             </div>
           </form>
@@ -292,8 +303,8 @@ export default function RequestForm() {
       <PaymentPopup
         open={paymentOpen}
         onClose={() => setPaymentOpen(false)}
-        amount={location.state?.finalTotal || 0}
-        onSuccess={() => saveRequest()}
+        amount={resolvedAmount}
+        onSuccess={(txId) => saveRequest(txId)}
       />
     </div>
   )

@@ -16,12 +16,13 @@ import {
   Sparkles,
   AlertTriangle,
   Navigation,
+  TicketPercent,
 } from "lucide-react"
-import PaymentPopup from "../components/PaymentPopup"  // ✅ ADDED
+import PaymentPopup from "../components/PaymentPopup"
 
 export default function BookService() {
   const navigate = useNavigate()
-  const { user, addBooking, addRequest } = useApp()
+  const { user, addRequest, address: savedAddress, appliedCoupon } = useApp()
 
   // Form State
   const [selectedService, setSelectedService] = useState(null)
@@ -29,7 +30,7 @@ export default function BookService() {
   const [formData, setFormData] = useState({
     name: user?.name || "",
     phone: user?.phone || "",
-    address: "",
+    address: savedAddress || "",
     issue: "",
   })
 
@@ -39,7 +40,7 @@ export default function BookService() {
   const [isFormDirty, setIsFormDirty] = useState(false)
   const [addressSuggestions, setAddressSuggestions] = useState([])
   const [showSuggestions, setShowSuggestions] = useState(false)
-  const [showPayment, setShowPayment] = useState(false)  // ✅ ADDED
+  const [showPayment, setShowPayment] = useState(false)
 
   // Services Data with Images
   const services = [
@@ -101,19 +102,19 @@ export default function BookService() {
         ...prev,
         name: user.name || "",
         phone: user.phone || "",
+        address: prev.address || savedAddress || "",
       }))
     }
-  }, [user])
+  }, [user, savedAddress])
 
   // Track form dirty state
   useEffect(() => {
     const hasData =
       selectedService !== null ||
       selectedTimeSlot !== null ||
-      formData.address.trim() !== "" ||
       formData.issue.trim() !== ""
     setIsFormDirty(hasData)
-  }, [selectedService, selectedTimeSlot, formData])
+  }, [selectedService, selectedTimeSlot, formData.issue])
 
   // Mock address autocomplete
   const handleAddressChange = (value) => {
@@ -140,13 +141,19 @@ export default function BookService() {
 
   // Calculate Price
   const calculatePrice = () => {
-    if (!selectedService) return { service: 0, visit: 0, total: 0 }
+    if (!selectedService) return { service: 0, visit: 0, discount: 0, total: 0 }
     const servicePrice = services.find((s) => s.id === selectedService)?.startingPrice || 0
     const visitFee = 50
+    const discount = appliedCoupon
+      ? appliedCoupon.type === "percent"
+        ? Math.round((servicePrice * appliedCoupon.value) / 100)
+        : Math.min(appliedCoupon.value, servicePrice)
+      : 0
     return {
       service: servicePrice,
       visit: visitFee,
-      total: servicePrice + visitFee,
+      discount,
+      total: Math.max(0, servicePrice + visitFee - discount),
     }
   }
 
@@ -174,7 +181,7 @@ export default function BookService() {
     setPendingNavigation(null)
   }
 
-  // Submit Booking - Opens Payment Popup ✅ CHANGED
+  // Submit Booking - Opens Payment Popup
   const handleSubmit = () => {
     if (!user) {
       toast.error("Please login first!")
@@ -197,36 +204,33 @@ export default function BookService() {
       return
     }
 
-    // Open Payment Popup
     setShowPayment(true)
   }
 
-  // Payment Success Handler ✅ ADDED
+  // Payment Success Handler
   const handlePaymentSuccess = (transactionId) => {
     const serviceData = services.find((s) => s.id === selectedService)
 
     const bookingObj = {
       id: Date.now(),
-      transactionId: transactionId, // ✅ Save transaction ID
+      transactionId: transactionId,
       userId: user.id || user.email,
       userName: formData.name,
       userPhone: formData.phone,
       userAddress: formData.address,
+      address: formData.address,
       service: serviceData.name,
       issue: formData.issue || "General Service",
       timeSlot: selectedTimeSlot,
-      date: new Date().toLocaleDateString(),
+      date: new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
       status: "PENDING_EXECUTIVE",
       amount: price.total,
       createdAt: new Date().toISOString(),
+      selectedIssues: formData.issue ? [formData.issue] : [],
+      priority: "Medium",
     }
 
-    addBooking(bookingObj)
-    addRequest({
-      ...bookingObj,
-      selectedIssues: [],
-      priority: "Medium",
-    })
+    addRequest(bookingObj)
 
     toast.success("Booking Confirmed! Executive will call you shortly.")
     setIsFormDirty(false)
@@ -234,7 +238,6 @@ export default function BookService() {
     navigate("/account/track")
   }
 
-  // Check if form is valid
   const isFormValid = selectedService && selectedTimeSlot && formData.address.trim()
 
   return (
@@ -263,7 +266,7 @@ export default function BookService() {
       </div>
 
       {/* ====== Main Content ====== */}
-      <div className="max-w-4xl mx-auto px-4 py-6 pb-24">
+      <div className="max-w-4xl mx-auto px-4 py-6 pb-28">
         {/* Trust Badges */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -522,6 +525,14 @@ export default function BookService() {
                 <span className="text-gray-600">Visit Fee</span>
                 <span>₹{price.visit}</span>
               </div>
+              {price.discount > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span className="flex items-center gap-1">
+                    <TicketPercent size={14} /> Coupon ({appliedCoupon?.code})
+                  </span>
+                  <span>-₹{price.discount}</span>
+                </div>
+              )}
               <div className="border-t pt-2 mt-2 flex justify-between font-bold text-[#1A2A49]">
                 <span>Total</span>
                 <span>₹{price.total}</span>
@@ -547,7 +558,7 @@ export default function BookService() {
                 : "bg-gray-300 cursor-not-allowed"
             }`}
           >
-            {isFormValid ? "🚀 Confirm & Book" : "Fill all required fields"}
+            {isFormValid ? `🚀 Confirm & Book (₹${price.total})` : "Fill all required fields"}
           </button>
           <p className="text-xs text-gray-500 text-center mt-2">
             ✅ No hidden charges • Free cancellation
@@ -600,7 +611,7 @@ export default function BookService() {
         )}
       </AnimatePresence>
 
-      {/* ====== Payment Popup ====== ✅ ADDED */}
+      {/* ====== Payment Popup ====== */}
       <PaymentPopup
         open={showPayment}
         onClose={() => setShowPayment(false)}

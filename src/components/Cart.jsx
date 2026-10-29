@@ -1,21 +1,39 @@
 // src/components/Cart.jsx
 import { useState } from "react"
-import { X, ShoppingBag, Trash2, MapPin, ArrowRight, Shield, Package } from "lucide-react"
+import { X, ShoppingBag, Trash2, MapPin, ArrowRight, Shield, Package, TicketPercent } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useNavigate } from "react-router-dom"
 import { useApp } from "../AppContext"
 import PaymentPopup from "./PaymentPopup"
 import toast from "react-hot-toast"
 
 export default function Cart({ open, onClose }) {
-  const { cart, removeFromCart, clearCart, addRequest, user, address, setAddress } = useApp()
+  const navigate = useNavigate()
+  const {
+    cart,
+    removeFromCart,
+    clearCart,
+    addRequest,
+    user,
+    address,
+    setAddress,
+    appliedCoupon,
+  } = useApp()
   const [tempAddress, setTempAddress] = useState("")
   const [showAddressForm, setShowAddressForm] = useState(false)
   const [showPayment, setShowPayment] = useState(false)
 
-  const subtotal = cart.reduce((sum, item) => sum + (item.price || 0), 0)
+  const subtotal = cart.reduce((sum, item) => sum + Number(item.price || 0), 0)
   const labourCharge = cart.length > 0 ? 50 : 0
-  const discount = cart.length >= 3 ? subtotal * 0.15 : cart.length === 2 ? subtotal * 0.1 : 0
-  const finalTotal = subtotal + labourCharge - discount
+  const bundleDiscount =
+    cart.length >= 3 ? Math.round(subtotal * 0.15) : cart.length === 2 ? Math.round(subtotal * 0.1) : 0
+  const couponDiscount = appliedCoupon
+    ? appliedCoupon.type === "percent"
+      ? Math.round((subtotal * appliedCoupon.value) / 100)
+      : appliedCoupon.value
+    : 0
+  const discount = Math.max(bundleDiscount, couponDiscount)
+  const finalTotal = Math.max(0, subtotal + labourCharge - discount)
 
   const handleSaveAddress = () => {
     if (!tempAddress.trim()) {
@@ -44,11 +62,12 @@ export default function Cart({ open, onClose }) {
   const handlePaymentSuccess = (transactionId) => {
     const newRequest = {
       id: Date.now(),
-      transactionId: transactionId,
+      transactionId: transactionId || `PLG${Date.now().toString().slice(-8)}`,
       items: cart,
-      issue: cart.map(i => i.issue).join(", "),
-      service: cart.map(i => i.service || i.subcategory).join(", "),
+      issue: cart.map((i) => i.issue).join(", "),
+      service: [...new Set(cart.map((i) => i.service || i.subcategory || "Service"))].join(", "),
       address: address,
+      userAddress: address,
       amount: finalTotal,
       status: "PENDING_EXECUTIVE",
       createdAt: new Date().toISOString(),
@@ -61,6 +80,7 @@ export default function Cart({ open, onClose }) {
     setShowPayment(false)
     onClose()
     toast.success("Booking confirmed!")
+    navigate("/account/track")
   }
 
   const handleRemoveItem = (item) => {
@@ -81,7 +101,7 @@ export default function Cart({ open, onClose }) {
             className="fixed inset-0 z-50 flex justify-end font-inter"
           >
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-            
+
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
@@ -101,11 +121,16 @@ export default function Cart({ open, onClose }) {
                   <div>
                     <h2 className="text-base sm:text-lg font-bold text-[#1A2A49] font-poppins">Your Cart</h2>
                     {cart.length > 0 && (
-                      <p className="text-xs text-gray-500">{cart.length} item{cart.length !== 1 ? 's' : ''}</p>
+                      <p className="text-xs text-gray-500">
+                        {cart.length} item{cart.length !== 1 ? "s" : ""}
+                      </p>
                     )}
                   </div>
                 </div>
-                <button onClick={onClose} className="p-2 -mr-2 sm:mr-0 hover:bg-gray-100 rounded-full transition">
+                <button
+                  onClick={onClose}
+                  className="p-2 -mr-2 sm:mr-0 hover:bg-gray-100 rounded-full transition"
+                >
                   <X size={20} className="text-gray-500" />
                 </button>
               </div>
@@ -113,7 +138,7 @@ export default function Cart({ open, onClose }) {
               {/* Cart Items */}
               <div className="flex-1 overflow-y-auto bg-gray-50/50">
                 {cart.length === 0 ? (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="flex flex-col items-center justify-center h-full px-6 py-12 text-center"
@@ -121,9 +146,11 @@ export default function Cart({ open, onClose }) {
                     <div className="w-24 h-24 sm:w-28 sm:h-28 bg-white rounded-full flex items-center justify-center mb-5 shadow-md">
                       <Package size={40} className="text-gray-300" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-bold text-[#1A2A49] font-poppins mb-2">Your cart is empty</h3>
+                    <h3 className="text-lg sm:text-xl font-bold text-[#1A2A49] font-poppins mb-2">
+                      Your cart is empty
+                    </h3>
                     <p className="text-gray-500 text-sm mb-6">Add services to get started</p>
-                    <button 
+                    <button
                       onClick={onClose}
                       className="px-6 py-3 bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white rounded-full font-medium hover:shadow-lg transition text-sm"
                     >
@@ -145,22 +172,30 @@ export default function Cart({ open, onClose }) {
                           <div className="flex items-start gap-2 sm:gap-3">
                             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition flex-shrink-0">
                               <span className="text-xl sm:text-2xl">
-                                {item.categoryKey === "ac-repair" ? "❄️" : 
-                                 item.categoryKey === "fan-motor" ? "🌀" : 
-                                 item.categoryKey === "wiring" ? "⚡" : "🔌"}
+                                {item.categoryKey === "ac-repair"
+                                  ? "❄️"
+                                  : item.categoryKey === "fan-motor"
+                                  ? "🌀"
+                                  : item.categoryKey === "wiring"
+                                  ? "⚡"
+                                  : "🔌"}
                               </span>
                             </div>
                             <div className="flex-1 min-w-0">
                               <h4 className="font-semibold text-[#1A2A49] text-sm truncate">{item.issue}</h4>
-                              <p className="text-xs text-gray-500 mt-0.5 truncate">{item.service || item.subcategory || "Service"}</p>
+                              <p className="text-xs text-gray-500 mt-0.5 truncate">
+                                {item.service || item.subcategory || "Service"}
+                              </p>
                               <div className="flex items-center gap-2 mt-1.5">
                                 <span className="text-[#F37021] font-bold text-sm">₹{item.price}</span>
                                 {item.originalPrice && (
-                                  <span className="text-xs text-gray-400 line-through">₹{item.originalPrice}</span>
+                                  <span className="text-xs text-gray-400 line-through">
+                                    ₹{item.originalPrice}
+                                  </span>
                                 )}
                               </div>
                             </div>
-                            <button 
+                            <button
                               onClick={() => handleRemoveItem(item)}
                               className="p-2 sm:p-3 -mr-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition flex-shrink-0"
                             >
@@ -184,18 +219,18 @@ export default function Cart({ open, onClose }) {
                         <MapPin size={15} className="text-[#F37021]" /> Delivery Address
                       </label>
                       {address && !showAddressForm && (
-                        <button 
+                        <button
                           onClick={() => {
                             setTempAddress(address)
                             setShowAddressForm(true)
-                          }} 
+                          }}
                           className="text-xs text-[#F37021] font-medium hover:underline"
                         >
                           Change
                         </button>
                       )}
                     </div>
-                    
+
                     {address && !showAddressForm ? (
                       <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-700 border border-gray-100">
                         {address}
@@ -210,18 +245,18 @@ export default function Cart({ open, onClose }) {
                           rows={2}
                         />
                         <div className="flex gap-2">
-                          <button 
-                            onClick={handleSaveAddress} 
+                          <button
+                            onClick={handleSaveAddress}
                             className="flex-1 py-2.5 bg-[#1A2A49] text-white rounded-xl text-sm font-medium hover:bg-[#223a61] transition active:scale-[0.98]"
                           >
                             Save Address
                           </button>
                           {address && (
-                            <button 
+                            <button
                               onClick={() => {
                                 setShowAddressForm(false)
                                 setTempAddress("")
-                              }} 
+                              }}
                               className="px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50 transition"
                             >
                               Cancel
@@ -244,7 +279,12 @@ export default function Cart({ open, onClose }) {
                     </div>
                     {discount > 0 && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-green-600">Bundle Discount</span>
+                        <span className="text-green-600 flex items-center gap-1">
+                          <TicketPercent size={14} />
+                          {couponDiscount >= bundleDiscount && appliedCoupon
+                            ? `Coupon (${appliedCoupon.code})`
+                            : "Bundle Discount"}
+                        </span>
                         <span className="font-medium text-green-600">-₹{Math.round(discount)}</span>
                       </div>
                     )}
@@ -259,8 +299,8 @@ export default function Cart({ open, onClose }) {
                     onClick={handleCheckout}
                     disabled={!address}
                     className={`w-full py-3.5 rounded-full font-semibold text-white flex items-center justify-center gap-2 transition-all text-sm sm:text-base ${
-                      address 
-                        ? "bg-gradient-to-r from-[#F37021] to-[#FF8C42] hover:shadow-lg active:scale-[0.98]" 
+                      address
+                        ? "bg-gradient-to-r from-[#F37021] to-[#FF8C42] hover:shadow-lg active:scale-[0.98]"
                         : "bg-gray-300 cursor-not-allowed"
                     }`}
                   >

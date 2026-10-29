@@ -1,11 +1,14 @@
+// src/pages/ChangePasswordPage.jsx
 import { useState } from "react"
 import { useApp } from "../AppContext"
+import { useNavigate } from "react-router-dom"
 import { Lock } from "lucide-react"
 import toast from "react-hot-toast"
 import BackButton from "../components/BackButton"
 
 export default function ChangePasswordPage() {
-  const { user, setUser } = useApp()
+  const { user, updateUser } = useApp()
+  const navigate = useNavigate()
   const [current, setCurrent] = useState("")
   const [newPass, setNewPass] = useState("")
   const [confirm, setConfirm] = useState("")
@@ -18,7 +21,7 @@ export default function ChangePasswordPage() {
       return
     }
 
-    if (current !== user.password) {
+    if (user.password && current !== user.password) {
       toast.error("Current password is incorrect ❌")
       return
     }
@@ -33,21 +36,20 @@ export default function ChangePasswordPage() {
       return
     }
 
-    const updatedUser = { ...user, password: newPass }
-    localStorage.setItem("pluggy_user", JSON.stringify(updatedUser))
-    setUser(updatedUser)
+    updateUser({ password: newPass })
     toast.success("Password changed successfully 🎉")
 
     setCurrent("")
     setNewPass("")
     setConfirm("")
+    navigate("/account")
   }
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6">
       <div className="max-w-md mx-auto bg-white shadow rounded-xl p-6">
         <BackButton />
-        <h2 className="text-xl font-bold text-[#1A2A49] mb-4">
+        <h2 className="text-xl font-bold text-[#1A2A49] mb-4 mt-2">
           Change Password
         </h2>
 
@@ -94,7 +96,7 @@ export default function ChangePasswordPage() {
           {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-[#1A2A49] text-white py-2 rounded-lg hover:bg-[#223a61]"
+            className="w-full bg-[#1A2A49] text-white py-2.5 rounded-lg hover:bg-[#223a61] font-medium transition"
           >
             Update Password
           </button>

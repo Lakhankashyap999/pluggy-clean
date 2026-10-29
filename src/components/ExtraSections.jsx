@@ -1,9 +1,15 @@
+// src/components/ExtraSections.jsx
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { CalendarCheck, Wrench, CheckCircle2, Star, ChevronDown } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import { useApp } from "../AppContext"
+import toast from "react-hot-toast"
 
 export default function ExtraSections() {
   const [openIndex, setOpenIndex] = useState(null)
+  const navigate = useNavigate()
+  const { user, applyCouponCode } = useApp()
 
   const steps = [
     {
@@ -29,10 +35,22 @@ export default function ExtraSections() {
   ]
 
   const faqs = [
-    { q: "How do I book a service?", a: "Simply choose your desired service from the homepage, fill in your details, and confirm the booking." },
-    { q: "Are your technicians verified?", a: "Yes, all our technicians go through a strict background check and are trained professionals." },
-    { q: "What payment methods do you accept?", a: "We support UPI, Credit/Debit Cards, Netbanking, and Cash on Delivery." },
-    { q: "Do you provide service guarantee?", a: "Yes, we offer a 30-day service guarantee for all repairs and installations." },
+    {
+      q: "How do I book a service?",
+      a: "Simply choose your desired service from the homepage, fill in your details, and confirm the booking.",
+    },
+    {
+      q: "Are your technicians verified?",
+      a: "Yes, all our technicians go through a strict background check and are trained professionals.",
+    },
+    {
+      q: "What payment methods do you accept?",
+      a: "We support UPI, Credit/Debit Cards, Netbanking, and Cash on Delivery.",
+    },
+    {
+      q: "Do you provide service guarantee?",
+      a: "Yes, we offer a 30-day service guarantee for all repairs and installations.",
+    },
   ]
 
   const container = {
@@ -43,6 +61,16 @@ export default function ExtraSections() {
   const item = {
     hidden: { opacity: 0, y: 40 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  }
+
+  const handleBookCTA = () => {
+    applyCouponCode("PLUG20")
+    toast.success("Coupon PLUG20 (20% OFF) applied!")
+    if (!user) {
+      navigate("/login")
+    } else {
+      navigate("/book-service")
+    }
   }
 
   return (
@@ -158,7 +186,7 @@ export default function ExtraSections() {
             </h2>
             <p className="text-gray-200 mt-2">
               Book your first service today and enjoy 20% OFF with code{" "}
-              <span className="bg-white text-[#1A2A49] px-2 py-0.5 rounded">
+              <span className="bg-white text-[#1A2A49] px-2 py-0.5 rounded font-mono font-bold">
                 PLUG20
               </span>
             </p>
@@ -166,6 +194,7 @@ export default function ExtraSections() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={handleBookCTA}
             className="px-6 py-3 bg-white text-[#1A2A49] font-semibold rounded-lg shadow hover:bg-gray-100"
           >
             Book a Service

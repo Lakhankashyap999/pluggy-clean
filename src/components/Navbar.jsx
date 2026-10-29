@@ -10,14 +10,15 @@ import { motion, AnimatePresence } from "framer-motion"
 
 export default function Navbar() {
   const navigate = useNavigate()
-  const { user, logoutUser, cart, removeFromCart, city } = useApp()
-  
+  const { user, logoutUser, cart, removeFromCart, city, notifications, appliedCoupon } = useApp()
+
   const [cartOpen, setCartOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(null)
   const [locationOpen, setLocationOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
-  
-  // ✅ SCROLL DETECTION - Hide on scroll down, show on scroll up
+  const [mobileQuery, setMobileQuery] = useState("")
+
+  // Hide on scroll down, show on scroll up
   const [visible, setVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
 
@@ -30,13 +31,13 @@ export default function Navbar() {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
-      
+
       if (currentScrollY > lastScrollY && currentScrollY > 50) {
         setVisible(false)
       } else if (currentScrollY < lastScrollY) {
         setVisible(true)
       }
-      
+
       setLastScrollY(currentScrollY)
     }
 
@@ -44,7 +45,15 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [lastScrollY])
 
-  const finalTotal = cart.reduce((sum, i) => sum + i.price, 0) + (cart.length > 0 ? 50 : 0)
+  const unreadCount = (notifications || []).filter((n) => !n.read).length
+  const itemsTotal = cart.reduce((sum, i) => sum + Number(i.price || 0), 0)
+  const labourCharge = cart.length > 0 ? 50 : 0
+  const discount = appliedCoupon
+    ? appliedCoupon.type === "percent"
+      ? Math.round((itemsTotal * appliedCoupon.value) / 100)
+      : appliedCoupon.value
+    : 0
+  const finalTotal = Math.max(0, itemsTotal + labourCharge - discount)
 
   const handleRequireLogin = (callback) => {
     if (!user) {
@@ -55,10 +64,27 @@ export default function Navbar() {
     }
   }
 
+  const handleMobileSearchSubmit = (e) => {
+    e?.preventDefault()
+    if (!mobileQuery.trim()) return
+    const q = mobileQuery.trim().toLowerCase()
+    setSearchOpen(false)
+    setMobileQuery("")
+    if (q.includes("ac")) navigate("/services/ac-repair")
+    else if (q.includes("fan")) navigate("/services/fan-motor")
+    else if (q.includes("wir")) navigate("/services/wiring")
+    else if (q.includes("mcb") || q.includes("fuse") || q.includes("switch")) navigate("/services/mcb-repair")
+    else navigate(`/request/${q.replace(/\s+/g, "-")}`)
+  }
+
   return (
     <>
       {/* ====== MOBILE NAVBAR - HIDE ON SCROLL ====== */}
-      <div className={`md:hidden fixed top-0 left-0 right-0 bg-white z-50 transition-transform duration-300 ${visible ? 'translate-y-0' : '-translate-y-full'}`}>
+      <div
+        className={`md:hidden fixed top-0 left-0 right-0 bg-white z-50 transition-transform duration-300 ${
+          visible ? "translate-y-0" : "-translate-y-full"
+        }`}
+      >
         {/* Location Bar */}
         <div className="px-4 py-2 flex items-center justify-between">
           <button onClick={() => setLocationOpen(true)} className="flex items-center gap-1">
@@ -68,10 +94,15 @@ export default function Navbar() {
             </span>
             <ChevronDown size={14} className="text-gray-400" />
           </button>
-          
+
           <div className="flex items-center gap-2">
-            <button onClick={() => navigate("/account/notifications")} className="p-1.5">
+            <button onClick={() => navigate("/account/notifications")} className="p-1.5 relative">
               <Bell size={18} className="text-gray-700" />
+              {unreadCount > 0 && (
+                <span className="absolute top-0.5 right-0.5 bg-[#F37021] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                  {unreadCount}
+                </span>
+              )}
             </button>
             <button onClick={() => navigate(user ? "/account" : "/login")} className="p-1.5">
               <User size={18} className="text-gray-700" />
@@ -81,17 +112,20 @@ export default function Navbar() {
 
         {/* Search Bar */}
         <div className="px-4 pb-2">
-          <button onClick={() => setSearchOpen(true)} className="w-full flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 text-gray-500">
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="w-full flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 text-gray-500"
+          >
             <Search size={16} />
             <span className="text-sm">Search for services...</span>
           </button>
         </div>
-        
+
         {/* Thin border */}
         <div className="h-[1px] bg-gray-200" />
       </div>
 
-      {/* ====== DESKTOP NAVBAR - FIXED LOCATION WIDTH ====== */}
+      {/* ====== DESKTOP NAVBAR ====== */}
       <motion.nav
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -100,15 +134,19 @@ export default function Navbar() {
         <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between text-white">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-            <img src="/image/logos.png" alt="Pluggy" className="h-10 w-10 rounded-md filter brightness-0 invert" />
+            <img
+              src="/image/logos.png"
+              alt="Pluggy"
+              className="h-10 w-10 rounded-md filter brightness-0 invert"
+            />
             <span className="text-xl font-extrabold tracking-wider font-poppins">Pluggy</span>
           </Link>
 
           {/* Desktop Navigation Items */}
           <div className="flex items-center gap-5 text-sm">
-            {/* ✅ Location Selector - Fixed Width */}
-            <button 
-              onClick={() => setLocationOpen(true)} 
+            {/* Location Selector */}
+            <button
+              onClick={() => setLocationOpen(true)}
               className="flex items-center gap-1.5 text-white/90 hover:text-white transition px-3 py-1.5 rounded-full bg-white/10 max-w-[180px]"
             >
               <MapPin size={16} className="text-[#F37021] flex-shrink-0" />
@@ -118,10 +156,28 @@ export default function Navbar() {
 
             {user && (
               <>
-                <button onClick={() => navigate("/account/track")} className="flex items-center gap-2 hover:text-gray-300 transition whitespace-nowrap">
+                <button
+                  onClick={() => navigate("/account/notifications")}
+                  className="relative p-1.5 hover:text-gray-300 transition"
+                  title="Notifications"
+                >
+                  <Bell size={18} />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-[#F37021] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => navigate("/account/track")}
+                  className="flex items-center gap-2 hover:text-gray-300 transition whitespace-nowrap"
+                >
                   <ShoppingCart size={18} /> My Requests
                 </button>
-                <button onClick={() => setCartOpen(true)} className="flex items-center gap-2 hover:text-gray-300 transition relative whitespace-nowrap">
+                <button
+                  onClick={() => setCartOpen(true)}
+                  className="flex items-center gap-2 hover:text-gray-300 transition relative whitespace-nowrap"
+                >
                   <ShoppingCart size={18} /> Cart
                   {cart.length > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
@@ -133,11 +189,18 @@ export default function Navbar() {
             )}
 
             {!user ? (
-              <button onClick={() => navigate("/login")} className="px-4 py-1.5 bg-white text-[#1A2A49] rounded-full shadow hover:bg-gray-100 transition whitespace-nowrap">
+              <button
+                onClick={() => navigate("/login")}
+                className="px-4 py-1.5 bg-white text-[#1A2A49] rounded-full shadow hover:bg-gray-100 transition whitespace-nowrap"
+              >
                 Log in
               </button>
             ) : (
-              <div className="relative" onMouseEnter={() => setMenuOpen("user")} onMouseLeave={() => setMenuOpen(null)}>
+              <div
+                className="relative"
+                onMouseEnter={() => setMenuOpen("user")}
+                onMouseLeave={() => setMenuOpen(null)}
+              >
                 <button className="flex items-center gap-1 text-sm font-medium whitespace-nowrap">
                   <User size={16} />
                   <span className="font-semibold">{user.name?.split(" ")[0]}</span>
@@ -151,13 +214,33 @@ export default function Navbar() {
                       exit={{ opacity: 0, y: -6 }}
                       className="absolute right-0 mt-2 w-48 bg-white text-black shadow-lg rounded-xl border border-gray-100 z-50 overflow-hidden"
                     >
-                      <button onClick={() => { navigate("/account"); setMenuOpen(null) }} className="w-full text-left px-4 py-3 hover:bg-gray-50 transition flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          navigate("/account")
+                          setMenuOpen(null)
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-gray-50 transition flex items-center gap-2"
+                      >
                         <User size={16} /> My Account
                       </button>
-                      <button onClick={() => { navigate("/account/track"); setMenuOpen(null) }} className="w-full text-left px-4 py-3 hover:bg-gray-50 transition flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          navigate("/account/track")
+                          setMenuOpen(null)
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-gray-50 transition flex items-center gap-2"
+                      >
                         <ShoppingCart size={16} /> My Requests
                       </button>
-                      <div onClick={() => { logoutUser(); toast.success("Logged out"); navigate("/"); setMenuOpen(null) }} className="px-4 py-3 text-red-600 hover:bg-red-50 cursor-pointer flex items-center gap-2 transition">
+                      <div
+                        onClick={() => {
+                          logoutUser()
+                          toast.success("Logged out")
+                          navigate("/")
+                          setMenuOpen(null)
+                        }}
+                        className="px-4 py-3 text-red-600 hover:bg-red-50 cursor-pointer flex items-center gap-2 transition"
+                      >
                         <LogOut size={16} /> Logout
                       </div>
                     </motion.div>
@@ -173,12 +256,16 @@ export default function Navbar() {
       <AnimatePresence>
         {searchOpen && (
           <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-center items-end md:hidden"
             onClick={() => setSearchOpen(false)}
           >
             <motion.div
-              initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="bg-white rounded-t-3xl w-full p-5 shadow-2xl"
               onClick={(e) => e.stopPropagation()}
@@ -186,17 +273,65 @@ export default function Navbar() {
               <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-4" />
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-bold text-[#1A2A49]">Search Services</h3>
-                <button onClick={() => setSearchOpen(false)} className="p-2"><span className="text-gray-500 text-xl">✕</span></button>
+                <button onClick={() => setSearchOpen(false)} className="p-2">
+                  <span className="text-gray-500 text-xl">✕</span>
+                </button>
               </div>
-              <div className="relative mb-4">
+              <form onSubmit={handleMobileSearchSubmit} className="relative mb-4">
                 <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input type="text" placeholder="AC repair, fan, wiring..." className="w-full pl-12 pr-4 py-4 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#F37021]" autoFocus />
-              </div>
+                <input
+                  type="text"
+                  value={mobileQuery}
+                  onChange={(e) => setMobileQuery(e.target.value)}
+                  placeholder="AC repair, fan, wiring..."
+                  className="w-full pl-12 pr-20 py-4 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#F37021]"
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 bg-[#1A2A49] text-white text-xs font-semibold rounded-xl"
+                >
+                  Go
+                </button>
+              </form>
               <div className="space-y-1">
                 <p className="text-sm font-medium text-gray-500 mb-2">Popular Searches</p>
-                <button onClick={() => { navigate("/services/ac-repair"); setSearchOpen(false) }} className="w-full text-left px-4 py-3 hover:bg-gray-50 rounded-xl">AC Repair</button>
-                <button onClick={() => { navigate("/services/fan-motor"); setSearchOpen(false) }} className="w-full text-left px-4 py-3 hover:bg-gray-50 rounded-xl">Fan Motor</button>
-                <button onClick={() => { navigate("/services/wiring"); setSearchOpen(false) }} className="w-full text-left px-4 py-3 hover:bg-gray-50 rounded-xl">Wiring</button>
+                <button
+                  onClick={() => {
+                    navigate("/services/ac-repair")
+                    setSearchOpen(false)
+                  }}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-50 rounded-xl"
+                >
+                  AC Repair
+                </button>
+                <button
+                  onClick={() => {
+                    navigate("/services/fan-motor")
+                    setSearchOpen(false)
+                  }}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-50 rounded-xl"
+                >
+                  Fan Motor
+                </button>
+                <button
+                  onClick={() => {
+                    navigate("/services/wiring")
+                    setSearchOpen(false)
+                  }}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-50 rounded-xl"
+                >
+                  Wiring
+                </button>
+                <button
+                  onClick={() => {
+                    navigate("/services/mcb-repair")
+                    setSearchOpen(false)
+                  }}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-50 rounded-xl"
+                >
+                  MCB & Fuse
+                </button>
               </div>
             </motion.div>
           </motion.div>
@@ -204,18 +339,33 @@ export default function Navbar() {
       </AnimatePresence>
 
       {/* ====== LOCATION POPUP ====== */}
-      <LocationPopup open={locationOpen} onClose={() => setLocationOpen(false)} onSelect={() => setLocationOpen(false)} />
+      <LocationPopup
+        open={locationOpen}
+        onClose={() => setLocationOpen(false)}
+        onSelect={() => setLocationOpen(false)}
+      />
 
       {/* ====== CART POPUP ====== */}
       <Cart
         open={cartOpen && !!user}
         onClose={() => setCartOpen(false)}
         items={cart}
-        labourCharge={cart.length > 0 ? 50 : 0}
-        discount={0}
+        labourCharge={labourCharge}
+        discount={discount}
         finalTotal={finalTotal}
         onRemove={removeFromCart}
-        onProceed={() => handleRequireLogin(() => navigate("/request/ac-repair"))}
+        onProceed={() =>
+          handleRequireLogin(() => {
+            setCartOpen(false)
+            navigate("/request/cart-checkout", {
+              state: {
+                selectedItems: cart,
+                finalTotal,
+                fromCart: true,
+              },
+            })
+          })
+        }
       />
     </>
   )
