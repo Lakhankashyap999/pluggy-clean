@@ -173,7 +173,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-[#F4F6F9] pb-20 font-inter">
       {/* ================= DEDICATED ADMIN COMMAND TOP HEADER ================= */}
-      <header className="sticky top-0 z-40 bg-gradient-to-r from-[#0F172A] via-[#1A2A49] to-[#223a61] text-white shadow-lg border-b-2 border-[#F37021]">
+      <header className="lg:sticky top-0 z-40 bg-gradient-to-r from-[#0F172A] via-[#1A2A49] to-[#223a61] text-white shadow-lg border-b-2 border-[#F37021]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
@@ -196,20 +196,22 @@ export default function AdminDashboard() {
                 <h1 className="text-lg sm:text-xl font-extrabold mt-0.5">
                   {admin.name}
                 </h1>
-                <p className="text-blue-200 text-xs">
-                  Central Dispatch • Engineer ID & Access Management • Escrow
-                  Payment Ledger
+                <p className="text-blue-200 text-[11px] sm:text-xs leading-snug">
+                  <span className="hidden sm:inline">Central Dispatch • Engineer ID & Access Management • Escrow Payment Ledger</span>
+                  <span className="sm:hidden">Dispatch • Engineers • Escrow Ledger</span>
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="grid grid-cols-2 lg:flex items-center gap-2">
               <button
                 onClick={() => setActiveTab("fleet")}
-                className="px-3.5 py-2 rounded-xl bg-[#F37021] hover:bg-[#e05e15] text-white text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition active:scale-95"
+                className="px-3 py-2.5 rounded-xl bg-[#F37021] hover:bg-[#e05e15] text-white text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95"
               >
-                <Users size={14} /> Manage Engineers & Create ID (
-                {engineersList?.length || 0})
+                <Users size={14} className="shrink-0" />
+                <span className="truncate">
+                  Engineers & IDs ({engineersList?.length || 0})
+                </span>
               </button>
               <button
                 onClick={() => {
@@ -217,7 +219,7 @@ export default function AdminDashboard() {
                   toast.success("Logged out of Admin Control Desk");
                   navigate("/admin-login", { replace: true });
                 }}
-                className="px-3.5 py-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-400/30 text-red-200 text-xs font-bold flex items-center gap-1.5 transition"
+                className="px-3 py-2.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-400/30 text-red-200 text-xs font-bold flex items-center justify-center gap-1.5 transition"
               >
                 <LogOut size={14} /> Sign Out
               </button>
@@ -225,7 +227,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Admin KPI Strip */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4 pt-4 border-t border-white/10">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mt-3 pt-3 sm:mt-4 sm:pt-4 border-t border-white/10 [&>div]:!p-2.5 [&_p.text-xs]:!text-[11px] [&_p.text-2xl]:!text-xl sm:[&_p.text-2xl]:!text-2xl">
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/15">
               <p className="text-2xl font-extrabold text-amber-300">
                 {pendingVerificationCount}
@@ -265,7 +267,7 @@ export default function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         {/* Navigation Tabs */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 mb-6">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 mb-4 sm:mb-6 -mx-4 px-4 sm:mx-0 sm:px-0">
           <button
             onClick={() => setActiveTab("dispatch")}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-2 whitespace-nowrap transition ${
@@ -274,7 +276,7 @@ export default function AdminDashboard() {
                 : "bg-white text-gray-600 border border-gray-200 hover:border-[#F37021]"
             }`}
           >
-            <ClipboardCheck size={16} /> 1. Customer Requests & Dispatch (
+            <ClipboardCheck size={16} /> Dispatch (
             {requests?.length || 0})
           </button>
 
@@ -286,7 +288,7 @@ export default function AdminDashboard() {
                 : "bg-white text-gray-600 border border-gray-200 hover:border-[#F37021]"
             }`}
           >
-            <Users size={16} /> 2. Engineer Fleet, Edit & Create ID (
+            <Users size={16} /> Engineers (
             {engineersList?.length || 0})
           </button>
 
@@ -298,7 +300,7 @@ export default function AdminDashboard() {
                 : "bg-white text-gray-600 border border-gray-200 hover:border-[#F37021]"
             }`}
           >
-            <CreditCard size={16} /> 3. Payment Gateway Ledger (
+            <CreditCard size={16} /> Payments (
             {paymentTransactions?.length || 0})
           </button>
 
@@ -310,7 +312,7 @@ export default function AdminDashboard() {
                 : "bg-white text-gray-600 border border-gray-200 hover:border-[#F37021]"
             }`}
           >
-            <History size={16} /> 4. Order History Logs (
+            <History size={16} /> History (
             {orderHistoryLogs?.length || 0})
           </button>
 
@@ -325,7 +327,7 @@ export default function AdminDashboard() {
                 : "bg-white text-gray-600 border border-gray-200 hover:border-[#F37021]"
             }`}
           >
-            <Database size={16} /> 5. SQL Database Explorer
+            <Database size={16} /> SQL DB
           </button>
         </div>
 
@@ -345,7 +347,7 @@ export default function AdminDashboard() {
                   layout
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-white rounded-3xl p-5 shadow-sm border border-gray-200/90 space-y-4"
+                  className="bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-sm border border-gray-200/90 space-y-3 sm:space-y-4"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-gray-100">
                     <div className="flex flex-wrap items-center gap-2">
@@ -371,9 +373,9 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+                  <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 xl:items-center">
                     {/* Customer & Fault Info */}
-                    <div className="lg:col-span-5 space-y-1">
+                    <div className="xl:col-span-5 space-y-1">
                       <h3 className="font-extrabold text-base text-[#1A2A49]">
                         {req.service}
                       </h3>
@@ -392,7 +394,7 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* Executive Verification & Toolkit Assignment */}
-                    <div className="lg:col-span-4 space-y-2 bg-[#F4F6F9] p-3.5 rounded-2xl">
+                    <div className="xl:col-span-4 space-y-2 bg-[#F4F6F9] p-3.5 rounded-2xl">
                       <label className="block text-[10px] font-extrabold uppercase tracking-wider text-gray-500">
                         1. Mandatory Toolkit for Engineer
                       </label>
@@ -426,7 +428,7 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* Engineer Dispatch Selector */}
-                    <div className="lg:col-span-3 space-y-2 bg-[#F4F6F9] p-3.5 rounded-2xl">
+                    <div className="xl:col-span-3 space-y-2 bg-[#F4F6F9] p-3.5 rounded-2xl">
                       <label className="block text-[10px] font-extrabold uppercase tracking-wider text-gray-500">
                         2. Assign to Engineer ID
                       </label>
@@ -455,7 +457,7 @@ export default function AdminDashboard() {
 
                       <button
                         onClick={() => handleDispatchEngineer(req)}
-                        className="w-full py-2 bg-[#F37021] hover:bg-[#e05e15] text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5"
+                        className="w-full py-2.5 px-2 bg-[#F37021] hover:bg-[#e05e15] text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 text-center leading-tight"
                       >
                         <UserCheck size={14} />{" "}
                         {req.assignedEngineer

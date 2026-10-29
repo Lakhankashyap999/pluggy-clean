@@ -820,7 +820,7 @@ export function AppProvider({ children }) {
       action: "ENGINEER_ASSIGNED",
       details: `Dispatched Engineer ${resolvedName} (${resolvedId}) to customer location.`,
     })
-    toast.success(`Engineer ${resolvedName} (${resolvedId}) assigned & synced!`)
+    toast.success(`Engineer ${resolvedName} (${resolvedId}) assigned & synced!`, { id: `assign-${requestId}` })
     addNotification({
       type: "service",
       title: "👨‍🔧 Expert Assigned!",
