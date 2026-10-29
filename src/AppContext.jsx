@@ -1,5 +1,6 @@
 // src/AppContext.jsx
 import { createContext, useContext, useState, useEffect } from "react"
+import toast from "react-hot-toast"
 
 const AppContext = createContext()
 
@@ -326,15 +327,36 @@ export function AppProvider({ children }) {
 
   // Cart Functions
   const addToCart = (item) => {
+    const normalizedName = item.name || item.issue || "Doorstep Service"
+    const normalizedId = item.id || normalizedName
     setCart((prev) => {
-      const exists = prev.find((i) => i.issue === item.issue)
+      const exists = prev.find(
+        (i) =>
+          (i.id && i.id === normalizedId) ||
+          (i.issue && i.issue === normalizedName) ||
+          (i.name && i.name === normalizedName)
+      )
       if (exists) return prev
-      return [...prev, { ...item, quantity: 1 }]
+      return [
+        ...prev,
+        {
+          ...item,
+          id: normalizedId,
+          name: normalizedName,
+          issue: normalizedName,
+          qty: item.qty || item.quantity || 1,
+          quantity: item.quantity || item.qty || 1,
+        },
+      ]
     })
   }
 
-  const removeFromCart = (issue) => {
-    setCart((prev) => prev.filter((i) => i.issue !== issue))
+  const removeFromCart = (idOrIssue) => {
+    setCart((prev) =>
+      prev.filter(
+        (i) => i.id !== idOrIssue && i.issue !== idOrIssue && i.name !== idOrIssue
+      )
+    )
   }
 
   const clearCart = () => setCart([])
@@ -420,8 +442,11 @@ export function AppProvider({ children }) {
       baseAmount: Number(request.baseAmount ?? request.amount ?? request.finalAmount ?? 0),
       partsAmount: Number(request.partsAmount ?? 0),
       amount: Number(request.amount ?? request.finalAmount ?? 0),
-      customerPreferences: request.customerPreferences || userPreferences,
-      requiredKit: request.requiredKit || ["Digital Multimeter", "Standard Safety Kit", "Genuine Spare Parts Box"],
+      preferences: request.preferences || request.customerPreferences || userPreferences,
+      customerPreferences: request.customerPreferences || request.preferences || userPreferences,
+      requiredKit: Array.isArray(request.requiredKit)
+        ? request.requiredKit.join(", ")
+        : request.requiredKit || "Digital Multimeter, Standard Safety Kit & Genuine Spares",
       addedSpareParts: request.addedSpareParts || [],
       standbyLoaner: request.standbyLoaner || null,
       createdAt: request.createdAt || new Date().toISOString(),
@@ -456,14 +481,23 @@ export function AppProvider({ children }) {
   }
 
   // Workflow 2: Executive Desk Verifies Booking
-  const verifyByExecutive = (requestId, kitItems = [], executiveNote = "") => {
+  const verifyByExecutive = (requestId, noteOrKit = "", kitOrNote = "") => {
+    const resolvedKit = Array.isArray(noteOrKit)
+      ? noteOrKit.join(", ")
+      : kitOrNote || noteOrKit || "Digital Multimeter, Spare Capacitor/MCB & Safety Gloves"
+    const resolvedNote =
+      typeof noteOrKit === "string" && kitOrNote
+        ? noteOrKit
+        : "Verified by Pluggy Executive Desk"
+
     const update = {
       status: "EXECUTIVE_VERIFIED",
-      requiredKit: kitItems.length > 0 ? kitItems : ["Multimeter", "Spare Capacitor/MCB", "Safety Gloves"],
-      executiveNote: executiveNote || "Verified by Pluggy Executive Desk",
+      requiredKit: resolvedKit,
+      executiveNote: resolvedNote,
       verifiedAt: new Date().toISOString(),
     }
     updateRequestStatus(requestId, "EXECUTIVE_VERIFIED", update)
+    toast.success("Booking verified & mandatory toolkit locked!")
     addNotification({
       type: "update",
       title: "Booking Verified by Executive",
@@ -481,6 +515,7 @@ export function AppProvider({ children }) {
       assignedAt: new Date().toISOString(),
     }
     updateRequestStatus(requestId, "ENGINEER_ASSIGNED", update)
+    toast.success(`Engineer ${update.assignedEngineer} assigned & dispatched!`)
     addNotification({
       type: "service",
       title: "👨‍🔧 Expert Assigned!",
@@ -491,24 +526,37 @@ export function AppProvider({ children }) {
   // Workflow 3: Engineer Starts Job with 4-Digit Start OTP
   const startJobWithOtp = (requestId, enteredOtp) => {
     const target = requests.find((r) => r.id === requestId)
-    if (!target) return { success: false, message: "Booking not found" }
+    if (!target) {
+      toast.error("Booking not found")
+      return false
+    }
     if (enteredOtp && target.startOtp && enteredOtp.trim() !== target.startOtp) {
-      return { success: false, message: `Incorrect Start PIN! Ask customer for 4-digit Start PIN (${target.startOtp})` }
+      toast.error(`Incorrect Start PIN! Ask customer for 4-digit Start PIN (${target.startOtp})`)
+      return false
     }
     updateRequestStatus(requestId, "IN_PROGRESS", { startedAt: new Date().toISOString() })
+    toast.success("Start PIN verified! Job is now IN PROGRESS.")
     addNotification({
       type: "update",
       title: "🔧 Service Started (PIN Verified)",
       message: `Your ${target.service} is now in progress.`,
     })
-    return { success: true }
+    return true
   }
 
   // Workflow 4: Engineer Adds Spare Part from Official Rate Card (Requires Customer Approval)
   const addSparePartToJob = (requestId, part) => {
+    const uid = `${part.id || part.code}-${Date.now()}`
+    const partName = part.name || part.part
     const newPartEntry = {
       ...part,
-      entryId: `${part.id}-${Date.now()}`,
+      id: part.id || part.code,
+      code: part.code || part.id,
+      name: partName,
+      part: partName,
+      uid,
+      entryId: uid,
+      status: "PENDING_APPROVAL",
       approvalStatus: "PENDING_APPROVAL",
       addedAt: new Date().toISOString(),
     }
@@ -521,23 +569,27 @@ export function AppProvider({ children }) {
         }
       })
     )
+    toast.success(`Official quote for ${partName} (₹${part.price}) sent to customer!`)
     addNotification({
       type: "service",
       title: "📋 Spare Part Approval Requested",
-      message: `Engineer requested to add ${part.name} (₹${part.price}). Please Approve/Reject in Track Requests.`,
+      message: `Engineer requested to add ${partName} (₹${part.price}). Please Approve/Reject in Track Requests.`,
     })
   }
 
   // Workflow 4: Customer Approves or Rejects Spare Part Quote
   const respondToSparePartQuote = (requestId, entryId, isApproved) => {
+    const nextStatus = isApproved ? "APPROVED" : "REJECTED"
     setRequests((prev) =>
       prev.map((r) => {
         if (r.id !== requestId) return r
         const updatedParts = (r.addedSpareParts || []).map((p) =>
-          p.entryId === entryId ? { ...p, approvalStatus: isApproved ? "APPROVED" : "REJECTED" } : p
+          p.entryId === entryId || p.uid === entryId
+            ? { ...p, status: nextStatus, approvalStatus: nextStatus }
+            : p
         )
         const approvedPartsSum = updatedParts
-          .filter((p) => p.approvalStatus === "APPROVED")
+          .filter((p) => p.approvalStatus === "APPROVED" || p.status === "APPROVED")
           .reduce((sum, p) => sum + Number(p.price || 0), 0)
         const base = Number(r.baseAmount ?? r.amount ?? 0)
         return {
@@ -548,21 +600,28 @@ export function AppProvider({ children }) {
         }
       })
     )
+    toast.success(isApproved ? "Spare part quote approved!" : "Spare part quote rejected.")
   }
 
   // Workflow 4: Issue Standby Backup Appliance (Fan / Cooler / Stabilizer) when Motor/PCB goes to Workshop
-  const issueStandbyAppliance = (requestId, loanerItem = "Pluggy Standby High-Speed Fan") => {
+  const issueStandbyAppliance = (
+    requestId,
+    loanerItem = "Pluggy Standby High-Speed Fan",
+    dailyRent = 99
+  ) => {
     const loaner = {
       active: true,
       item: loanerItem,
-      dailyRate: 99,
+      unitName: loanerItem,
+      dailyRate: dailyRent,
+      dailyRent,
       receiptNo: `STBY-${Date.now().toString().slice(-5)}`,
       issuedAt: new Date().toISOString(),
     }
     setRequests((prev) =>
       prev.map((r) => {
         if (r.id !== requestId) return r
-        const nextAmount = Number(r.amount || 0) + 99
+        const nextAmount = Number(r.amount || 0) + Number(dailyRent)
         return {
           ...r,
           standbyLoaner: loaner,
@@ -570,6 +629,7 @@ export function AppProvider({ children }) {
         }
       })
     )
+    toast.success(`${loanerItem} issued @ ₹${dailyRent}/day!`)
     addNotification({
       type: "update",
       title: "🔄 Standby Appliance Issued",
@@ -580,31 +640,44 @@ export function AppProvider({ children }) {
   // Workflow 5: Complete Job with 4-Digit Happy OTP + Activate 30-Day Warranty + QR Health Sticker
   const completeJobWithOtp = (requestId, enteredOtp) => {
     const target = requests.find((r) => r.id === requestId)
-    if (!target) return { success: false, message: "Booking not found" }
+    if (!target) {
+      toast.error("Booking not found")
+      return false
+    }
     if (enteredOtp && target.happyOtp && enteredOtp.trim() !== target.happyOtp) {
-      return { success: false, message: `Incorrect Happy PIN! Ask customer for 4-digit Happy PIN (${target.happyOtp})` }
+      toast.error(`Incorrect Happy PIN! Ask customer for 4-digit Happy PIN (${target.happyOtp})`)
+      return false
     }
 
     const expiry = new Date()
     expiry.setDate(expiry.getDate() + 30)
     const qrCodeId = `PLG-QR-${requestId.toString().slice(-5)}`
+    const payout =
+      Math.round(Number(target.baseAmount || target.amount || 0) * 0.8) +
+      Number(target.partsAmount || 0)
 
     const completionData = {
       status: "COMPLETED",
       completedAt: new Date().toISOString(),
       warrantyExpiresAt: expiry.toISOString(),
+      warrantyValidTill: expiry.toISOString(),
       applianceQrId: qrCodeId,
+      engineerPayout: payout,
     }
 
     updateRequestStatus(requestId, "COMPLETED", completionData)
 
     // Credit 80% service fee + 100% spare parts to engineer
     if (target.assignedEngineerId) {
-      const payout = Math.round(Number(target.baseAmount || target.amount || 0) * 0.8) + Number(target.partsAmount || 0)
       setEngineersList((prev) =>
         prev.map((e) =>
           e.id === target.assignedEngineerId
-            ? { ...e, walletBalance: (e.walletBalance || 0) + payout, completedCount: (e.completedCount || 0) + 1 }
+            ? {
+                ...e,
+                walletBalance: (e.walletBalance || 0) + payout,
+                completedCount: (e.completedCount || 0) + 1,
+                jobsCompleted: (e.jobsCompleted || e.completedCount || 0) + 1,
+              }
             : e
         )
       )
@@ -617,17 +690,26 @@ export function AppProvider({ children }) {
       }
     }
 
+    toast.success(`Happy PIN verified! Job completed & ₹${payout} credited to Partner Wallet!`)
     addNotification({
       type: "service",
       title: "✅ Service Completed & 30-Day Warranty Active!",
       message: `Digital QR Health Card (${qrCodeId}) generated for your ${target.service}.`,
     })
 
-    return { success: true }
+    return true
   }
 
   // Workflow 6: Claim Free 30-Day Warranty Re-Visit
-  const claimWarrantyRevisit = (originalRequest) => {
+  const claimWarrantyRevisit = (idOrReq) => {
+    const originalRequest =
+      typeof idOrReq === "object" && idOrReq !== null
+        ? idOrReq
+        : requests.find((r) => r.id === idOrReq)
+    if (!originalRequest) {
+      toast.error("Original booking not found")
+      return null
+    }
     const revisit = addRequest({
       service: `${originalRequest.service} (Warranty Free Re-Visit)`,
       issue: `30-Day Warranty Claim for Booking #${originalRequest.transactionId || originalRequest.id}`,
@@ -639,6 +721,7 @@ export function AppProvider({ children }) {
       autoAssignSOS: true,
       parentBookingId: originalRequest.id,
     })
+    toast.success("🛡️ ₹0 Free Warranty Re-Visit booked & Priority Engineer assigned!")
     return revisit
   }
 

@@ -155,21 +155,21 @@ export default function Navbar() {
   }, [activeCategoryObj, hoveredSubId])
 
   const handleQuickAddFromMenu = (srv, cat, sub) => {
-    if (!user) {
-      toast.error("Please log in to add services to cart")
-      navigate("/login")
-      return
-    }
-    const exists = cart.some((c) => c.issue === srv.issue)
+    const exists = cart.some((c) => c.issue === srv.issue || c.id === srv.id)
     if (exists) {
-      removeFromCart(srv.issue)
+      removeFromCart(srv.id || srv.issue)
       toast.success("Removed from cart")
     } else {
       addToCart({
         ...srv,
+        id: srv.id,
+        name: srv.issue,
+        issue: srv.issue,
         service: cat.name,
+        categoryName: cat.name,
         subcategory: sub.name,
         categoryKey: cat.slug,
+        category: cat.slug,
       })
       toast.success(`${srv.issue} added to cart!`)
     }
@@ -624,14 +624,7 @@ export default function Navbar() {
 
               {/* Cart Trigger */}
               <button
-                onClick={() => {
-                  if (!user) {
-                    toast.error("Please login first")
-                    navigate("/login")
-                  } else {
-                    setCartOpen(true)
-                  }
-                }}
+                onClick={() => setCartOpen(true)}
                 className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white text-[#1A2A49] hover:bg-gray-100 font-bold text-xs shadow transition relative"
               >
                 <ShoppingCart size={17} className="text-[#F37021]" />
@@ -994,7 +987,7 @@ export default function Navbar() {
         onSelect={() => setLocationOpen(false)}
       />
 
-      <Cart open={cartOpen && !!user} onClose={() => setCartOpen(false)} />
+      <Cart open={cartOpen} onClose={() => setCartOpen(false)} />
 
       <RateCardModal
         open={rateCardOpen}

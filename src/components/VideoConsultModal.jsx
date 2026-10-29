@@ -26,13 +26,7 @@ export default function VideoConsultModal({ open, onClose, initialTab = "sos" })
   if (!open) return null
 
   const ensureAuthAndAddress = () => {
-    if (!user) {
-      toast.error("Please login first to continue!")
-      onClose()
-      navigate("/login")
-      return false
-    }
-    const finalAddr = localAddress.trim() || address.trim()
+    const finalAddr = (localAddress || "").trim() || (address || "").trim()
     if (!finalAddr) {
       toast.error("Please enter your house/flat address")
       return false

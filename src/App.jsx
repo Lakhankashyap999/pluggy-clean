@@ -98,6 +98,7 @@ export default function App() {
           <Route path="/request/:service" element={<RequestForm />} />
           <Route path="/engineer-login" element={<EngineerLogin />} />
           <Route path="/engineer" element={<EngineerDashboard />} />
+          <Route path="/engineer-dashboard" element={<EngineerDashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

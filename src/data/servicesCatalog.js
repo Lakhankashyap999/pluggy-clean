@@ -1355,39 +1355,39 @@ export const CATEGORIES_CATALOG = [
 // 📋 OFFICIAL ANTI-FRAUD SPARE PARTS RATE CARD
 export const SPARE_PARTS_RATE_CARD = {
   "ac-repair": [
-    { id: "sp-ac-1", name: "AC Compressor Running Capacitor (35–50 mfd)", brand: "Tibcon / Epcos", price: 380, warranty: "6 Months" },
-    { id: "sp-ac-2", name: "Outdoor Fan Motor Capacitor (4–6 mfd)", brand: "ISI Certified", price: 180, warranty: "6 Months" },
-    { id: "sp-ac-3", name: "Heavy Copper Pipe with Insulation (Per Foot)", brand: "Mandev / Totaline", price: 350, warranty: "1 Year" },
-    { id: "sp-ac-4", name: "Outdoor Unit Heavy Wall Stand (Pair)", brand: "Powder Coated MS", price: 650, warranty: "2 Years" },
-    { id: "sp-ac-5", name: "Flexible Drain Water Pipe (Per Meter)", brand: "Heavy PVC", price: 90, warranty: "3 Months" },
-    { id: "sp-ac-6", name: "Contactor Relay (25A–30A)", brand: "Schneider / L&T", price: 550, warranty: "6 Months" },
+    { id: "sp-ac-1", code: "sp-ac-1", name: "AC Compressor Running Capacitor (35–50 mfd)", part: "AC Compressor Running Capacitor (35–50 mfd)", brand: "Tibcon / Epcos", price: 380, warranty: "6 Months" },
+    { id: "sp-ac-2", code: "sp-ac-2", name: "Outdoor Fan Motor Capacitor (4–6 mfd)", part: "Outdoor Fan Motor Capacitor (4–6 mfd)", brand: "ISI Certified", price: 180, warranty: "6 Months" },
+    { id: "sp-ac-3", code: "sp-ac-3", name: "Heavy Copper Pipe with Insulation (Per Foot)", part: "Heavy Copper Pipe with Insulation (Per Foot)", brand: "Mandev / Totaline", price: 350, warranty: "1 Year" },
+    { id: "sp-ac-4", code: "sp-ac-4", name: "Outdoor Unit Heavy Wall Stand (Pair)", part: "Outdoor Unit Heavy Wall Stand (Pair)", brand: "Powder Coated MS", price: 650, warranty: "2 Years" },
+    { id: "sp-ac-5", code: "sp-ac-5", name: "Flexible Drain Water Pipe (Per Meter)", part: "Flexible Drain Water Pipe (Per Meter)", brand: "Heavy PVC", price: 90, warranty: "3 Months" },
+    { id: "sp-ac-6", code: "sp-ac-6", name: "Contactor Relay (25A–30A)", part: "Contactor Relay (25A–30A)", brand: "Schneider / L&T", price: 550, warranty: "6 Months" },
   ],
   wiring: [
-    { id: "sp-el-1", name: "6A Modular Switch / Socket", brand: "Anchor / Havells", price: 65, warranty: "1 Year" },
-    { id: "sp-el-2", name: "16A Heavy Power Switch / Socket", brand: "Anchor / Legrand", price: 145, warranty: "1 Year" },
-    { id: "sp-el-3", name: "Single Pole MCB (6A to 32A)", brand: "Havells / L&T", price: 220, warranty: "1 Year" },
-    { id: "sp-el-4", name: "Double Pole Main Isolator / MCB (40A–63A)", brand: "Havells / Schneider", price: 540, warranty: "1 Year" },
-    { id: "sp-el-5", name: "FRLS Copper Wire 1.5 sqmm (Per Meter)", brand: "Polycab / Finolex", price: 32, warranty: "1 Year" },
-    { id: "sp-el-6", name: "FRLS Copper Wire 2.5 sqmm for AC/Geyser (Per Meter)", brand: "Polycab / Finolex", price: 48, warranty: "1 Year" },
+    { id: "sp-el-1", code: "sp-el-1", name: "6A Modular Switch / Socket", part: "6A Modular Switch / Socket", brand: "Anchor / Havells", price: 65, warranty: "1 Year" },
+    { id: "sp-el-2", code: "sp-el-2", name: "16A Heavy Power Switch / Socket", part: "16A Heavy Power Switch / Socket", brand: "Anchor / Legrand", price: 145, warranty: "1 Year" },
+    { id: "sp-el-3", code: "sp-el-3", name: "Single Pole MCB (6A to 32A)", part: "Single Pole MCB (6A to 32A)", brand: "Havells / L&T", price: 220, warranty: "1 Year" },
+    { id: "sp-el-4", code: "sp-el-4", name: "Double Pole Main Isolator / MCB (40A–63A)", part: "Double Pole Main Isolator / MCB (40A–63A)", brand: "Havells / Schneider", price: 540, warranty: "1 Year" },
+    { id: "sp-el-5", code: "sp-el-5", name: "FRLS Copper Wire 1.5 sqmm (Per Meter)", part: "FRLS Copper Wire 1.5 sqmm (Per Meter)", brand: "Polycab / Finolex", price: 32, warranty: "1 Year" },
+    { id: "sp-el-6", code: "sp-el-6", name: "FRLS Copper Wire 2.5 sqmm for AC/Geyser (Per Meter)", part: "FRLS Copper Wire 2.5 sqmm for AC/Geyser (Per Meter)", brand: "Polycab / Finolex", price: 48, warranty: "1 Year" },
   ],
   "fan-motor": [
-    { id: "sp-fm-1", name: "Ceiling Fan Capacitor (2.5 / 3.15 mfd)", brand: "Tibcon ISI", price: 85, warranty: "6 Months" },
-    { id: "sp-fm-2", name: "Step-Type Modular Fan Regulator", brand: "Anchor / GM", price: 210, warranty: "1 Year" },
-    { id: "sp-fm-3", name: "High-Speed Ball Bearing Set (6201 + 6202)", brand: "SKF / NBC Original", price: 260, warranty: "1 Year" },
-    { id: "sp-fm-4", name: "Geyser Copper Heating Element (2000W)", brand: "Bajaj / Racold Compatible", price: 680, warranty: "6 Months" },
-    { id: "sp-fm-5", name: "Geyser Stem / Capillary Thermostat", brand: "ISI Certified", price: 320, warranty: "6 Months" },
-    { id: "sp-fm-6", name: "Standby Backup Fan / Cooler Rental (Per Day)", brand: "Pluggy Backup Pool", price: 99, warranty: "Full Support" },
+    { id: "sp-fm-1", code: "sp-fm-1", name: "Ceiling Fan Capacitor (2.5 / 3.15 mfd)", part: "Ceiling Fan Capacitor (2.5 / 3.15 mfd)", brand: "Tibcon ISI", price: 85, warranty: "6 Months" },
+    { id: "sp-fm-2", code: "sp-fm-2", name: "Step-Type Modular Fan Regulator", part: "Step-Type Modular Fan Regulator", brand: "Anchor / GM", price: 210, warranty: "1 Year" },
+    { id: "sp-fm-3", code: "sp-fm-3", name: "High-Speed Ball Bearing Set (6201 + 6202)", part: "High-Speed Ball Bearing Set (6201 + 6202)", brand: "SKF / NBC Original", price: 260, warranty: "1 Year" },
+    { id: "sp-fm-4", code: "sp-fm-4", name: "Geyser Copper Heating Element (2000W)", part: "Geyser Copper Heating Element (2000W)", brand: "Bajaj / Racold Compatible", price: 680, warranty: "6 Months" },
+    { id: "sp-fm-5", code: "sp-fm-5", name: "Geyser Stem / Capillary Thermostat", part: "Geyser Stem / Capillary Thermostat", brand: "ISI Certified", price: 320, warranty: "6 Months" },
+    { id: "sp-fm-6", code: "sp-fm-6", name: "Standby Backup Fan / Cooler Rental (Per Day)", part: "Standby Backup Fan / Cooler Rental (Per Day)", brand: "Pluggy Backup Pool", price: 99, warranty: "Full Support" },
   ],
   appliances: [
-    { id: "sp-ap-1", name: "Fridge Compressor Relay + OLP Kit", brand: "LG / Samsung / Whirlpool", price: 390, warranty: "6 Months" },
-    { id: "sp-ap-2", name: "Washing Machine Water Inlet Solenoid Valve", brand: "OEM Original", price: 480, warranty: "6 Months" },
-    { id: "sp-ap-3", name: "RO Sediment + Carbon Pre-Filter Set", brand: "Kent / Aquaguard Grade", price: 420, warranty: "6 Months" },
-    { id: "sp-ap-4", name: "Universal Heavy TV Wall Bracket (32\"–55\")", brand: "Cold-Rolled Steel", price: 450, warranty: "2 Years" },
+    { id: "sp-ap-1", code: "sp-ap-1", name: "Fridge Compressor Relay + OLP Kit", part: "Fridge Compressor Relay + OLP Kit", brand: "LG / Samsung / Whirlpool", price: 390, warranty: "6 Months" },
+    { id: "sp-ap-2", code: "sp-ap-2", name: "Washing Machine Water Inlet Solenoid Valve", part: "Washing Machine Water Inlet Solenoid Valve", brand: "OEM Original", price: 480, warranty: "6 Months" },
+    { id: "sp-ap-3", code: "sp-ap-3", name: "RO Sediment + Carbon Pre-Filter Set", part: "RO Sediment + Carbon Pre-Filter Set", brand: "Kent / Aquaguard Grade", price: 420, warranty: "6 Months" },
+    { id: "sp-ap-4", code: "sp-ap-4", name: "Universal Heavy TV Wall Bracket (32\"–55\")", part: "Universal Heavy TV Wall Bracket (32\"–55\")", brand: "Cold-Rolled Steel", price: 450, warranty: "2 Years" },
   ],
   plumbing: [
-    { id: "sp-pl-1", name: "Brass Quarter-Turn Tap Spindle", brand: "Jaquar / Hindware Grade", price: 160, warranty: "6 Months" },
-    { id: "sp-pl-2", name: "SS Braided Connection Pipe (18 inch)", brand: "Heavy Stainless Steel", price: 150, warranty: "1 Year" },
-    { id: "sp-pl-3", name: "Flush Tank Dual-Push Syphon Kit", brand: "Parryware / Cera Grade", price: 490, warranty: "6 Months" },
+    { id: "sp-pl-1", code: "sp-pl-1", name: "Brass Quarter-Turn Tap Spindle", part: "Brass Quarter-Turn Tap Spindle", brand: "Jaquar / Hindware Grade", price: 160, warranty: "6 Months" },
+    { id: "sp-pl-2", code: "sp-pl-2", name: "SS Braided Connection Pipe (18 inch)", part: "SS Braided Connection Pipe (18 inch)", brand: "Heavy Stainless Steel", price: 150, warranty: "1 Year" },
+    { id: "sp-pl-3", code: "sp-pl-3", name: "Flush Tank Dual-Push Syphon Kit", part: "Flush Tank Dual-Push Syphon Kit", brand: "Parryware / Cera Grade", price: 490, warranty: "6 Months" },
   ],
 }
 
@@ -1395,6 +1395,7 @@ export const SPARE_PARTS_RATE_CARD = {
 export const SYMPTOM_ESTIMATOR_DATA = [
   {
     id: "est-ac-cool",
+    icon: "❄️",
     categorySlug: "ac-repair",
     appliance: "Split / Window AC",
     symptom: "AC chal raha hai par thanda nahi kar raha (No Cooling)",
@@ -1405,11 +1406,38 @@ export const SYMPTOM_ESTIMATOR_DATA = [
     recommendedServiceId: "ac-no-cooling",
     recommendedServiceName: "AC Less / No Cooling Diagnostic & Repair",
     requiredKit: ["Digital Clamp Meter", "Manifold Gas Gauge", "35–50mfd Capacitor", "Jet Wash Pump"],
+    symptoms: [
+      {
+        symptom: "AC chal raha hai par cooling nahi ho rahi",
+        likelyCause: "Choked cooling coils, weak 35mfd compressor capacitor, ya low gas pressure",
+        estimatedCost: "₹249 – ₹629",
+        visitFee: 249,
+        serviceName: "AC Less / No Cooling Diagnostic & Repair",
+        requiredKit: "Digital Clamp Meter, R32 Gas Gauge & 35mfd Capacitor",
+      },
+      {
+        symptom: "Indoor unit se paani tapak raha hai (Water Leakage)",
+        likelyCause: "Blocked drain tray ya slime jam in flexible drain pipe",
+        estimatedCost: "₹349 – ₹449",
+        visitFee: 349,
+        serviceName: "AC Water Leakage & Drain Pipe Flush",
+        requiredKit: "High-Pressure Drain Flush Gun & Leveler",
+      },
+      {
+        symptom: "AC on nahi ho raha / Error code blink kar raha hai",
+        likelyCause: "Indoor PCB relay fault ya outdoor contactor/sensor issue",
+        estimatedCost: "₹299 – ₹899",
+        visitFee: 299,
+        serviceName: "AC PCB & Sensor Fault Check",
+        requiredKit: "PCB Tester, Contactor Relay & Multimeter",
+      },
+    ],
   },
   {
     id: "est-mcb-trip",
+    icon: "⚡",
     categorySlug: "wiring",
-    appliance: "Main Line / MCB Box",
+    appliance: "Main Line / MCB",
     symptom: "MCB baar-baar gir rahi hai ya ghar ki light chali gayi",
     likelyCause: "Weak C-curve MCB, phase overload, ya appliance socket short-circuit",
     estMin: 199,
@@ -1418,9 +1446,36 @@ export const SYMPTOM_ESTIMATOR_DATA = [
     recommendedServiceId: "short-circuit-sos",
     recommendedServiceName: "Emergency Power Blackout / Short-Circuit Fault Restore",
     requiredKit: ["Insulation Megger", "32A Havells MCB", "2.5sqmm FRLS Wire", "Heavy Pliers"],
+    symptoms: [
+      {
+        symptom: "MCB baar-baar trip ho rahi hai ya spark ho raha hai",
+        likelyCause: "Weak C-curve MCB, phase overload, ya loose neutral terminal",
+        estimatedCost: "₹199 – ₹419",
+        visitFee: 199,
+        serviceName: "MCB Tripping & DB Box Overhaul",
+        requiredKit: "Insulation Megger & Havells 32A MCB Kit",
+      },
+      {
+        symptom: "AC/Geyser ka 16A power plug jal gaya hai",
+        likelyCause: "Loose pin contact causing carbon heating in 16A socket",
+        estimatedCost: "₹149 – ₹294",
+        visitFee: 149,
+        serviceName: "16A Heavy Power Socket Replacement",
+        requiredKit: "Anchor/Havells 16A Modular Socket & FRLS Wire",
+      },
+      {
+        symptom: "Aadhe ghar mein light nahi aa rahi (Phase/Inverter Fault)",
+        likelyCause: "Phase selector switch fault ya inverter output relay stuck",
+        estimatedCost: "₹249 – ₹399",
+        visitFee: 249,
+        serviceName: "Emergency Phase & Inverter Line Restore",
+        requiredKit: "Phase Tester, Clamp Meter & Bypass Cable",
+      },
+    ],
   },
   {
     id: "est-fan-slow",
+    icon: "🌀",
     categorySlug: "fan-motor",
     appliance: "Ceiling Fan",
     symptom: "Pankha bahut dheere chal raha hai ya awaaz kar raha hai",
@@ -1431,11 +1486,30 @@ export const SYMPTOM_ESTIMATOR_DATA = [
     recommendedServiceId: "fan-speed-cap",
     recommendedServiceName: "Fan Slow Speed / Capacitor & Regulator Fix",
     requiredKit: ["2.5mfd Tibcon Capacitor", "SKF Bearing Puller", "High-Temp Grease"],
+    symptoms: [
+      {
+        symptom: "Pankha bahut slow chal raha hai (Slow Speed)",
+        likelyCause: "Weak 2.5mfd / 3.15mfd running capacitor ya faulty step regulator",
+        estimatedCost: "₹149 – ₹234",
+        visitFee: 149,
+        serviceName: "Fan Slow Speed & Capacitor Fix",
+        requiredKit: "Tibcon 2.5mfd ISI Capacitor & Step Regulator",
+      },
+      {
+        symptom: "Pankhe se kat-kat awaaz ya wobbling ho rahi hai",
+        likelyCause: "Worn-out 6201/6202 ball bearings ya loose downrod bush",
+        estimatedCost: "₹299 – ₹559",
+        visitFee: 299,
+        serviceName: "Fan Bearing & Balancing Overhaul",
+        requiredKit: "SKF Bearing Puller, 6201/6202 Bearings & Standby Fan",
+      },
+    ],
   },
   {
     id: "est-geyser-cold",
+    icon: "🔥",
     categorySlug: "fan-motor",
-    appliance: "Geyser / Water Heater",
+    appliance: "Geyser / Heater",
     symptom: "Geyser mein paani garam nahi ho raha ya shock lag raha hai",
     likelyCause: "Tripped safety thermostat ya scaled 2000W heating element",
     estMin: 299,
@@ -1444,11 +1518,30 @@ export const SYMPTOM_ESTIMATOR_DATA = [
     recommendedServiceId: "geyser-repair",
     recommendedServiceName: "Geyser Not Heating / Thermostat & Element Repair",
     requiredKit: ["Multimeter", "Capillary Thermostat", "2000W Copper Element", "Flange Gasket"],
+    symptoms: [
+      {
+        symptom: "Geyser on hai par paani garam nahi ho raha",
+        likelyCause: "Tripped dual-cutoff thermostat ya burnt 2000W copper element",
+        estimatedCost: "₹299 – ₹979",
+        visitFee: 299,
+        serviceName: "Geyser Thermostat & Heating Element Repair",
+        requiredKit: "2000W Copper Heating Coil & ISI Thermostat",
+      },
+      {
+        symptom: "Nal mein halka current / shock feel ho raha hai",
+        likelyCause: "Element insulation leakage ya missing earthing wire",
+        estimatedCost: "₹299 – ₹699",
+        visitFee: 299,
+        serviceName: "Geyser Earth Leakage & Safety Check",
+        requiredKit: "Earth Leakage Tester & Copper Element",
+      },
+    ],
   },
   {
     id: "est-fridge-warm",
+    icon: "🧊",
     categorySlug: "appliances",
-    appliance: "Refrigerator (Fridge)",
+    appliance: "Refrigerator",
     symptom: "Fridge upar baraf jama raha hai par neeche thanda nahi ho raha",
     likelyCause: "Defrost sensor / bimetal fault ya choked air duct",
     estMin: 299,
@@ -1457,9 +1550,28 @@ export const SYMPTOM_ESTIMATOR_DATA = [
     recommendedServiceId: "fridge-cooling-fix",
     recommendedServiceName: "Fridge Not Cooling / Over-Freezing Check & Repair",
     requiredKit: ["Compressor Relay + OLP", "Bimetal Defrost Sensor", "Clamp Meter"],
+    symptoms: [
+      {
+        symptom: "Freezer thanda hai par neeche cooling nahi ho rahi",
+        likelyCause: "Defrost bimetal sensor fault ya choked return air duct",
+        estimatedCost: "₹299 – ₹689",
+        visitFee: 299,
+        serviceName: "Double-Door Fridge Cooling & Defrost Fix",
+        requiredKit: "Bimetal Sensor, Defrost Timer & Multimeter",
+      },
+      {
+        symptom: "Fridge compressor start hokar 5 sec mein cut ho jata hai",
+        likelyCause: "Faulty PTC compressor relay & overload protector (OLP)",
+        estimatedCost: "₹299 – ₹689",
+        visitFee: 299,
+        serviceName: "Fridge Compressor Relay & OLP Repair",
+        requiredKit: "OEM Relay + OLP Kit & Clamp Meter",
+      },
+    ],
   },
   {
     id: "est-wm-drain",
+    icon: "🧺",
     categorySlug: "appliances",
     appliance: "Washing Machine",
     symptom: "Washing machine spin nahi kar rahi ya paani bahar nahi nikal raha",
@@ -1470,6 +1582,24 @@ export const SYMPTOM_ESTIMATOR_DATA = [
     recommendedServiceId: "wm-top-front-repair",
     recommendedServiceName: "Fully Automatic (Top/Front Load) Repair & Error Code Fix",
     requiredKit: ["Drain Pump Cleaner", "Solenoid Valve", "T-Spanner Set"],
+    symptoms: [
+      {
+        symptom: "Paani drain nahi ho raha / Spin dry nahi ho raha",
+        likelyCause: "Coin/lint blockage in drain motor ya faulty lid safety switch",
+        estimatedCost: "₹299 – ₹649",
+        visitFee: 299,
+        serviceName: "Washing Machine Drain & Spin Repair",
+        requiredKit: "Drain Pump Assembly & T-Spanner Kit",
+      },
+      {
+        symptom: "Machine mein paani bahut dheere bhar raha hai",
+        likelyCause: "Choked inlet mesh filter ya weak solenoid inlet valve",
+        estimatedCost: "₹249 – ₹729",
+        visitFee: 249,
+        serviceName: "Washing Machine Inlet Valve Service",
+        requiredKit: "OEM Solenoid Inlet Valve & Descaler",
+      },
+    ],
   },
 ]
 
@@ -1482,6 +1612,7 @@ export const EVENT_STANDBY_PACKAGES = [
     price: 499,
     originalPrice: 799,
     duration: "4 Hours On-Site Standby",
+    idealFor: "Ideal for House Parties, Roka, Pooja & Birthday Functions",
     desc: "Dedicated Pluggy Senior Electrician stays at your house during your function to prevent any power trip, AC failure, or load issue.",
     features: [
       "Pre-function 3-phase load balancing & MCB check",
@@ -1491,11 +1622,12 @@ export const EVENT_STANDBY_PACKAGES = [
   },
   {
     id: "event-8hr",
-    name: "8-Hour Shaadi / Full-Night Standby Expert",
+    name: "8-Hour Shaadi / Full-Night Standby",
     badge: "WEDDING / JAGRAN / FESTIVAL",
     price: 999,
     originalPrice: 1599,
     duration: "8 Hours On-Site Standby",
+    idealFor: "Ideal for Shaadi, Mehndi, Haldi, Jagran & Overnight Events",
     desc: "Complete peace of mind for weddings & overnight events — zero blackout guarantee with full emergency toolkit.",
     features: [
       "Continuous monitoring of heavy AC, lighting & sound load",
@@ -1503,15 +1635,47 @@ export const EVENT_STANDBY_PACKAGES = [
       "Covers both indoor house DB and outdoor event line",
     ],
   },
+  {
+    id: "event-24hr",
+    name: "24-Hour Complete Wedding Guard",
+    badge: "2-SHIFT MASTER TEAM",
+    price: 1899,
+    originalPrice: 2999,
+    duration: "24 Hours (2 Engineers Shift)",
+    idealFor: "Full-Day Wedding House + Tent / Generator Load Management",
+    desc: "Two rotational Master Electricians manage all AC units, geysers, decorative lights & generator changeovers for 24 hours.",
+    features: [
+      "Zero downtime across Haldi, Mehndi & Baraat reception",
+      "Includes 50m heavy armored bypass cable & spare MCB bank",
+      "Priority backup cooler/fan loaner support on standby",
+    ],
+  },
 ]
 
 // ⚡ ₹79 CHOTA-KAAM (GALI-PASS MICRO FIXES)
 export const MICRO_FIX_SERVICES = [
-  { id: "micro-switch", issue: "1 Burnt Switch / Socket Fix", price: 79, categoryKey: "wiring", time: "Next 3 Hrs (Gali-Pass)" },
-  { id: "micro-holder", issue: "Bulb Holder / Tube Starter Change", price: 79, categoryKey: "wiring", time: "Next 3 Hrs (Gali-Pass)" },
-  { id: "micro-bell", issue: "Doorbell / Ding-Dong Bell Fix", price: 79, categoryKey: "wiring", time: "Next 3 Hrs (Gali-Pass)" },
-  { id: "micro-plug", issue: "3-Pin Heavy Plug Top Replacement", price: 79, categoryKey: "wiring", time: "Next 3 Hrs (Gali-Pass)" },
+  { id: "micro-switch", icon: "🔘", name: "1 Burnt Switch / Socket Fix", issue: "1 Burnt Switch / Socket Fix", price: 79, categoryKey: "wiring", categorySlug: "wiring", time: "20 Mins" },
+  { id: "micro-reg", icon: "🎛️", name: "Fan Regulator Change", issue: "Fan Regulator Change", price: 89, categoryKey: "fan-motor", categorySlug: "fan-motor", time: "20 Mins" },
+  { id: "micro-holder", icon: "💡", name: "Bulb Holder / Tube Light Fix", issue: "Bulb Holder / Tube Light Fix", price: 79, categoryKey: "wiring", categorySlug: "wiring", time: "15 Mins" },
+  { id: "micro-bell", icon: "🔔", name: "Doorbell / Ding-Dong Bell Fix", issue: "Doorbell / Ding-Dong Bell Fix", price: 79, categoryKey: "wiring", categorySlug: "wiring", time: "20 Mins" },
+  { id: "micro-plug", icon: "🔌", name: "3-Pin Heavy Plug Replacement", issue: "3-Pin Heavy Plug Replacement", price: 79, categoryKey: "wiring", categorySlug: "wiring", time: "15 Mins" },
+  { id: "micro-tap", icon: "🚰", name: "Dripping Tap Washer Fix", issue: "Dripping Tap Washer Fix", price: 89, categoryKey: "plumbing", categorySlug: "plumbing", time: "20 Mins" },
 ]
+
+// Normalize CATEGORIES_CATALOG in-place so both property conventions work seamlessly across all components
+CATEGORIES_CATALOG.forEach((cat) => {
+  cat.emoji = cat.emoji || cat.icon
+  cat.icon = cat.icon || cat.emoji
+  cat.bookingsCount = cat.bookingsCount || cat.reviewsCount || "10k+"
+  cat.badge = cat.badge || cat.promoOffer?.badge || "VERIFIED"
+  cat.subcategories.forEach((sub) => {
+    sub.services.forEach((srv) => {
+      srv.name = srv.name || srv.issue
+      srv.issue = srv.issue || srv.name
+      srv.desc = srv.desc || (srv.included && srv.included[0]) || srv.name
+    })
+  })
+})
 
 export function getCategoryBySlug(slug) {
   if (!slug) return CATEGORIES_CATALOG[0]
@@ -1536,11 +1700,18 @@ export function getAllServicesFlat() {
       sub.services.forEach((srv) => {
         list.push({
           ...srv,
+          name: srv.name || srv.issue,
+          issue: srv.issue || srv.name,
+          desc: srv.desc || (srv.included && srv.included[0]) || srv.issue,
           categoryKey: cat.slug,
+          categorySlug: cat.slug,
           categoryName: cat.name,
           categoryIcon: cat.icon,
+          categoryEmoji: cat.icon,
           subcategoryId: sub.id,
+          subCategoryId: sub.id,
           subcategoryName: sub.name,
+          subCategoryName: sub.name,
         })
       })
     })
