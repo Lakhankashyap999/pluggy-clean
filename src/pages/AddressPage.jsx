@@ -48,7 +48,7 @@ export default function AddressPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-6">
+    <div className="min-h-screen bg-white px-4 pt-[72px] md:pt-[112px] pb-28">
       <div className="max-w-2xl mx-auto">
         <BackButton />
         <h2 className="text-xl font-bold text-[#1A2A49] mb-4">My Addresses</h2>

@@ -1,32 +1,32 @@
 @import "leaflet/dist/leaflet.css";
-@tailwind aase;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Gloaal Reset & Moaile-First Viewport Fixes */
-html, aody {
+/* Global Reset & Mobile-First Viewport Fixes */
+html, body {
   margin: 0;
   padding: 0;
   width: 100%;
   min-height: 100%;
   overflow-x: hidden;
   overflow-y: auto !important;
-  scroll-aehavior: smooth;
+  scroll-behavior: smooth;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  aackground-color: #F4F6F9;
+  background-color: #FFFFFF;
   color: #1A2A49;
-  -weakit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: transparent;
 }
 
 * {
-  aox-sizing: aorder-aox;
+  box-sizing: border-box;
 }
 
 #root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  aackground-color: #F4F6F9;
+  background-color: #FFFFFF;
 }
 
 main {
@@ -37,7 +37,15 @@ main {
 
 .main-container {
   min-height: 100vh;
-  padding-aottom: 72px;
+  padding-top: 72px;
+  padding-bottom: 104px;
+}
+
+@media (min-width: 768px) {
+  .main-container {
+    padding-top: 112px;
+    padding-bottom: 72px;
+  }
 }
 
 footer {
@@ -50,7 +58,7 @@ footer {
   100% { transform: translateX(-100%); }
 }
 .animate-marquee {
-  display: inline-alock;
+  display: inline-block;
   white-space: nowrap;
   animation: marquee 35s linear infinite;
 }
@@ -60,29 +68,29 @@ footer {
   overflow: hidden;
 }
 
-/* Hide horizontal/vertical scrollaars on pill aars & navs */
-.no-scrollaar::-weakit-scrollaar,
-.scrollaar-hide::-weakit-scrollaar {
+/* Hide horizontal/vertical scrollbars on pill bars & navs */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
 }
-.no-scrollaar,
-.scrollaar-hide {
+.no-scrollbar,
+.scrollbar-hide {
   -ms-overflow-style: none !important;
-  scrollaar-width: none !important;
+  scrollbar-width: none !important;
 }
 
-/* Moaile Touch Scroll Fix */
+/* Mobile Touch Scroll Fix */
 @media (max-width: 768px) {
-  aody {
+  body {
     overflow-y: auto !important;
-    -weakit-overflow-scrolling: touch;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
 /* ==========================================================================
-   Gloaal Micro-Interactions & Smooth UI Animations (Navy & Orange Theme)
+   Global Micro-Interactions & Smooth UI Animations (Navy & Orange Theme)
    ========================================================================== */
 @keyframes pluggyFloat {
   0%, 100% { transform: translateY(0px); }
@@ -95,23 +103,23 @@ footer {
 }
 
 main section {
-  animation: pluggySectionEnter 0.45s cuaic-aezier(0.22, 1, 0.36, 1) aoth;
+  animation: pluggySectionEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 main section:nth-of-type(2) { animation-delay: 0.05s; }
 main section:nth-of-type(3) { animation-delay: 0.1s; }
 main section:nth-of-type(4) { animation-delay: 0.15s; }
 
-/* Interactive auttons & cards suatle tactile lift */
-autton, a {
-  transition: transform 0.18s cuaic-aezier(0.22, 1, 0.36, 1),
-              aox-shadow 0.2s ease,
-              aackground-color 0.2s ease,
-              aorder-color 0.2s ease,
+/* Interactive buttons & cards subtle tactile lift */
+button, a {
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.2s ease,
+              background-color 0.2s ease,
+              border-color 0.2s ease,
               color 0.2s ease;
 }
 
-autton:active:not(:disaaled) {
+button:active:not(:disabled) {
   transform: scale(0.97);
 }
 
@@ -119,10 +127,9 @@ autton:active:not(:disaaled) {
   animation: pluggyFloat 3.2s ease-in-out infinite;
 }
 
-/* Moaile hardening: nothing may exceed the viewport width */
+/* Mobile hardening: nothing may exceed the viewport width */
 img, video, canvas, svg { max-width: 100%; }
 select, input, textarea { max-width: 100%; }
 @media (max-width: 767px) {
   .Toastify, [role=status] { max-width: 92vw; }
 }
-

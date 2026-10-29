@@ -25,6 +25,7 @@ import FilteredResults from "../components/FilteredResults"
 import CustomerReviews from "../components/CustomerReviews"
 import ExtraSections from "../components/ExtraSections"
 import MarqueeSection from "../components/MarqueeSection"
+import FaultMediaUpload from "../components/FaultMediaUpload"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { useApp } from "../AppContext"
@@ -179,7 +180,7 @@ export default function Dashboard() {
                       <span className="text-2xl sm:text-3xl mb-1.5 group-hover:scale-110 transition-transform">
                         {cat.emoji}
                       </span>
-                      <span className="text-[11px] sm:text-xs font-bold leading-tight line-clamp-1">
+                      <span className="text-[11px] sm:text-xs font-bold leading-tight text-center">
                         {cat.shortName}
                       </span>
                     </motion.button>
@@ -311,7 +312,7 @@ export default function Dashboard() {
                     <span className="text-[10px] text-gray-300 block">
                       Est. Total: <strong className="text-emerald-300">{currentSymptom.estimatedCost}</strong>
                     </span>
-                    <span className="text-xs font-bold text-white block truncate max-w-full sm:max-w-[180px]">
+                    <span className="text-xs font-bold text-white block leading-snug">
                       {currentSymptom.likelyCause}
                     </span>
                   </div>
@@ -322,6 +323,11 @@ export default function Dashboard() {
                     + Book @ ₹{currentSymptom.visitFee}
                   </button>
                 </div>
+              </div>
+
+              {/* Direct Camera / Gallery Appliance Fault Upload right on Homepage */}
+              <div className="mt-4 pt-4 border-t border-white/10 bg-white rounded-2xl p-1 text-[#1A2A49]">
+                <FaultMediaUpload />
               </div>
             </div>
           </section>
@@ -367,7 +373,7 @@ export default function Dashboard() {
                         </span>
                       </div>
 
-                      <h3 className="font-extrabold text-[#1A2A49] text-sm sm:text-base leading-snug mb-1 line-clamp-1">
+                      <h3 className="font-extrabold text-[#1A2A49] text-sm sm:text-base leading-snug mb-1">
                         {srv.name}
                       </h3>
                       <p className="text-xs text-gray-500 line-clamp-2 mb-4">{srv.desc}</p>
@@ -498,72 +504,99 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Clean 2-Card Split: Shaadi Standby + ₹99/Day Loaner Guarantee */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              {/* Card 1: Shaadi / Function Standby */}
-              <div className="bg-[#F5F5F7] rounded-3xl p-5 sm:p-7 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-[#F37021]">
-                      🎪 Event Power Guard
-                    </span>
-                    <button
-                      onClick={() => openConsultModal("event")}
-                      className="px-3 py-1.5 bg-[#1A2A49] text-white rounded-xl text-xs font-bold"
-                    >
-                      Book Standby →
-                    </button>
-                  </div>
-                  <h3 className="text-base sm:text-xl font-extrabold text-[#1A2A49] mb-3">
-                    Dedicated Electrician for Shaadi & Home Functions
-                  </h3>
+            {/* Clean Apple-Style Open Split: Shaadi Standby + Zero Downtime Protection (No Nested Boxes) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 pt-4">
+              {/* Left: Shaadi / Function Standby */}
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-[#F37021]">
+                    🎪 Event Power Guard
+                  </span>
+                  <button
+                    onClick={() => openConsultModal("event")}
+                    className="text-xs font-bold text-[#F37021] hover:underline flex items-center gap-1"
+                  >
+                    Book Standby <ChevronRight size={14} />
+                  </button>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#1A2A49] mb-4">
+                  Dedicated Electrician for Shaadi & Home Functions
+                </h3>
 
-                  <div className="grid grid-cols-3 gap-2.5">
-                    {EVENT_STANDBY_PACKAGES.map((pkg) => (
-                      <div
-                        key={pkg.id}
-                        onClick={() => openConsultModal("event")}
-                        className="p-3 rounded-2xl bg-white cursor-pointer text-center"
-                      >
-                        <p className="text-[11px] font-bold text-[#1A2A49] truncate">{pkg.name}</p>
-                        <p className="text-sm font-extrabold text-[#F37021] mt-1">₹{pkg.price}</p>
-                        <p className="text-[10px] text-gray-500">{pkg.duration}</p>
+                <div className="divide-y divide-gray-200 border-y border-gray-200">
+                  {EVENT_STANDBY_PACKAGES.map((pkg) => (
+                    <div
+                      key={pkg.id}
+                      onClick={() => openConsultModal("event")}
+                      className="py-3.5 flex items-center justify-between gap-4 cursor-pointer group"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm sm:text-base font-bold text-[#1A2A49] group-hover:text-[#F37021] transition-colors">
+                          {pkg.name}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">{pkg.duration}</p>
                       </div>
-                    ))}
-                  </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="text-base sm:text-lg font-extrabold text-[#1A2A49]">
+                          ₹{pkg.price}
+                        </span>
+                        <span className="h-8 px-3 rounded-full bg-[#F5F5F7] group-hover:bg-[#1A2A49] group-hover:text-white text-xs font-bold text-[#1A2A49] flex items-center">
+                          Select
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* Card 2: Standby Backup Appliance + Dual-PIN */}
-              <div className="bg-[#F5F5F7] rounded-3xl p-5 sm:p-7 flex flex-col justify-between">
-                <div>
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-700">
-                    🛡️ Pluggy Exclusive Protection
-                  </span>
-                  <h3 className="text-base sm:text-xl font-extrabold text-[#1A2A49] mt-1 mb-3">
-                    Zero Downtime & 100% Safe Repairs
-                  </h3>
+              {/* Right: Standby Backup Appliance + Dual-PIN */}
+              <div>
+                <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-700">
+                  🛡️ Pluggy Exclusive Protection
+                </span>
+                <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#1A2A49] mt-2 mb-4">
+                  Zero Downtime & 100% Safe Repairs
+                </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                    <div className="p-3.5 rounded-2xl bg-white">
-                      <RefreshCw size={16} className="text-[#1A2A49] mb-1.5" />
-                      <p className="text-xs font-bold text-[#1A2A49]">₹99/Day Loaner Fan</p>
-                      <p className="text-[11px] text-gray-500 mt-0.5">
-                        Backup unit during 24h motor repairs
+                <div className="divide-y divide-gray-200 border-y border-gray-200">
+                  <div className="py-3.5 flex items-start gap-3.5">
+                    <div className="w-9 h-9 rounded-full bg-[#F5F5F7] flex items-center justify-center shrink-0 mt-0.5">
+                      <RefreshCw size={16} className="text-[#1A2A49]" />
+                    </div>
+                    <div>
+                      <p className="text-sm sm:text-base font-bold text-[#1A2A49]">
+                        ₹99/Day Loaner Fan
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Backup unit provided during 24-hour motor rewinding repairs
                       </p>
                     </div>
-                    <div className="p-3.5 rounded-2xl bg-white">
-                      <ShieldCheck size={16} className="text-[#F37021] mb-1.5" />
-                      <p className="text-xs font-bold text-[#1A2A49]">Dual-PIN Escrow</p>
-                      <p className="text-[11px] text-gray-500 mt-0.5">
-                        Share Happy PIN only when satisfied
+                  </div>
+
+                  <div className="py-3.5 flex items-start gap-3.5">
+                    <div className="w-9 h-9 rounded-full bg-orange-50 flex items-center justify-center shrink-0 mt-0.5">
+                      <ShieldCheck size={16} className="text-[#F37021]" />
+                    </div>
+                    <div>
+                      <p className="text-sm sm:text-base font-bold text-[#1A2A49]">
+                        Dual-PIN Escrow Protection
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Payment stays safe in Escrow — share Happy PIN only when 100% satisfied
                       </p>
                     </div>
-                    <div className="p-3.5 rounded-2xl bg-white">
-                      <QrCode size={16} className="text-emerald-600 mb-1.5" />
-                      <p className="text-xs font-bold text-[#1A2A49]">30-Day QR Warranty</p>
-                      <p className="text-[11px] text-gray-500 mt-0.5">
-                        1-Click ₹0 free re-visit claim
+                  </div>
+
+                  <div className="py-3.5 flex items-start gap-3.5">
+                    <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center shrink-0 mt-0.5">
+                      <QrCode size={16} className="text-emerald-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm sm:text-base font-bold text-[#1A2A49]">
+                        30-Day QR Appliance Warranty
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        1-Click ₹0 free priority engineer re-visit if the issue returns
                       </p>
                     </div>
                   </div>

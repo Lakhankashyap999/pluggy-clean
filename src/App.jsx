@@ -69,7 +69,15 @@ export default function App() {
     "/engineer",
     "/engineer-dashboard",
     "/admin",
-    "/account",
+  ];
+  const hideBottomNavRoutes = [
+    "/login",
+    "/signup",
+    "/engineer-login",
+    "/admin-login",
+    "/engineer",
+    "/engineer-dashboard",
+    "/admin",
   ];
   const hideFooterRoutes = [
     "/login",
@@ -80,9 +88,13 @@ export default function App() {
     "/engineer-dashboard",
     "/admin",
     "/account",
+    "/track",
   ];
 
   const hideNavbar = hideNavbarRoutes.some(
+    (path) => location.pathname === path || location.pathname.startsWith(`${path}/`)
+  );
+  const hideBottomNav = hideBottomNavRoutes.some(
     (path) => location.pathname === path || location.pathname.startsWith(`${path}/`)
   );
   const hideFooter = hideFooterRoutes.some(
@@ -90,7 +102,7 @@ export default function App() {
   );
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#F4F6F9] dark:bg-[#0B1120] transition-colors duration-300">
+    <div className="flex flex-col min-h-screen bg-white dark:bg-[#0B1120] transition-colors duration-300">
       {!hideNavbar && <Navbar />}
 
       <main className="flex-1">
@@ -136,7 +148,7 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      {!hideFooter && <BottomNavbar />}
+      {!hideBottomNav && <BottomNavbar />}
       {!hideFooter && <Footer />}
 
       <Toaster

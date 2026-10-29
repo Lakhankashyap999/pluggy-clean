@@ -151,64 +151,137 @@ export default function Account() {
   ]
 
   return (
-    <div className="min-h-screen bg-white font-inter pb-28 md:pb-10">
-      {/* Header */}
-      <div className="bg-white/90 backdrop-blur-xl border-b border-black/5 sticky top-0 z-30 safe-top">
-        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+    <div className="min-h-screen bg-white font-inter pt-[64px] md:pt-[108px] pb-28 md:pb-14">
+      <div className="max-w-3xl mx-auto px-5 py-6 sm:py-8">
+        {/* Top Row: Back + Sign Out */}
+        <div className="flex items-center justify-between mb-6">
           <BackButton />
-          <h2 className="text-base font-bold text-[#1A2A49]">Account</h2>
-          <button onClick={toggleTheme} className="w-10 h-10 hover:bg-gray-100 rounded-full transition flex items-center justify-center">
-            {theme === "dark" ? <Sun size={19} className="text-gray-600" /> : <Moon size={19} className="text-gray-600" />}
+          <button
+            onClick={() => setShowLogoutModal(true)}
+            className="text-xs sm:text-sm font-bold text-red-600 hover:text-red-700 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50"
+          >
+            <LogOut size={14} /> Sign Out
           </button>
         </div>
-      </div>
 
-      <div className="max-w-3xl mx-auto px-5 py-8">
-        {/* Profile — centered, no box */}
+        {/* Profile — Clean Apple-Style Header (No Box) */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-200"
         >
-          <div className="w-24 h-24 mx-auto bg-gradient-to-br from-[#F37021] to-[#FF8C42] rounded-full flex items-center justify-center text-white text-4xl font-bold shadow-lg shadow-orange-200">
-            {user.name?.charAt(0).toUpperCase() || "U"}
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 bg-gradient-to-br from-[#F37021] to-[#FF8C42] rounded-full flex items-center justify-center text-white text-2xl sm:text-3xl font-extrabold shadow-md">
+              {user.name?.charAt(0).toUpperCase() || "U"}
+            </div>
+            <div className="min-w-0">
+              <span className="inline-block text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full mb-1">
+                Verified Customer ({user.id || "USR001"})
+              </span>
+              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#1A2A49] truncate">
+                {user.name}
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-500 truncate mt-0.5">{user.email}</p>
+              {user.phone && (
+                <p className="text-xs sm:text-sm text-gray-500 mt-0.5">{user.phone}</p>
+              )}
+            </div>
           </div>
-          <h3 className="text-2xl font-extrabold tracking-tight text-[#1A2A49] mt-4 break-words">
-            {user.name}
-          </h3>
-          <p className="text-sm text-gray-500 mt-1 break-all">{user.email}</p>
-          {user.phone && <p className="text-sm text-gray-500 mt-0.5">{user.phone}</p>}
 
           <button
             onClick={() => navigate("/account/edit")}
-            className="mt-4 h-10 px-6 rounded-full bg-[#F5F5F7] text-sm font-semibold text-[#1A2A49] inline-flex items-center gap-1.5 active:bg-gray-200"
+            className="self-start sm:self-center h-10 px-5 rounded-full bg-[#F5F5F7] hover:bg-gray-200 text-xs sm:text-sm font-bold text-[#1A2A49] inline-flex items-center gap-1.5 shrink-0"
           >
-            <Edit3 size={14} /> Edit profile
+            <Edit3 size={14} /> Edit Profile
           </button>
-
-          {/* Stats — three clean columns */}
-          <div className="grid grid-cols-3 mt-8 py-5 border-y border-gray-100">
-            <div>
-              <p className="text-2xl font-extrabold text-[#1A2A49]">{activeBookings}</p>
-              <p className="text-xs text-gray-500 mt-0.5">Active</p>
-            </div>
-            <div className="border-x border-gray-100">
-              <p className="text-2xl font-extrabold text-[#1A2A49]">{completedBookings}</p>
-              <p className="text-xs text-gray-500 mt-0.5">Completed</p>
-            </div>
-            <div>
-              <p className="text-2xl font-extrabold text-[#1A2A49]">{cart?.length || 0}</p>
-              <p className="text-xs text-gray-500 mt-0.5">In cart</p>
-            </div>
-          </div>
-
-          <div className="mt-6 text-left">
-            <ProfileStrengthMeter user={user} />
-          </div>
         </motion.div>
 
+        {/* Stats — Three Clean Columns with Hairline Dividers */}
+        <div className="grid grid-cols-3 py-5 border-b border-gray-200 text-center">
+          <div onClick={() => navigate("/account/track")} className="cursor-pointer">
+            <p className="text-2xl font-extrabold text-[#1A2A49]">{activeBookings}</p>
+            <p className="text-xs text-gray-500 mt-0.5">Active Bookings</p>
+          </div>
+          <div
+            onClick={() => navigate("/account/track")}
+            className="border-x border-gray-200 cursor-pointer"
+          >
+            <p className="text-2xl font-extrabold text-[#1A2A49]">{completedBookings}</p>
+            <p className="text-xs text-gray-500 mt-0.5">Completed</p>
+          </div>
+          <div onClick={() => navigate("/account/cart")} className="cursor-pointer">
+            <p className="text-2xl font-extrabold text-[#F37021]">₹{walletBalance ?? 250}</p>
+            <p className="text-xs text-gray-500 mt-0.5">Pluggy Wallet</p>
+          </div>
+        </div>
+
+        {/* Clean Apple-Style Menu List (Dividers, No Heavy Boxes) */}
+        <div className="mt-6">
+          <h2 className="text-xs font-extrabold uppercase tracking-wider text-gray-400 mb-2">
+            Account & Bookings
+          </h2>
+          <div className="divide-y divide-gray-200/80 border-y border-gray-200/80">
+            {sections.map((section) => (
+              <div key={section.id}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (section.id === "payment" || section.id === "support") {
+                      setExpandedSection(expandedSection === section.id ? null : section.id)
+                    } else if (section.link) {
+                      navigate(section.link)
+                    }
+                  }}
+                  className="w-full py-4 flex items-center justify-between gap-3.5 text-left group"
+                >
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div
+                      className={`w-10 h-10 rounded-xl ${section.color} flex items-center justify-center shrink-0`}
+                    >
+                      <section.icon size={20} />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-[#1A2A49] text-sm sm:text-base group-hover:text-[#F37021] transition-colors">
+                          {section.title}
+                        </h4>
+                        {section.badge && (
+                          <span className="bg-[#F37021] text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
+                            {section.badge}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-gray-500 text-xs sm:text-sm mt-0.5 truncate">
+                        {section.subtitle}
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight
+                    size={18}
+                    className={`text-gray-400 shrink-0 transition-transform ${
+                      expandedSection === section.id ? "rotate-90 text-[#F37021]" : ""
+                    }`}
+                  />
+                </button>
+
+                {section.id === "payment" && expandedSection === "payment" && (
+                  <div className="pb-4">
+                    <PaymentMethodsCard />
+                  </div>
+                )}
+
+                {section.id === "support" && expandedSection === "support" && (
+                  <div className="pb-4">
+                    <SupportCard />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Wallet & Referrals Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
           <WalletCard balance={walletBalance} />
           <ReferralCard
             code={referralCode}
@@ -219,153 +292,37 @@ export default function Account() {
           />
         </div>
 
-        {/* Loyalty Badges */}
-        <div className="mb-6">
-          <BadgesCard completedCount={completedBookings} />
-        </div>
-
-        {/* Grid Sections with Inline Expand */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-4">
-          {sections.map((section, index) => (
-            <div key={section.id}>
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.03 }}
-                whileHover={{ y: -2, boxShadow: "0 8px 20px rgba(0,0,0,0.06)" }}
-                onClick={() => {
-                  if (section.id === "payment" || section.id === "support") {
-                    setExpandedSection(expandedSection === section.id ? null : section.id)
-                  } else if (section.link) {
-                    navigate(section.link)
-                  }
-                }}
-                className="bg-[#F5F5F7] rounded-2xl p-4 sm:p-5 cursor-pointer active:bg-gray-200 transition-all group"
-              >
-                <div className="flex items-start gap-4">
-                  <div
-                    className={`w-12 h-12 rounded-xl ${section.color} flex items-center justify-center group-hover:scale-110 transition`}
-                  >
-                    <section.icon size={24} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-semibold text-[#1A2A49] text-base">{section.title}</h4>
-                      {section.badge && (
-                        <span className="bg-[#F37021] text-white text-xs px-2 py-0.5 rounded-full">
-                          {section.badge}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-gray-500 text-sm mt-0.5">{section.subtitle}</p>
-                  </div>
-                  <ChevronRight
-                    size={20}
-                    className={`text-gray-400 group-hover:text-[#F37021] transition-all ${
-                      expandedSection === section.id ? "rotate-90 text-[#F37021]" : "group-hover:translate-x-1"
-                    }`}
-                  />
-                </div>
-              </motion.div>
-
-              {section.id === "payment" && expandedSection === "payment" && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mt-2 bg-[#F5F5F7] rounded-2xl p-5"
-                >
-                  <PaymentMethodsCard />
-                </motion.div>
-              )}
-
-              {section.id === "support" && expandedSection === "support" && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mt-2 bg-[#F5F5F7] rounded-2xl p-5"
-                >
-                  <SupportCard />
-                </motion.div>
-              )}
-            </div>
-          ))}
-        </div>
-
         {/* Preferences & Activity Timeline */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-          <div className="bg-[#F5F5F7] rounded-3xl p-5">
-            <h3 className="font-bold text-[#1A2A49] mb-4 flex items-center gap-2">
-              <Settings size={18} className="text-[#F37021]" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 pt-6 border-t border-gray-200">
+          <div>
+            <h3 className="font-bold text-[#1A2A49] mb-3 flex items-center gap-2 text-sm sm:text-base">
+              <Settings size={17} className="text-[#F37021]" />
               Service Preferences
             </h3>
             <BookingPreferences />
           </div>
 
-          <div className="bg-[#F5F5F7] rounded-3xl p-5">
-            <h3 className="font-bold text-[#1A2A49] mb-4 flex items-center gap-2">
-              <Clock size={18} className="text-[#F37021]" />
+          <div>
+            <h3 className="font-bold text-[#1A2A49] mb-3 flex items-center gap-2 text-sm sm:text-base">
+              <Clock size={17} className="text-[#F37021]" />
               Recent Activity
             </h3>
             <ActivityTimeline notifications={notifications || []} bookings={requests || []} />
           </div>
         </div>
 
-        {/* Additional Options */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="mt-6 bg-[#F5F5F7] rounded-2xl overflow-hidden"
-        >
-          <div
-            onClick={() => navigate("/account/services")}
-            className="flex items-center justify-between p-5 hover:bg-gray-50 cursor-pointer border-b border-gray-100"
-          >
-            <div className="flex items-center gap-3">
-              <Settings size={20} className="text-gray-500" />
-              <span className="text-gray-700 font-medium">Browse All Services</span>
-            </div>
-            <ChevronRight size={18} className="text-gray-400" />
-          </div>
-          <div
-            onClick={() => navigate("/account/password")}
-            className="flex items-center justify-between p-5 hover:bg-gray-50 cursor-pointer border-b border-gray-100"
-          >
-            <div className="flex items-center gap-3">
-              <Shield size={20} className="text-gray-500" />
-              <span className="text-gray-700 font-medium">Change Password</span>
-            </div>
-            <ChevronRight size={18} className="text-gray-400" />
-          </div>
-          <div
-            className="flex items-center justify-between p-5 hover:bg-gray-50 cursor-pointer"
-            onClick={toggleTheme}
-          >
-            <div className="flex items-center gap-3">
-              {theme === "dark" ? <Moon size={20} className="text-gray-500" /> : <Sun size={20} className="text-gray-500" />}
-              <span className="text-gray-700 font-medium">Dark Mode ({theme === "dark" ? "On" : "Off"})</span>
-            </div>
-            <ChevronRight size={18} className="text-gray-400" />
-          </div>
-        </motion.div>
-
         {/* Logout Button */}
-        <motion.button
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
+        <button
           onClick={() => setShowLogoutModal(true)}
-          className="w-full mt-4 py-4 bg-white border border-red-200 rounded-xl text-red-600 font-medium hover:bg-red-50 transition flex items-center justify-center gap-2"
+          className="w-full mt-8 py-3.5 rounded-full bg-red-50 hover:bg-red-100 text-red-600 font-bold text-sm transition flex items-center justify-center gap-2"
         >
-          <LogOut size={18} /> Sign Out
-        </motion.button>
+          <LogOut size={17} /> Sign Out of Pluggy
+        </button>
 
         {/* Version */}
         <p className="text-center text-xs text-gray-400 mt-6">
           <Sparkles size={12} className="inline mr-1" />
-          Pluggy v1.0 • Made with ❤️ in India
+          Pluggy v2.0 • Made with ❤️ in India
         </p>
       </div>
 

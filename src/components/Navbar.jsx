@@ -210,8 +210,8 @@ export default function Navbar() {
               <Menu size={20} />
             </button>
 
-            <Link to="/" className="flex items-center gap-1.5 shrink-0">
-              <div className="w-7 h-7 rounded-lg bg-[#1A2A49] p-1 flex items-center justify-center">
+            <Link to="/" className="flex items-center gap-2 shrink-0">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#F37021] to-[#FF8C42] p-1 flex items-center justify-center shadow-xs">
                 <img
                   src="/image/logos.png"
                   alt="Pluggy"
@@ -224,14 +224,15 @@ export default function Navbar() {
             </Link>
           </div>
 
-          <div className="flex items-center gap-0.5 shrink-0">
+          <div className="flex items-center gap-1 shrink-0">
             <button
               onClick={() => setLocationOpen(true)}
-              className="flex items-center gap-1 h-8 px-2 rounded-full bg-gray-100 text-[11px] font-semibold text-[#1A2A49] max-w-[88px]"
+              className="flex items-center gap-1 h-8 px-2.5 rounded-full bg-[#F5F5F7] text-xs font-semibold text-[#1A2A49] max-w-[130px]"
               aria-label="Change location"
             >
               <MapPin size={12} className="text-[#F37021] shrink-0" />
-              <span className="truncate">{city || "City"}</span>
+              <span className="truncate">{city?.split(",")[0] || "Select City"}</span>
+              <ChevronDown size={11} className="text-gray-400 shrink-0" />
             </button>
 
             <button
@@ -253,14 +254,6 @@ export default function Navbar() {
                   {cart.length}
                 </span>
               )}
-            </button>
-
-            <button
-              onClick={() => navigate(user ? "/account" : "/login")}
-              className="w-9 h-9 rounded-full active:bg-gray-100 flex items-center justify-center"
-              aria-label="Account"
-            >
-              <User size={19} />
             </button>
           </div>
         </div>

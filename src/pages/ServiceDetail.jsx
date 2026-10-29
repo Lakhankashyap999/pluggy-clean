@@ -29,6 +29,7 @@ import {
 } from "../data/servicesCatalog"
 import { motion, AnimatePresence } from "framer-motion"
 import toast from "react-hot-toast"
+import FaultMediaUpload from "../components/FaultMediaUpload"
 
 export default function ServiceDetail() {
   const params = useParams()
@@ -149,7 +150,7 @@ export default function ServiceDetail() {
       : currentCat.subcategories.filter((s) => s.id === activeSubId)
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] pt-[72px] md:pt-[112px] pb-24">
+    <div className="min-h-screen bg-white pt-[72px] md:pt-[112px] pb-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
         {/* Top Breadcrumb & Category Switcher Pills */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
@@ -272,7 +273,7 @@ export default function ServiceDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* LEFT COLUMN (3 COLS): STICKY SUB-CATEGORY RAIL + QUICK HELP */}
           <div className="lg:col-span-3 lg:sticky lg:top-[150px] space-y-4">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-4">
+            <div className="lg:bg-[#F5F5F7] lg:rounded-3xl lg:p-4">
               <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-400 mb-3 flex items-center gap-1.5">
                 <Sparkles size={14} className="text-[#F37021]" /> Select Sub-Category
               </h3>
@@ -374,18 +375,15 @@ export default function ServiceDetail() {
             </div>
           </div>
 
-          {/* CENTER COLUMN (5 COLS): DETAILED SERVICE CARDS */}
-          <div className="lg:col-span-5 space-y-6">
+          {/* CENTER COLUMN (5 COLS): CLEAN APPLE-STYLE SERVICE LIST (NO NESTED BOXES) */}
+          <div className="lg:col-span-5 space-y-10">
             {displayedSubcategories.map((sub) => (
-              <div
-                key={sub.id}
-                className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-4 sm:p-5"
-              >
-                <div className="flex items-center justify-between pb-3 mb-4 border-b border-gray-100">
-                  <div className="flex items-center gap-2">
+              <div key={sub.id}>
+                <div className="flex items-center justify-between pb-3 mb-2 border-b-2 border-[#1A2A49]/10">
+                  <div className="flex items-center gap-2.5">
                     <span className="text-2xl">{sub.icon}</span>
                     <div>
-                      <h2 className="font-extrabold text-[#1A2A49] text-base sm:text-lg">
+                      <h2 className="font-extrabold text-[#1A2A49] text-lg sm:text-xl tracking-tight">
                         {sub.name}
                       </h2>
                       <p className="text-xs text-gray-500">
@@ -395,17 +393,15 @@ export default function ServiceDetail() {
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="divide-y divide-gray-200/80">
                   {sub.services.map((srv) => {
                     const selected = isInCart(srv.id)
                     return (
                       <motion.div
                         key={srv.id}
                         layout
-                        className={`rounded-2xl p-4 border transition-all ${
-                          selected
-                            ? "bg-orange-50/40 border-[#F37021] shadow-sm"
-                            : "bg-[#F4F6F9]/60 border-gray-200/80 hover:border-gray-300"
+                        className={`py-5 transition-all ${
+                          selected ? "bg-orange-50/30 -mx-3 px-3 rounded-2xl" : ""
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
@@ -608,6 +604,11 @@ export default function ServiceDetail() {
                         🎉 You are saving ₹{itemSavings + bundleDiscountAmount} on this order!
                       </div>
                     )}
+                  </div>
+
+                  {/* Fault Photo & Device Upload right inside Cart Summary */}
+                  <div className="mt-4">
+                    <FaultMediaUpload />
                   </div>
 
                   {/* Address Input */}
