@@ -272,19 +272,19 @@ export default function Navbar() {
         className="hidden md:block fixed top-0 left-0 right-0 z-50 shadow-md"
         onMouseLeave={() => setHoveredCategory(null)}
       >
-        {/* TIER 1: Top Utility Strip */}
-        <div className="bg-[#0F172A] text-white/85 text-xs border-b border-white/10">
-          <div className="max-w-7xl mx-auto px-6 py-1.5 flex items-center justify-between">
-            <div className="flex items-center gap-5">
+        {/* TIER 1: Top Utility Strip (Strict Single-Line h-8) */}
+        <div className="bg-[#0F172A] text-white/90 text-[11px] border-b border-white/10 h-8 flex items-center">
+          <div className="max-w-7xl w-full mx-auto px-4 lg:px-6 flex items-center justify-between gap-2 whitespace-nowrap overflow-hidden">
+            <div className="flex items-center gap-3 lg:gap-4 whitespace-nowrap">
               <button
                 onClick={() => {
                   setConsultInitialTab("sos")
                   setConsultModalOpen(true)
                 }}
-                className="flex items-center gap-1.5 text-[#FF8C42] hover:text-white font-semibold transition"
+                className="flex items-center gap-1.5 text-[#FF8C42] hover:text-white font-bold transition whitespace-nowrap"
               >
-                <span className="w-2 h-2 rounded-full bg-[#F37021] animate-ping" />
-                ⚡ 15-Min Emergency SOS Responder
+                <span className="w-2 h-2 rounded-full bg-[#F37021] animate-ping shrink-0" />
+                <span>⚡ 15-Min Emergency SOS</span>
               </button>
               <span className="text-white/20">|</span>
               <button
@@ -292,46 +292,56 @@ export default function Navbar() {
                   setConsultInitialTab("event")
                   setConsultModalOpen(true)
                 }}
-                className="hover:text-white transition flex items-center gap-1"
+                className="hover:text-white transition flex items-center gap-1 whitespace-nowrap"
               >
-                🎪 Shaadi / Function Standby Electrician
+                <span>🎪 Shaadi / Function Standby</span>
               </button>
               <span className="text-white/20">|</span>
               <button
                 onClick={() => setRateCardOpen(true)}
-                className="hover:text-white transition flex items-center gap-1"
+                className="hover:text-white transition flex items-center gap-1 whitespace-nowrap"
               >
-                <FileText size={13} className="text-[#F37021]" /> Official Spare Parts Rate Card
+                <FileText size={12} className="text-[#F37021] shrink-0" />
+                <span>Official Spare Rate Card</span>
               </button>
             </div>
 
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-3 lg:gap-4 whitespace-nowrap">
               <button
                 onClick={() => {
                   setConsultInitialTab("video")
                   setConsultModalOpen(true)
                 }}
-                className="hover:text-white transition flex items-center gap-1 text-emerald-300 font-medium"
+                className="hover:text-white transition flex items-center gap-1 text-emerald-300 font-semibold whitespace-nowrap"
               >
-                <Video size={13} /> ₹29 Video Diagnosis
+                <Video size={12} className="shrink-0" />
+                <span>₹29 Video Diagnosis</span>
               </button>
               <span className="text-white/20">|</span>
-              <Link to="/engineer-dashboard" className="hover:text-white transition flex items-center gap-1">
-                <Wrench size={13} className="text-[#F37021]" /> Engineer Partner Portal
+              <Link
+                to="/engineer"
+                className="hover:text-white transition flex items-center gap-1 whitespace-nowrap"
+              >
+                <Wrench size={12} className="text-[#F37021] shrink-0" />
+                <span>Partner Portal</span>
               </Link>
               <span className="text-white/20">|</span>
-              <Link to="/admin" className="hover:text-white transition flex items-center gap-1 font-semibold text-amber-300">
-                <LayoutDashboard size={13} /> Executive / Admin Desk
+              <Link
+                to="/admin"
+                className="hover:text-white transition flex items-center gap-1 font-bold text-amber-300 whitespace-nowrap"
+              >
+                <LayoutDashboard size={12} className="shrink-0" />
+                <span>Admin Desk</span>
               </Link>
             </div>
           </div>
         </div>
 
-        {/* TIER 2: Main Brand, Universal Search Bar & Quick Actions */}
-        <div className="bg-[#1A2A49] text-white">
-          <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-5">
+        {/* TIER 2: Main Brand, Universal Search Bar & Quick Actions (Strict Single-Line h-16) */}
+        <div className="bg-[#1A2A49] text-white h-16 flex items-center">
+          <div className="max-w-7xl w-full mx-auto px-4 lg:px-6 flex items-center justify-between gap-3 lg:gap-4">
             {/* Brand Logo */}
-            <Link to="/" className="flex items-center gap-2.5 flex-shrink-0 group">
+            <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F37021] to-[#FF8C42] p-1.5 flex items-center justify-center shadow-md group-hover:scale-105 transition">
                 <img
                   src="/image/logos.png"
@@ -339,11 +349,11 @@ export default function Navbar() {
                   className="h-full w-full object-contain filter brightness-0 invert"
                 />
               </div>
-              <div>
+              <div className="whitespace-nowrap">
                 <span className="text-xl font-extrabold tracking-wide font-poppins block leading-none">
                   Pluggy
                 </span>
-                <span className="text-[10px] text-[#FF8C42] font-medium tracking-wider uppercase">
+                <span className="text-[10px] text-[#FF8C42] font-semibold tracking-wider uppercase block mt-0.5">
                   Home Services
                 </span>
               </div>
@@ -352,30 +362,30 @@ export default function Navbar() {
             {/* Location Selector Box (Amazon Style) */}
             <button
               onClick={() => setLocationOpen(true)}
-              className="flex items-center gap-2 text-left px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 transition flex-shrink-0 max-w-[190px]"
+              className="flex items-center gap-2 text-left px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 transition shrink-0 max-w-[175px]"
             >
-              <MapPin size={18} className="text-[#F37021] flex-shrink-0" />
+              <MapPin size={16} className="text-[#F37021] shrink-0" />
               <div className="min-w-0">
-                <span className="block text-[10px] text-white/70 leading-tight">
+                <span className="block text-[10px] text-white/70 leading-tight whitespace-nowrap">
                   Service Location
                 </span>
                 <span className="font-semibold text-xs truncate block text-white">
                   {city || "Select City"}
                 </span>
               </div>
-              <ChevronDown size={14} className="text-white/60 flex-shrink-0" />
+              <ChevronDown size={13} className="text-white/60 shrink-0" />
             </button>
 
             {/* CENTER: Wide Universal Search Bar with Category Dropdown */}
-            <div className="flex-1 max-w-2xl relative">
+            <div className="flex-1 max-w-xl relative">
               <form
                 onSubmit={handleDesktopSearchSubmit}
-                className="flex items-center bg-white rounded-xl overflow-hidden shadow-inner border-2 border-transparent focus-within:border-[#F37021] transition"
+                className="flex items-center bg-white rounded-xl overflow-hidden shadow-inner border-2 border-transparent focus-within:border-[#F37021] transition h-10"
               >
                 <select
                   value={searchCategory}
                   onChange={(e) => setSearchCategory(e.target.value)}
-                  className="bg-gray-100 text-[#1A2A49] text-xs font-semibold px-3 py-3 border-r border-gray-200 focus:outline-none cursor-pointer"
+                  className="bg-gray-100 text-[#1A2A49] text-xs font-bold px-2.5 h-full border-r border-gray-200 focus:outline-none cursor-pointer shrink-0"
                 >
                   <option value="all">All Categories</option>
                   {CATEGORIES_CATALOG.map((cat) => (
@@ -393,8 +403,8 @@ export default function Navbar() {
                     setSearchQuery(e.target.value)
                     setSearchFocused(true)
                   }}
-                  placeholder="Search for 'AC Foam Jet', 'MCB Tripping', 'Fan Capacitor', 'Geyser'..."
-                  className="flex-1 px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none"
+                  placeholder="Search 'AC Foam Jet', 'MCB Trip', 'Fan', 'Geyser'..."
+                  className="flex-1 px-3 h-full text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none min-w-0"
                 />
 
                 {searchQuery && (
@@ -409,9 +419,9 @@ export default function Navbar() {
 
                 <button
                   type="submit"
-                  className="bg-[#F37021] hover:bg-[#e05e15] text-white px-5 py-3 font-semibold text-sm flex items-center gap-1.5 transition"
+                  className="bg-[#F37021] hover:bg-[#e05e15] text-white px-4 h-full font-semibold text-sm flex items-center justify-center transition shrink-0"
                 >
-                  <Search size={17} />
+                  <Search size={16} />
                 </button>
               </form>
 
@@ -442,7 +452,7 @@ export default function Navbar() {
                     ) : (
                       <div className="divide-y divide-gray-100 max-h-80 overflow-y-auto">
                         {liveSearchResults.map((srv) => {
-                          const inCart = cart.some((c) => c.issue === srv.issue)
+                          const inCart = cart.some((c) => c.issue === srv.issue || c.id === srv.id)
                           return (
                             <div
                               key={srv.id}
@@ -456,7 +466,7 @@ export default function Navbar() {
                                 }}
                                 className="flex items-center gap-3 cursor-pointer flex-1 min-w-0"
                               >
-                                <span className="w-9 h-9 rounded-xl bg-[#1A2A49]/5 flex items-center justify-center text-lg flex-shrink-0">
+                                <span className="w-9 h-9 rounded-xl bg-[#1A2A49]/5 flex items-center justify-center text-lg shrink-0">
                                   {srv.categoryIcon}
                                 </span>
                                 <div className="min-w-0">
@@ -468,7 +478,7 @@ export default function Navbar() {
                                   </p>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-3 flex-shrink-0">
+                              <div className="flex items-center gap-3 shrink-0">
                                 <span className="font-bold text-sm text-[#F37021]">₹{srv.price}</span>
                                 <button
                                   onClick={() =>
@@ -498,16 +508,16 @@ export default function Navbar() {
             </div>
 
             {/* Right Action Buttons */}
-            <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="flex items-center gap-2 lg:gap-2.5 shrink-0 whitespace-nowrap">
               {/* SOS Button */}
               <button
                 onClick={() => {
                   setConsultInitialTab("sos")
                   setConsultModalOpen(true)
                 }}
-                className="px-3 py-2 rounded-xl bg-gradient-to-r from-[#F37021] to-[#FF8C42] text-white font-bold text-xs shadow-md hover:scale-105 transition flex items-center gap-1"
+                className="px-3 py-2 rounded-xl bg-gradient-to-r from-[#F37021] to-[#FF8C42] text-white font-bold text-xs shadow-md hover:scale-105 transition flex items-center gap-1 whitespace-nowrap"
               >
-                <Zap size={14} /> SOS
+                <Zap size={13} /> SOS
               </button>
 
               {user && (
@@ -515,10 +525,10 @@ export default function Navbar() {
                   {/* Wallet Pill */}
                   <button
                     onClick={() => navigate("/account")}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold transition"
+                    className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold transition whitespace-nowrap"
                     title="Pluggy Wallet Balance"
                   >
-                    <Wallet size={15} className="text-[#FF8C42]" />
+                    <Wallet size={14} className="text-[#FF8C42]" />
                     <span>₹{walletBalance}</span>
                   </button>
 
@@ -528,7 +538,7 @@ export default function Navbar() {
                     className="relative p-2 rounded-xl bg-white/10 hover:bg-white/15 transition"
                     title="Notifications"
                   >
-                    <Bell size={17} />
+                    <Bell size={16} />
                     {unreadCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-[#F37021] text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
                         {unreadCount}
@@ -542,7 +552,7 @@ export default function Navbar() {
               {!user ? (
                 <button
                   onClick={() => navigate("/login")}
-                  className="px-4 py-2 bg-white text-[#1A2A49] font-bold text-xs rounded-xl shadow hover:bg-gray-100 transition"
+                  className="px-3.5 py-2 bg-white text-[#1A2A49] font-bold text-xs rounded-xl shadow hover:bg-gray-100 transition whitespace-nowrap"
                 >
                   Login / Sign Up
                 </button>
@@ -552,8 +562,8 @@ export default function Navbar() {
                   onMouseEnter={() => setMenuOpen("user")}
                   onMouseLeave={() => setMenuOpen(null)}
                 >
-                  <button className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs transition">
-                    <div className="w-7 h-7 rounded-full bg-[#F37021] text-white font-bold flex items-center justify-center text-xs">
+                  <button className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs transition whitespace-nowrap">
+                    <div className="w-7 h-7 rounded-full bg-[#F37021] text-white font-bold flex items-center justify-center text-xs shrink-0">
                       {user.name?.charAt(0).toUpperCase() || "U"}
                     </div>
                     <div className="text-left">
@@ -581,7 +591,7 @@ export default function Navbar() {
                           <User size={15} className="text-[#F37021]" /> Your Account & Wallet
                         </button>
                         <button
-                          onClick={() => navigate("/account/track")}
+                          onClick={() => navigate("/track")}
                           className="w-full text-left px-4 py-2.5 hover:bg-[#F4F6F9] flex items-center gap-2.5"
                         >
                           <ShoppingCart size={15} className="text-[#F37021]" /> Track Bookings & OTP
@@ -594,7 +604,7 @@ export default function Navbar() {
                         </button>
                         <div className="border-t border-gray-100 my-1" />
                         <button
-                          onClick={() => navigate("/engineer-dashboard")}
+                          onClick={() => navigate("/engineer")}
                           className="w-full text-left px-4 py-2.5 hover:bg-[#F4F6F9] flex items-center gap-2.5 text-gray-600"
                         >
                           <Wrench size={15} /> Switch to Engineer Portal
@@ -625,9 +635,9 @@ export default function Navbar() {
               {/* Cart Trigger */}
               <button
                 onClick={() => setCartOpen(true)}
-                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white text-[#1A2A49] hover:bg-gray-100 font-bold text-xs shadow transition relative"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white text-[#1A2A49] hover:bg-gray-100 font-bold text-xs shadow transition relative whitespace-nowrap"
               >
-                <ShoppingCart size={17} className="text-[#F37021]" />
+                <ShoppingCart size={16} className="text-[#F37021] shrink-0" />
                 <div className="text-left leading-tight">
                   <span className="block text-[10px] text-gray-500">Cart ({cart.length})</span>
                   <span className="font-extrabold text-xs text-[#1A2A49]">₹{finalTotal}</span>
@@ -637,10 +647,10 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* TIER 3: Flipkart / Amazon Style Category Mega-Menu Bar */}
-        <div className="bg-[#223a61] text-white border-t border-white/10">
-          <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-            <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
+        {/* TIER 3: Flipkart / Amazon Style Category Mega-Menu Bar (NO Scrollbar, Strict Single-Line h-10) */}
+        <div className="bg-[#223a61] text-white border-t border-white/10 h-10 flex items-center">
+          <div className="max-w-7xl w-full mx-auto px-4 lg:px-6 flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between flex-1">
               {CATEGORIES_CATALOG.map((cat) => {
                 const isHovered = hoveredCategory === cat.slug
                 const isCurrentRoute = location.pathname === `/services/${cat.slug}`
@@ -658,7 +668,7 @@ export default function Navbar() {
                         setHoveredCategory(null)
                         navigate(`/services/${cat.slug}`)
                       }}
-                      className={`px-3.5 py-2.5 text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap transition border-b-2 ${
+                      className={`px-2 lg:px-3 h-10 text-xs font-semibold flex items-center gap-1 whitespace-nowrap transition border-b-2 ${
                         isHovered || isCurrentRoute
                           ? "border-[#F37021] bg-white/10 text-white"
                           : "border-transparent text-white/90 hover:text-white hover:bg-white/5"
@@ -667,8 +677,10 @@ export default function Navbar() {
                       <span>{cat.icon}</span>
                       <span>{cat.shortName}</span>
                       <ChevronDown
-                        size={13}
-                        className={`transition-transform duration-200 ${isHovered ? "rotate-180 text-[#F37021]" : "text-white/60"}`}
+                        size={12}
+                        className={`transition-transform duration-200 ${
+                          isHovered ? "rotate-180 text-[#F37021]" : "text-white/60"
+                        }`}
                       />
                     </button>
                   </div>
@@ -678,7 +690,7 @@ export default function Navbar() {
 
             <button
               onClick={() => navigate("/book-service")}
-              className="text-xs font-bold text-[#FF8C42] hover:text-white whitespace-nowrap pl-4 py-2 flex items-center gap-1"
+              className="text-xs font-bold text-[#FF8C42] hover:text-white whitespace-nowrap pl-3 border-l border-white/15 h-6 flex items-center gap-1 shrink-0"
             >
               Quick Slot Book →
             </button>

@@ -228,6 +228,19 @@ footer {
   --tw-gradient-to: #EA580C !important;
 }
 
+/* ✅ Hide horizontal/vertical scrollbars on pill bars & navs */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.no-scrollbar,
+.scrollbar-hide {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
 /* ✅ MOBILE FIX - Prevent body scroll lock */
 @media (max-width: 768px) {
   body {

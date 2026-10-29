@@ -145,7 +145,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] pt-[128px] md:pt-[138px]">
+    <div className="min-h-screen bg-[#F4F6F9] pt-[128px] md:pt-[136px]">
       {/* Top Offer Ribbon */}
       <AnimatePresence>
         {showOfferBar && (
