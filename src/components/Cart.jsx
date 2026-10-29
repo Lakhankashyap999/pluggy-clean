@@ -18,6 +18,7 @@ export default function Cart({ open, onClose }) {
     address,
     setAddress,
     appliedCoupon,
+    requireCustomerLogin,
   } = useApp()
   const [tempAddress, setTempAddress] = useState("")
   const [showAddressForm, setShowAddressForm] = useState(false)
@@ -48,6 +49,11 @@ export default function Cart({ open, onClose }) {
   }
 
   const handleCheckout = () => {
+    if (!user) {
+      onClose()
+      requireCustomerLogin("Checkout aur payment ke liye pehle login karein")
+      return
+    }
     if (!address || address.trim() === "") {
       setShowAddressForm(true)
       return

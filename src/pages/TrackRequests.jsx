@@ -1,7 +1,7 @@
 // src/pages/TrackRequests.jsx
 import { useState, useMemo } from "react"
 import { useApp } from "../AppContext"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Navigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   PackageSearch,
@@ -40,7 +40,7 @@ import toast from "react-hot-toast"
 export default function TrackRequests() {
   const navigate = useNavigate()
   const {
-    requests,
+    myRequests: requests,
     user,
     cancelRequest,
     rateRequest,
@@ -189,6 +189,18 @@ export default function TrackRequests() {
     return Math.max(0, Math.ceil(diff / (24 * 60 * 60 * 1000)))
   }
 
+  if (!user) {
+    return <Navigate to="/login" state={{ from: "/track" }} replace />
+  }
+
+  const myBookingIds = new Set((requests || []).map((r) => r.id))
+  const myPaymentTransactions = (paymentTransactions || []).filter(
+    (tx) => myBookingIds.has(tx.bookingId || tx.requestId)
+  )
+  const myOrderHistoryLogs = (orderHistoryLogs || []).filter(
+    (log) => myBookingIds.has(log.bookingId || log.requestId)
+  )
+
   return (
     <div className="min-h-screen bg-[#F4F6F9] pt-[92px] md:pt-[112px] pb-20">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4">
@@ -198,7 +210,7 @@ export default function TrackRequests() {
             <BackButton />
             <div>
               <h1 className="text-xl sm:text-2xl font-extrabold text-[#1A2A49]">
-                Track Live Bookings & Digital Warranty
+                My Bookings, Receipts & 30-Day Warranty
               </h1>
               <p className="text-xs text-gray-500">
                 Dual-PIN Verification • Live Spare Part Quotes • 30-Day QR Appliance Health Cards
@@ -208,38 +220,16 @@ export default function TrackRequests() {
 
           <div className="flex flex-wrap items-center gap-2">
             <button
-              onClick={() => navigate("/admin")}
-              className="px-3.5 py-2 rounded-xl bg-[#1A2A49] text-white text-xs font-bold hover:bg-[#223a61] shadow-sm flex items-center gap-1.5"
+              onClick={() =>
+                window.dispatchEvent(
+                  new CustomEvent("pluggy:open-rate-card", { detail: { category: "ac-repair" } })
+                )
+              }
+              className="px-3.5 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-[#1A2A49] hover:border-[#F37021] flex items-center gap-1.5 shadow-sm"
             >
-              🛡️ Step 2: Admin Desk <ArrowRight size={13} />
-            </button>
-            <button
-              onClick={() => navigate("/engineer")}
-              className="px-3.5 py-2 rounded-xl bg-[#F37021] text-white text-xs font-bold hover:bg-[#e05e15] shadow-sm flex items-center gap-1.5"
-            >
-              👨‍🔧 Step 3: Engineer Portal <ArrowRight size={13} />
+              <ShieldCheck size={14} className="text-emerald-600" /> Official Spare Rate Card
             </button>
           </div>
-        </div>
-
-        {/* Interactive A-to-Z Real-Time SQL Workflow Guide Banner */}
-        <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white rounded-2xl p-4 mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
-          <div className="flex items-start sm:items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#F37021] text-white flex items-center justify-center shrink-0">
-              <Database size={18} />
-            </div>
-            <div>
-              <p className="text-xs sm:text-sm font-extrabold">
-                Live SQL Database Connected (Customer ↔ Admin ↔ Engineer)
-              </p>
-              <p className="text-[11px] text-blue-200 mt-0.5">
-                1. Raise Request → 2. Verify & Assign in <strong>Admin Desk</strong> → 3. Enter Start PIN & Happy PIN in <strong>Engineer Portal</strong>
-              </p>
-            </div>
-          </div>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[11px] font-bold shrink-0 w-fit">
-            ● {paymentTransactions?.length || 0} Payments • {orderHistoryLogs?.length || 0} SQL Logs
-          </span>
         </div>
 
         {/* Main Section Switcher Tabs (Bookings vs Payment Gateway Records vs Order History) */}
@@ -252,7 +242,7 @@ export default function TrackRequests() {
                 : "text-gray-600 hover:bg-gray-50"
             }`}
           >
-            <PackageSearch size={16} /> Live Bookings ({requests?.length || 0})
+            <PackageSearch size={16} /> My Bookings ({requests?.length || 0})
           </button>
           <button
             onClick={() => setActiveMainTab("payments")}
@@ -262,7 +252,7 @@ export default function TrackRequests() {
                 : "text-gray-600 hover:bg-gray-50"
             }`}
           >
-            <CreditCard size={16} /> Payment Gateway Records ({paymentTransactions?.length || 0})
+            <CreditCard size={16} /> My Payment Receipts ({myPaymentTransactions.length})
           </button>
           <button
             onClick={() => setActiveMainTab("history")}
@@ -272,7 +262,7 @@ export default function TrackRequests() {
                 : "text-gray-600 hover:bg-gray-50"
             }`}
           >
-            <History size={16} /> Order History & SQL Logs ({orderHistoryLogs?.length || 0})
+            <History size={16} /> My Order Timeline ({myOrderHistoryLogs.length})
           </button>
         </div>
 
@@ -281,10 +271,10 @@ export default function TrackRequests() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
               <div>
                 <h2 className="text-base sm:text-lg font-extrabold text-[#1A2A49]">
-                  Official Payment Gateway Ledger (SQL Table: payment_transactions)
+                  My Payment Gateway Receipts
                 </h2>
                 <p className="text-xs text-gray-500">
-                  Every service booking and approved spare part generates an immutable payment record.
+                  Every service booking and approved spare part generates an official escrow receipt.
                 </p>
               </div>
               <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 w-fit">
@@ -292,19 +282,19 @@ export default function TrackRequests() {
               </span>
             </div>
 
-            {(paymentTransactions || []).length === 0 ? (
+            {myPaymentTransactions.length === 0 ? (
               <p className="text-sm text-gray-500 py-8 text-center">No payment transactions recorded yet.</p>
             ) : (
               <div className="space-y-3">
-                {(paymentTransactions || []).map((tx) => (
+                {myPaymentTransactions.map((tx) => (
                   <div
-                    key={tx.transactionId}
+                    key={tx.transactionId || tx.txnId}
                     className="p-4 rounded-2xl bg-[#F4F6F9] border border-gray-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                   >
                     <div className="space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-mono text-xs font-extrabold px-2.5 py-0.5 rounded bg-white text-[#1A2A49] border border-gray-200">
-                          {tx.transactionId}
+                          {tx.transactionId || tx.txnId}
                         </span>
                         <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-[#1A2A49]">
                           {tx.paymentMethod} • {tx.paymentChannel}
@@ -320,17 +310,17 @@ export default function TrackRequests() {
                         </span>
                       </div>
                       <p className="text-xs font-bold text-[#1A2A49] mt-1">
-                        {tx.notes || "Doorstep Service Booking Payment"}
+                        {tx.notes || tx.serviceName || "Doorstep Service Booking Payment"}
                       </p>
                       <p className="text-[11px] text-gray-500">
-                        Customer: {tx.customerName} ({tx.customerPhone}) • Order ID: #{tx.requestId} •{" "}
+                        Order ID: #{tx.requestId || tx.bookingId} •{" "}
                         {tx.createdAt ? new Date(tx.createdAt).toLocaleString() : "Just now"}
                       </p>
                     </div>
                     <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0">
                       <span className="text-lg font-extrabold text-[#1A2A49]">₹{tx.amount}</span>
                       <button
-                        onClick={() => copyBookingId(tx.transactionId)}
+                        onClick={() => copyBookingId(tx.transactionId || tx.txnId)}
                         className="text-[11px] font-bold text-[#F37021] hover:underline flex items-center gap-1"
                       >
                         <Copy size={12} /> Copy Receipt ID
@@ -348,21 +338,21 @@ export default function TrackRequests() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
               <div>
                 <h2 className="text-base sm:text-lg font-extrabold text-[#1A2A49]">
-                  Chronological Order History & Audit Trail (SQL Table: order_history_logs)
+                  My Order History & Live Status Timeline
                 </h2>
                 <p className="text-xs text-gray-500">
-                  Real-time log of every action across Customer, Admin Desk, and Field Engineer portals.
+                  Real-time log of every update on your service bookings.
                 </p>
               </div>
             </div>
 
-            {(orderHistoryLogs || []).length === 0 ? (
+            {myOrderHistoryLogs.length === 0 ? (
               <p className="text-sm text-gray-500 py-8 text-center">No order history logs yet.</p>
             ) : (
               <div className="space-y-2.5">
-                {(orderHistoryLogs || []).map((log) => (
+                {myOrderHistoryLogs.map((log) => (
                   <div
-                    key={log.id}
+                    key={log.id || log.logId}
                     className="p-3.5 rounded-2xl bg-[#F4F6F9] border border-gray-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
                   >
                     <div className="space-y-1">
@@ -379,10 +369,10 @@ export default function TrackRequests() {
                           {log.actorRole}: {log.actorName}
                         </span>
                         <span className="font-mono text-xs font-bold text-gray-600">
-                          Order #{log.requestId}
+                          Order #{log.requestId || log.bookingId}
                         </span>
                         <span className="text-xs font-extrabold text-[#1A2A49]">
-                          {log.actionTitle}
+                          {log.actionTitle || log.action}
                         </span>
                       </div>
                       <p className="text-xs text-gray-600">{log.details}</p>

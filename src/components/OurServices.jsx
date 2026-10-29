@@ -17,7 +17,7 @@ export default function OurServices() {
 
   const handleQuickAdd = (e, cat, srv) => {
     e.stopPropagation()
-    addToCart({
+    if (!addToCart({
       id: srv.id,
       name: srv.name,
       price: srv.price,
@@ -25,7 +25,7 @@ export default function OurServices() {
       categoryName: cat.name,
       duration: srv.duration,
       warranty: srv.warranty,
-    })
+    })) return
     toast.success(`${srv.name} added to cart!`)
   }
 

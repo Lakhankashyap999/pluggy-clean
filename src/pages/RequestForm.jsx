@@ -14,6 +14,7 @@ export default function RequestForm() {
   const navigate = useNavigate()
   const {
     user,
+    requireCustomerLogin,
     addRequest,
     address: savedAddress,
     setAddress: setGlobalAddress,
@@ -100,6 +101,10 @@ export default function RequestForm() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    if (!user) {
+      requireCustomerLogin("Service book aur payment karne ke liye pehle login karein!")
+      return
+    }
     if (!form.issue.trim()) {
       toast.error("Please describe your issue first ❌")
       return

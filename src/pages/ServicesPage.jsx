@@ -141,7 +141,7 @@ export default function ServicesPage() {
                               </div>
                               <button
                                 onClick={() => {
-                                  addToCart({
+                                  if (!addToCart({
                                     id: srv.id,
                                     name: srv.name,
                                     price: srv.price,
@@ -149,7 +149,7 @@ export default function ServicesPage() {
                                     categoryName: cat.name,
                                     duration: srv.duration,
                                     warranty: srv.warranty,
-                                  })
+                                  })) return
                                   toast.success(`${srv.name} added to cart!`)
                                 }}
                                 className={`px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 ${

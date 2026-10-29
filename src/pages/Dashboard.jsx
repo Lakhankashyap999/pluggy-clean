@@ -86,7 +86,7 @@ export default function Dashboard() {
   }
 
   const handleAddEstimatorService = () => {
-    addToCart({
+    if (!addToCart({
       id: `est-${currentAppliance.appliance}-${selectedSymptomIdx}`,
       name: `${currentAppliance.appliance}: ${currentSymptom.serviceName}`,
       price: currentSymptom.visitFee,
@@ -94,13 +94,13 @@ export default function Dashboard() {
       categoryName: currentAppliance.appliance,
       duration: "45 mins",
       warranty: "30 Days",
-    })
+    })) return
     toast.success(`${currentSymptom.serviceName} added to cart!`)
     window.dispatchEvent(new CustomEvent("pluggy:open-cart"))
   }
 
   const handleAddMicroService = (micro) => {
-    addToCart({
+    if (!addToCart({
       id: micro.id,
       name: `${micro.name} (Chota-Kaam Express)`,
       price: micro.price,
@@ -108,7 +108,7 @@ export default function Dashboard() {
       categoryName: "Chota-Kaam Express",
       duration: micro.time,
       warranty: "15 Days",
-    })
+    })) return
     toast.success(`${micro.name} (₹${micro.price}) added to cart!`)
   }
 
@@ -386,7 +386,7 @@ export default function Dashboard() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
-                          addToCart({
+                          if (!addToCart({
                             id: srv.id,
                             name: srv.name,
                             price: srv.price,
@@ -394,7 +394,7 @@ export default function Dashboard() {
                             categoryName: srv.categoryName,
                             duration: srv.duration,
                             warranty: srv.warranty,
-                          })
+                          })) return
                           toast.success(`${srv.name} added to cart!`)
                         }}
                         className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition ${

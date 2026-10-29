@@ -80,3 +80,41 @@ footer {
     -webkit-overflow-scrolling: touch;
   }
 }
+
+/* ==========================================================================
+   Global Micro-Interactions & Smooth UI Animations (Navy & Orange Theme)
+   ========================================================================== */
+@keyframes pluggyFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes pluggySectionEnter {
+  0% { opacity: 0; transform: translateY(14px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+main section {
+  animation: pluggySectionEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+main section:nth-of-type(2) { animation-delay: 0.05s; }
+main section:nth-of-type(3) { animation-delay: 0.1s; }
+main section:nth-of-type(4) { animation-delay: 0.15s; }
+
+/* Interactive buttons & cards subtle tactile lift */
+button, a {
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.2s ease,
+              background-color 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease;
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.pluggy-float {
+  animation: pluggyFloat 3.2s ease-in-out infinite;
+}

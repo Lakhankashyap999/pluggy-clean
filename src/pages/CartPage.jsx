@@ -47,7 +47,7 @@ export default function CartPage() {
   const handleCheckout = () => {
     if (!user) {
       toast.error("Please login first")
-      navigate("/login")
+      navigate("/login", { state: { from: "/account/cart" } })
       return
     }
     if (!address || address.trim() === "") {

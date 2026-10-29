@@ -1,5 +1,6 @@
 // src/AppContext.jsx
-import { createContext, useContext, useState, useEffect } from "react"
+import { createContext, useContext, useState, useEffect, useMemo } from "react"
+import { useNavigate, useLocation } from "react-router-dom"
 import toast from "react-hot-toast"
 import {
   loadSqlDatabase,
@@ -19,6 +20,9 @@ const DEFAULT_COUPONS = {
 }
 
 export function AppProvider({ children }) {
+  const navigate = useNavigate()
+  const location = useLocation()
+
   // Load initial SQL relational database
   const initialSql = loadSqlDatabase()
 
@@ -34,10 +38,10 @@ export function AppProvider({ children }) {
     return saved ? JSON.parse(saved) : null
   })
 
-  // Admin / Executive State
+  // Admin / Executive State (requires explicit login)
   const [admin, setAdmin] = useState(() => {
     const saved = localStorage.getItem("pluggy_admin")
-    return saved ? JSON.parse(saved) : initialSql.admins[0]
+    return saved ? JSON.parse(saved) : null
   })
 
   // SQL Tables State (Synced Across All Portals & Tabs)
@@ -57,8 +61,10 @@ export function AppProvider({ children }) {
   )
   const [orderHistoryLogs, setOrderHistoryLogs] = useState(() => initialSql.order_history_logs)
 
-  // Cart State
+  // Cart State (only kept for a logged-in customer)
   const [cart, setCart] = useState(() => {
+    const hasUser = localStorage.getItem("pluggy_activeUser") || localStorage.getItem("pluggy_user")
+    if (!hasUser) return []
     const saved = localStorage.getItem("pluggy_cart")
     return saved ? JSON.parse(saved) : []
   })
@@ -165,9 +171,48 @@ export function AppProvider({ children }) {
       setBookings(freshDb.service_requests || [])
       setPaymentTransactions(freshDb.payment_transactions || [])
       setOrderHistoryLogs(freshDb.order_history_logs || [])
+
+      // Keep the logged-in engineer session in sync with admin edits
+      setEngineer((prev) => {
+        if (!prev) return prev
+        const fresh = (freshDb.engineers || []).find((e) => e.id === prev.id)
+        if (!fresh || fresh.status === "SUSPENDED") return null
+        return { ...prev, ...fresh }
+      })
     })
     return unsubscribe
   }, [])
+
+  // ---------------------------------------------------------------------------
+  // CUSTOMER LOGIN GUARD — cart, booking & payment need a logged-in customer
+  // ---------------------------------------------------------------------------
+  const requireCustomerLogin = (message = "Pehle login karein — tabhi cart aur booking hogi") => {
+    if (user) return true
+    toast.error(message, { id: "login-required" })
+    navigate("/login", { state: { from: location.pathname + location.search } })
+    return false
+  }
+
+  const normalizePhone = (val = "") => String(val).replace(/\D/g, "").slice(-10)
+
+  // Requests that belong to the logged-in customer only
+  const myRequests = useMemo(() => {
+    if (!user) return []
+    const myPhone = normalizePhone(user.phone)
+    const myEmail = String(user.email || "").toLowerCase()
+    return (requests || []).filter(
+      (r) =>
+        (user.id && r.userId === user.id) ||
+        (myPhone && normalizePhone(r.userPhone) === myPhone) ||
+        (myEmail && String(r.userEmail || "").toLowerCase() === myEmail)
+    )
+  }, [requests, user])
+
+  // Jobs that belong to the logged-in engineer only
+  const myEngineerJobs = useMemo(() => {
+    if (!engineer) return []
+    return (requests || []).filter((r) => r.assignedEngineerId === engineer.id)
+  }, [requests, engineer])
 
   // Sync LocalStorage
   useEffect(() => {
@@ -357,23 +402,29 @@ export function AppProvider({ children }) {
     setCart([])
   }
 
-  // Engineer Auth Functions (Backed by SQL `engineers` table)
-  const loginEngineer = (engineerData) => {
-    const cleanPhone = (engineerData.phone || "").replace(/\D/g, "").slice(-10)
+  // Engineer Auth Functions (Backed by SQL `engineers` table — credentials issued by Admin)
+  const authenticateEngineer = (identifier = "", password = "") => {
+    const raw = String(identifier).trim()
+    const digits = normalizePhone(raw)
     const found = engineersList.find(
       (e) =>
-        e.id?.toUpperCase() === engineerData.id?.toUpperCase() ||
-        (cleanPhone && (e.phone || "").replace(/\D/g, "").slice(-10) === cleanPhone)
+        e.id?.toUpperCase() === raw.toUpperCase() ||
+        (digits.length === 10 && normalizePhone(e.phone) === digits)
     )
-    const activeEng = found || {
-      ...engineerData,
-      id: engineerData.id || "ENG001",
-      isOnline: true,
-      rating: 4.9,
-      walletBalance: 1500,
-    }
-    setEngineer(activeEng)
-    return activeEng
+    if (!found) return { ok: false, error: "Ye Engineer ID registered nahi hai. Admin se ID banwayein." }
+    if (found.status === "SUSPENDED")
+      return { ok: false, error: "Aapka account Admin ne suspend kiya hai. Control Desk se contact karein." }
+    if ((found.password || "eng123") !== password)
+      return { ok: false, error: "Galat password. Admin dwara diya gaya password daalein." }
+    setEngineer(found)
+    return { ok: true, engineer: found }
+  }
+
+  const loginEngineer = (engineerData) => {
+    const found = engineersList.find((e) => e.id?.toUpperCase() === engineerData?.id?.toUpperCase())
+    if (!found) return null
+    setEngineer(found)
+    return found
   }
 
   const logoutEngineer = () => setEngineer(null)
@@ -383,43 +434,100 @@ export function AppProvider({ children }) {
     const nextOnline = !engineer.isOnline
     const updated = { ...engineer, isOnline: nextOnline }
     setEngineer(updated)
-    const nextEngineers = engineersList.map((e) => (e.id === engineer.id ? updated : e))
+    const nextEngineers = engineersList.map((e) => (e.id === engineer.id ? { ...e, isOnline: nextOnline } : e))
     setEngineersList(nextEngineers)
     syncTablesToSql({ engineers: nextEngineers })
+    toast.success(nextOnline ? "Aap ON DUTY hain — naye jobs milenge" : "Aap OFF DUTY hain")
+  }
+
+  // ---------------------------------------------------------------------------
+  // ADMIN-ONLY: ENGINEER FLEET MANAGEMENT (create ID, edit, suspend, remove)
+  // ---------------------------------------------------------------------------
+  const getNextEngineerId = () => {
+    const maxNum = engineersList.reduce((max, e) => {
+      const n = parseInt(String(e.id).replace(/\D/g, ""), 10)
+      return Number.isFinite(n) && n > max ? n : max
+    }, 0)
+    return `ENG${String(maxNum + 1).padStart(3, "0")}`
   }
 
   const registerNewEngineer = (engData) => {
-    const newId = engData.id?.trim().toUpperCase() || `ENG00${engineersList.length + 1}`
+    const newId = engData.id?.trim().toUpperCase() || getNextEngineerId()
+    if (engineersList.some((e) => e.id.toUpperCase() === newId)) {
+      toast.error(`Engineer ID ${newId} pehle se exist karti hai`)
+      return null
+    }
     const newEng = {
       id: newId,
       name: engData.name,
-      phone: engData.phone || "9876543219",
+      phone: normalizePhone(engData.phone) || "9876500000",
       email: engData.email || `${newId.toLowerCase()}@pluggy.in`,
       password: engData.password || "eng123",
       specialization: engData.specialization || "Electrical & Appliances",
-      rating: 4.8,
-      completedCount: 1,
-      isOnline: true,
+      rating: 5.0,
+      completedCount: 0,
+      isOnline: false,
+      status: "ACTIVE",
       area: engData.area || city,
-      walletBalance: 500,
+      walletBalance: 0,
       toolKit: engData.toolKit || ["Standard Electrical Kit", "Digital Multimeter"],
+      joinedAt: new Date().toISOString(),
+      createdBy: admin?.id || "ADM001",
     }
     const nextEngineers = [...engineersList, newEng]
     setEngineersList(nextEngineers)
-    setEngineer(newEng)
     syncTablesToSql({ engineers: nextEngineers })
-    toast.success(`Engineer ${newEng.name} (${newEng.id}) registered in SQL Database!`)
+    toast.success(`Engineer ${newEng.name} ki ID ${newEng.id} ban gayi!`)
     return newEng
   }
 
-  // Admin Auth Functions
-  const loginAdmin = (adminData = {}) => {
-    const nextAdmin = {
-      id: adminData.id || "ADM001",
-      name: adminData.name || "Vikramaditya Rao (Chief Dispatch Officer)",
-      email: adminData.email || "admin@pluggy.in",
-      role: "SUPER_ADMIN",
+  const updateEngineer = (engineerId, fields = {}) => {
+    const nextEngineers = engineersList.map((e) =>
+      e.id === engineerId
+        ? {
+            ...e,
+            ...fields,
+            phone: fields.phone !== undefined ? normalizePhone(fields.phone) : e.phone,
+            updatedAt: new Date().toISOString(),
+          }
+        : e
+    )
+    setEngineersList(nextEngineers)
+    syncTablesToSql({ engineers: nextEngineers })
+    if (engineer?.id === engineerId) {
+      const fresh = nextEngineers.find((e) => e.id === engineerId)
+      setEngineer(fresh?.status === "SUSPENDED" ? null : fresh)
     }
+    toast.success(`Engineer ${engineerId} update ho gaya`)
+  }
+
+  const removeEngineer = (engineerId) => {
+    const activeJobs = (requests || []).filter(
+      (r) => r.assignedEngineerId === engineerId && !["COMPLETED", "CANCELLED"].includes(r.status)
+    )
+    if (activeJobs.length > 0) {
+      toast.error(`Pehle ${activeJobs.length} active job(s) kisi aur engineer ko re-assign karein`)
+      return false
+    }
+    const nextEngineers = engineersList.filter((e) => e.id !== engineerId)
+    setEngineersList(nextEngineers)
+    syncTablesToSql({ engineers: nextEngineers })
+    if (engineer?.id === engineerId) setEngineer(null)
+    toast.success(`Engineer ${engineerId} remove ho gaya`)
+    return true
+  }
+
+  // Admin Auth Functions (validated against SQL `admins` table)
+  const loginAdmin = ({ email = "", password = "" } = {}) => {
+    const db = loadSqlDatabase()
+    const found = (db.admins || []).find(
+      (a) =>
+        (a.email?.toLowerCase() === email.trim().toLowerCase() ||
+          a.id?.toUpperCase() === email.trim().toUpperCase()) &&
+        a.password === password
+    )
+    if (!found) return { ok: false, error: "Galat Admin email ya password" }
+    const nextAdmin = { id: found.id, name: found.name, email: found.email, role: found.role }
     setAdmin(nextAdmin)
     return { ok: true, admin: nextAdmin }
   }
@@ -438,8 +546,9 @@ export function AppProvider({ children }) {
 
   const logoutAdmin = () => setAdmin(null)
 
-  // Cart Functions
+  // Cart Functions (customer must be logged in)
   const addToCart = (item) => {
+    if (!requireCustomerLogin("Cart mein add karne ke liye pehle login karein")) return false
     const normalizedName = item.name || item.issue || "Doorstep Service"
     const normalizedId = item.id || normalizedName
     setCart((prev) => {
@@ -462,6 +571,7 @@ export function AppProvider({ children }) {
         },
       ]
     })
+    return true
   }
 
   const removeFromCart = (idOrIssue) => {
@@ -523,6 +633,10 @@ export function AppProvider({ children }) {
   // WORKFLOW 1: CUSTOMER RAISES REQUEST (SAVED IN SQL + PAYMENT GATEWAY LEDGER)
   // ===========================================================================
   const addRequest = (request) => {
+    if (!user) {
+      requireCustomerLogin("Booking aur payment ke liye pehle login karein")
+      return null
+    }
     const id = request.id || Date.now()
     const transactionId = request.transactionId || `PLG${id.toString().slice(-8)}`
     const startOtp = request.startOtp || generate4DigitPin()
@@ -702,7 +816,7 @@ export function AppProvider({ children }) {
     }
     updateRequestStatus(requestId, "ENGINEER_ASSIGNED", update, {
       actorRole: "ADMIN",
-      actorName: resolvedName,
+      actorName: admin?.name || "Executive Desk",
       action: "ENGINEER_ASSIGNED",
       details: `Dispatched Engineer ${resolvedName} (${resolvedId}) to customer location.`,
     })
@@ -1116,6 +1230,13 @@ export function AppProvider({ children }) {
     setUser,
     loginUser,
     registerUser: loginUser,
+    requireCustomerLogin,
+    myRequests,
+    myEngineerJobs,
+    authenticateEngineer,
+    updateEngineer,
+    removeEngineer,
+    getNextEngineerId,
     updateUser,
     logoutUser,
     usersList,

@@ -82,7 +82,7 @@ export default function ServiceDetail() {
       removeFromCart(srv.id)
       toast.success(`Removed ${srv.name}`)
     } else {
-      addToCart({
+      if (!addToCart({
         id: srv.id,
         name: srv.name,
         issue: srv.name,
@@ -94,7 +94,7 @@ export default function ServiceDetail() {
         subcategory: subName,
         duration: srv.duration,
         warranty: srv.warranty,
-      })
+      })) return
       toast.success(`${srv.name} added to cart!`)
     }
   }
@@ -340,7 +340,7 @@ export default function ServiceDetail() {
                 onClick={() => {
                   const diagId = `diag-${currentCat.slug}`
                   if (!isInCart(diagId)) {
-                    addToCart({
+                    if (!addToCart({
                       id: diagId,
                       name: `${currentCat.shortName} Expert Fault Inspection Visit`,
                       issue: `${currentCat.shortName} Expert Fault Inspection Visit`,
@@ -351,7 +351,7 @@ export default function ServiceDetail() {
                       subcategory: "Inspection",
                       duration: "30 mins",
                       warranty: "Adjusted in final bill",
-                    })
+                    })) return
                     toast.success("Expert Inspection Visit (₹99) added!")
                   } else {
                     toast.success("Already in your cart!")

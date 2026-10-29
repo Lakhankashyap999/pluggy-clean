@@ -1,6 +1,6 @@
 // src/pages/Login.jsx
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useApp } from "../AppContext";
 import { motion } from "framer-motion";
 import {
@@ -21,6 +21,8 @@ import toast from "react-hot-toast";
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = location.state?.from || "/";
   const { loginUser, registerUser, usersList, requests } = useApp();
 
   const [loginMode, setLoginMode] = useState("phone"); // "phone" | "email"
@@ -72,7 +74,7 @@ export default function Login() {
         if (existingUser) {
           loginUser(existingUser);
           toast.success(`Welcome back, ${existingUser.name}!`);
-          navigate("/");
+          navigate(redirectTo, { replace: true });
         } else {
           setStep("profile");
         }
@@ -97,7 +99,7 @@ export default function Login() {
     if (existingUser) {
       loginUser(existingUser);
       toast.success(`Welcome back, ${existingUser.name}!`);
-      navigate("/");
+      navigate(redirectTo, { replace: true });
     } else {
       const created = registerUser({
         name: email.split("@")[0].replace(/[^a-zA-Z ]/g, " ") || "Pluggy Customer",
@@ -106,7 +108,7 @@ export default function Login() {
         password,
       });
       toast.success(`Logged in as ${created.name}!`);
-      navigate("/");
+      navigate(redirectTo, { replace: true });
     }
   };
 
@@ -125,13 +127,13 @@ export default function Login() {
     });
 
     toast.success(`Welcome to Pluggy, ${created.name}!`);
-    navigate("/");
+    navigate(redirectTo, { replace: true });
   };
 
   const handleQuickDemoCustomer = (demoUser) => {
     loginUser(demoUser);
     toast.success(`Logged in as ${demoUser.name} (Customer Portal)`);
-    navigate("/");
+    navigate(redirectTo, { replace: true });
   };
 
   return (

@@ -2,6 +2,7 @@
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import Navbar from "./components/Navbar";
 import BottomNavbar from "./components/BottomNavbar";
@@ -60,11 +61,33 @@ export default function App() {
   if (loading) return <Preloader />;
   if (!city) return <LocationGate onSelect={(c) => setCity(c)} />;
 
-  const hideNavbarRoutes = ["/login", "/signup", "/engineer-login", "/admin-login", "/account"];
-  const hideFooterRoutes = ["/login", "/signup", "/engineer-login", "/admin-login", "/engineer", "/account"];
+  const hideNavbarRoutes = [
+    "/login",
+    "/signup",
+    "/engineer-login",
+    "/admin-login",
+    "/engineer",
+    "/engineer-dashboard",
+    "/admin",
+    "/account",
+  ];
+  const hideFooterRoutes = [
+    "/login",
+    "/signup",
+    "/engineer-login",
+    "/admin-login",
+    "/engineer",
+    "/engineer-dashboard",
+    "/admin",
+    "/account",
+  ];
 
-  const hideNavbar = hideNavbarRoutes.includes(location.pathname);
-  const hideFooter = hideFooterRoutes.some((path) => location.pathname.startsWith(path));
+  const hideNavbar = hideNavbarRoutes.some(
+    (path) => location.pathname === path || location.pathname.startsWith(`${path}/`)
+  );
+  const hideFooter = hideFooterRoutes.some(
+    (path) => location.pathname === path || location.pathname.startsWith(`${path}/`)
+  );
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F4F6F9] dark:bg-[#0B1120] transition-colors duration-300">
@@ -73,34 +96,44 @@ export default function App() {
       <main className="flex-1">
         <ScrollToTop />
 
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/book-service" element={<BookService />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/account" element={<Account />} />
-          <Route path="/track" element={<TrackRequests />} />
-          <Route path="/account/track" element={<TrackRequests />} />
-          <Route path="/account/cart" element={<CartPage />} />
-          <Route path="/account/security" element={<SecurityPage />} />
-          <Route path="/account/address" element={<AddressPage />} />
-          <Route path="/account/recent" element={<RecentPage />} />
-          <Route path="/account/password" element={<ChangePasswordPage />} />
-          <Route path="/account/edit" element={<EditProfilePage />} />
-          <Route path="/account/coupons" element={<CouponsPage />} />
-          <Route path="/account/notifications" element={<NotificationsPage />} />
-          <Route path="/account/services" element={<ServicesPage />} />
-          <Route path="/services" element={<ServicesPage />} />
-          <Route path="/services/:category" element={<ServiceDetail />} />
-          <Route path="/services/:category/:sub" element={<ServiceDetail />} />
-          <Route path="/request/:service" element={<RequestForm />} />
-          <Route path="/engineer-login" element={<EngineerLogin />} />
-          <Route path="/engineer" element={<EngineerDashboard />} />
-          <Route path="/engineer-dashboard" element={<EngineerDashboard />} />
-          <Route path="/admin-login" element={<AdminLogin />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.24, ease: "easeOut" }}
+          >
+            <Routes location={location}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/book-service" element={<BookService />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/account" element={<Account />} />
+              <Route path="/track" element={<TrackRequests />} />
+              <Route path="/account/track" element={<TrackRequests />} />
+              <Route path="/account/cart" element={<CartPage />} />
+              <Route path="/account/security" element={<SecurityPage />} />
+              <Route path="/account/address" element={<AddressPage />} />
+              <Route path="/account/recent" element={<RecentPage />} />
+              <Route path="/account/password" element={<ChangePasswordPage />} />
+              <Route path="/account/edit" element={<EditProfilePage />} />
+              <Route path="/account/coupons" element={<CouponsPage />} />
+              <Route path="/account/notifications" element={<NotificationsPage />} />
+              <Route path="/account/services" element={<ServicesPage />} />
+              <Route path="/services" element={<ServicesPage />} />
+              <Route path="/services/:category" element={<ServiceDetail />} />
+              <Route path="/services/:category/:sub" element={<ServiceDetail />} />
+              <Route path="/request/:service" element={<RequestForm />} />
+              <Route path="/engineer-login" element={<EngineerLogin />} />
+              <Route path="/engineer" element={<EngineerDashboard />} />
+              <Route path="/engineer-dashboard" element={<EngineerDashboard />} />
+              <Route path="/admin-login" element={<AdminLogin />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {!hideFooter && <BottomNavbar />}

@@ -175,7 +175,7 @@ export default function Navbar() {
       removeFromCart(srv.id || srv.issue)
       toast.success("Removed from cart")
     } else {
-      addToCart({
+      if (!addToCart({
         ...srv,
         id: srv.id,
         name: srv.issue,
@@ -185,7 +185,7 @@ export default function Navbar() {
         subcategory: sub.name,
         categoryKey: cat.slug,
         category: cat.slug,
-      })
+      })) return
       toast.success(`${srv.issue} added to cart!`)
     }
   }

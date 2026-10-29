@@ -21,34 +21,102 @@ import {
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import successAnim from "../assets/success.lottie";
 
+// High-precision Inline SVG Brand Icons (100% reliable, never break or 404)
+function UpiBrandLogo({ id, size = "md" }) {
+  const cls = size === "lg" ? "w-12 h-12" : "w-11 h-11";
+
+  if (id === "gpay") {
+    return (
+      <div
+        className={`${cls} rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center p-1.5`}
+      >
+        <svg viewBox="0 0 48 48" className="w-full h-full">
+          <path
+            fill="#EA4335"
+            d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+          />
+          <path
+            fill="#4285F4"
+            d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+          />
+          <path
+            fill="#FBBC05"
+            d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+          />
+          <path
+            fill="#34A853"
+            d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+          />
+        </svg>
+      </div>
+    );
+  }
+
+  if (id === "phonepe") {
+    return (
+      <div
+        className={`${cls} rounded-2xl bg-[#5F259F] shadow-sm flex items-center justify-center`}
+      >
+        <svg viewBox="0 0 48 48" className="w-7 h-7">
+          <text
+            x="50%"
+            y="56%"
+             dominantBaseline="middle"
+            textAnchor="middle"
+            fill="#FFFFFF"
+            fontSize="28"
+            fontWeight="800"
+            fontFamily="sans-serif"
+          >
+            पे
+          </text>
+        </svg>
+      </div>
+    );
+  }
+
+  if (id === "paytm") {
+    return (
+      <div
+        className={`${cls} rounded-2xl bg-white border border-sky-200 shadow-sm flex items-center justify-center px-1`}
+      >
+        <div className="flex items-center font-extrabold tracking-tighter text-[12px] leading-none">
+          <span className="text-[#002970]">Pay</span>
+          <span className="text-[#00BAF2]">tm</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Amazon Pay
+  return (
+    <div
+      className={`${cls} rounded-2xl bg-[#232F3E] shadow-sm flex flex-col items-center justify-center px-1`}
+    >
+      <span className="text-white font-extrabold text-[10px] tracking-tight leading-none">
+        amazon
+      </span>
+      <span className="text-[#FF9900] font-extrabold text-[10px] leading-none mt-0.5">
+        pay  smile
+      </span>
+    </div>
+  );
+}
+
 const upiApps = [
-  {
-    id: "gpay",
-    name: "Google Pay",
-    icon: "https://upload.wikimedia.org/wikipedia/commons/7/7a/GPay_Logo.png",
-    color: "#1A73E8",
-  },
-  {
-    id: "phonepe",
-    name: "PhonePe",
-    icon: "https://upload.wikimedia.org/wikipedia/commons/5/5b/PhonePe_Logo.png",
-    color: "#6739B7",
-  },
-  {
-    id: "paytm",
-    name: "Paytm",
-    icon: "https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo.png",
-    color: "#00BAF2",
-  },
-  {
-    id: "amazonpay",
-    name: "Amazon Pay",
-    icon: "https://upload.wikimedia.org/wikipedia/commons/1/1f/Amazon_Pay_logo.svg",
-    color: "#FF9900",
-  },
+  { id: "gpay", name: "Google Pay", handle: "@okaxis", color: "#1A73E8" },
+  { id: "phonepe", name: "PhonePe", handle: "@ybl", color: "#5F259F" },
+  { id: "paytm", name: "Paytm UPI", handle: "@paytm", color: "#00BAF2" },
+  { id: "amazonpay", name: "Amazon Pay", handle: "@apl", color: "#FF9900" },
 ];
 
-export default function PaymentPopup({ open, onClose, amount, onSuccess, title = "Complete Escrow Payment" }) {
+export default function PaymentPopup({
+  open,
+  onClose,
+  amount,
+  onSuccess,
+  title = "Complete Escrow Payment",
+}) {
   const [step, setStep] = useState("method"); // method, upi, card, processing, success
   const [selectedMethod, setSelectedMethod] = useState("UPI");
   const [selectedChannel, setSelectedChannel] = useState("Google Pay");
@@ -175,42 +243,45 @@ export default function PaymentPopup({ open, onClose, amount, onSuccess, title =
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="absolute inset-0 bg-black/55 backdrop-blur-sm"
-        onClick={step === "processing" || step === "success" ? undefined : onClose}
+        onClick={
+          step === "processing" || step === "success" ? undefined : onClose
+        }
       />
 
       <motion.div
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        initial={{ y: "100%", opacity: 0.6 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: "100%", opacity: 0 }}
+        transition={{ type: "spring", damping: 24, stiffness: 280 }}
         className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[92vh] overflow-hidden flex flex-col border border-slate-200"
       >
         {/* Header */}
         <div className="sticky top-0 bg-[#1A2A49] text-white px-5 py-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
-            {step !== "method" && step !== "processing" && step !== "success" && (
-              <button
-                onClick={() => {
-                  setStep("method");
-                  setSelectedUpiApp(null);
-                }}
-                className="p-1.5 hover:bg-white/10 rounded-full transition"
-              >
-                <ChevronLeft size={20} />
-              </button>
-            )}
+            {step !== "method" &&
+              step !== "processing" &&
+              step !== "success" && (
+                <button
+                  onClick={() => {
+                    setStep("method");
+                    setSelectedUpiApp(null);
+                  }}
+                  className="p-1.5 hover:bg-white/10 rounded-full transition"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+              )}
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-extrabold">
-                  {step === "method" && title}
-                  {step === "upi" && (selectedUpiApp?.name || "UPI Gateway")}
-                  {step === "card" && "Card Checkout"}
-                  {step === "processing" && "Recording SQL Transaction"}
-                  {step === "success" && "Escrow Payment Recorded"}
-                </h2>
-              </div>
+              <h2 className="text-base font-extrabold">
+                {step === "method" && title}
+                {step === "upi" && (selectedUpiApp?.name || "UPI Gateway")}
+                {step === "card" && "Card Checkout"}
+                {step === "processing" && "Recording SQL Transaction"}
+                {step === "success" && "Escrow Payment Recorded"}
+              </h2>
               <p className="text-[11px] text-blue-200 flex items-center gap-1 mt-0.5">
-                <Database size={11} className="text-[#F37021]" /> Pluggy SQL Escrow Gateway
+                <Database size={11} className="text-[#F37021]" /> Pluggy SQL
+                Escrow Gateway
               </p>
             </div>
           </div>
@@ -258,11 +329,19 @@ export default function PaymentPopup({ open, onClose, amount, onSuccess, title =
                 </div>
 
                 {/* Amount + Escrow Breakdown Card */}
-                <div className="bg-gradient-to-br from-[#1A2A49] to-[#223a61] rounded-2xl p-4 text-white shadow-md">
+                <motion.div
+                  initial={{ scale: 0.96, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="bg-gradient-to-br from-[#1A2A49] to-[#223a61] rounded-2xl p-4 text-white shadow-md"
+                >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-blue-200">Total Payable Amount</p>
-                      <p className="text-3xl font-extrabold mt-0.5">₹{amount}</p>
+                      <p className="text-xs text-blue-200">
+                        Total Payable Amount
+                      </p>
+                      <p className="text-3xl font-extrabold mt-0.5">
+                        ₹{amount}
+                      </p>
                     </div>
                     <div className="text-right">
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[10px] font-bold">
@@ -273,56 +352,61 @@ export default function PaymentPopup({ open, onClose, amount, onSuccess, title =
                       </p>
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* 1-CLICK INSTANT DEMO PAY BUTTON */}
-                <div className="bg-orange-50/80 border-2 border-[#F37021]/30 rounded-2xl p-3.5">
+                <motion.div
+                  whileHover={{ scale: 1.01 }}
+                  className="bg-orange-50/80 border-2 border-[#F37021]/30 rounded-2xl p-3.5"
+                >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#F37021] flex items-center gap-1">
-                      <Zap size={13} /> 1-Click Instant Demo Payment
+                      <Zap size={13} /> 1-Click Instant UPI Escrow Pay
                     </span>
                     <span className="text-[10px] font-bold bg-white text-[#1A2A49] px-2 py-0.5 rounded-md border border-orange-200">
-                      Recommended for Testing
+                      Fastest
                     </span>
                   </div>
                   <button
                     type="button"
-                    onClick={() => triggerPaymentFlow("UPI", "Pluggy Instant UPI QR")}
-                    className="w-full py-3 bg-[#F37021] hover:bg-[#e06318] text-white rounded-xl font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition active:scale-[0.99]"
+                    onClick={() =>
+                      triggerPaymentFlow("UPI", "Pluggy Instant UPI QR")
+                    }
+                    className="w-full py-3 bg-[#F37021] hover:bg-[#e06318] text-white rounded-xl font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition active:scale-[0.98]"
                   >
-                    <QrCode size={16} /> Instant Demo Pay ₹{amount} (UPI Escrow)
+                    <QrCode size={16} /> Instant Pay ₹{amount} (UPI Escrow)
                   </button>
-                </div>
+                </motion.div>
 
-                {/* UPI Apps Grid */}
+                {/* UPI Apps Grid with Crisp Inline SVG Icons */}
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">
-                    Or Pay via UPI Apps
+                    Pay via UPI Apps
                   </p>
                   <div className="grid grid-cols-4 gap-2.5">
-                    {upiApps.map((app) => (
-                      <button
+                    {upiApps.map((app, idx) => (
+                      <motion.button
                         key={app.id}
                         type="button"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.05 }}
+                        whileHover={{ y: -3, scale: 1.03 }}
+                        whileTap={{ scale: 0.96 }}
                         onClick={() => {
                           setSelectedUpiApp(app);
                           setSelectedMethod("UPI");
                           setSelectedChannel(app.name);
+                          setUpiId(`lakhan${app.handle}`);
                           setStep("upi");
                         }}
-                        className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl bg-slate-50 hover:bg-orange-50/50 transition border border-slate-200 hover:border-[#F37021]"
+                        className="flex flex-col items-center gap-2 p-2.5 rounded-2xl bg-slate-50 hover:bg-orange-50/60 transition border border-slate-200 hover:border-[#F37021] shadow-xs"
                       >
-                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm p-1.5">
-                          <img
-                            src={app.icon}
-                            alt={app.name}
-                            className="w-full h-full object-contain"
-                          />
-                        </div>
-                        <span className="text-[11px] font-bold text-[#1A2A49]">
+                        <UpiBrandLogo id={app.id} />
+                        <span className="text-[11px] font-extrabold text-[#1A2A49] whitespace-nowrap">
                           {app.name.split(" ")[0]}
                         </span>
-                      </button>
+                      </motion.button>
                     ))}
                   </div>
                 </div>
@@ -333,7 +417,9 @@ export default function PaymentPopup({ open, onClose, amount, onSuccess, title =
                     Cards, Netbanking & Pay After Service
                   </p>
 
-                  <button
+                  <motion.button
+                    whileHover={{ x: 3 }}
+                    whileTap={{ scale: 0.99 }}
                     type="button"
                     onClick={() => {
                       setSelectedMethod("CARD");
@@ -342,7 +428,7 @@ export default function PaymentPopup({ open, onClose, amount, onSuccess, title =
                     }}
                     className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-[#1A2A49] hover:bg-slate-50 transition text-left"
                   >
-                    <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
                       <CreditCard size={18} className="text-blue-600" />
                     </div>
                     <div className="flex-1">
@@ -353,14 +439,21 @@ export default function PaymentPopup({ open, onClose, amount, onSuccess, title =
                         Visa, Mastercard, RuPay supported
                       </p>
                     </div>
-                  </button>
+                  </motion.button>
 
-                  <button
+                  <motion.button
+                    whileHover={{ x: 3 }}
+                    whileTap={{ scale: 0.99 }}
                     type="button"
-                    onClick={() => triggerPaymentFlow("NETBANKING", "HDFC / SBI Netbanking")}
+                    onClick={() =>
+                      triggerPaymentFlow(
+                        "NETBANKING",
+                        "HDFC / SBI Netbanking"
+                      )
+                    }
                     className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-[#1A2A49] hover:bg-slate-50 transition text-left"
                   >
-                    <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
                       <Building size={18} className="text-emerald-600" />
                     </div>
                     <div className="flex-1">
@@ -371,16 +464,21 @@ export default function PaymentPopup({ open, onClose, amount, onSuccess, title =
                         Instant SQL settlement confirmation
                       </p>
                     </div>
-                  </button>
+                  </motion.button>
 
-                  <button
+                  <motion.button
+                    whileHover={{ x: 3 }}
+                    whileTap={{ scale: 0.99 }}
                     type="button"
                     onClick={() =>
-                      triggerPaymentFlow("PAY_AFTER_SERVICE", "Pay on Happy-PIN Completion")
+                      triggerPaymentFlow(
+                        "PAY_AFTER_SERVICE",
+                        "Pay on Happy-PIN Completion"
+                      )
                     }
                     className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-[#F37021] hover:bg-orange-50/30 transition text-left"
                   >
-                    <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center shrink-0">
                       <Wallet size={18} className="text-[#F37021]" />
                     </div>
                     <div className="flex-1">
@@ -391,7 +489,7 @@ export default function PaymentPopup({ open, onClose, amount, onSuccess, title =
                         Book now for ₹0 upfront; pay engineer after completion
                       </p>
                     </div>
-                  </button>
+                  </motion.button>
                 </div>
               </motion.div>
             )}
@@ -405,15 +503,11 @@ export default function PaymentPopup({ open, onClose, amount, onSuccess, title =
                 exit={{ opacity: 0, x: 16 }}
                 className="p-5 space-y-5"
               >
-                <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
-                  <img
-                    src={selectedUpiApp?.icon}
-                    alt={selectedUpiApp?.name}
-                    className="w-10 h-10 object-contain"
-                  />
+                <div className="flex items-center gap-3.5 p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
+                  <UpiBrandLogo id={selectedUpiApp?.id || "gpay"} size="lg" />
                   <div>
-                    <p className="text-sm font-bold text-[#1A2A49]">
-                      {selectedUpiApp?.name}
+                    <p className="text-sm font-extrabold text-[#1A2A49]">
+                      {selectedUpiApp?.name || "Google Pay"}
                     </p>
                     <p className="text-xs text-slate-500">
                       Escrow-linked UPI Collect & Intent
@@ -423,12 +517,14 @@ export default function PaymentPopup({ open, onClose, amount, onSuccess, title =
 
                 <div>
                   <p className="text-xs text-slate-500">Amount to Pay</p>
-                  <p className="text-3xl font-extrabold text-[#1A2A49]">₹{amount}</p>
+                  <p className="text-3xl font-extrabold text-[#1A2A49]">
+                    ₹{amount}
+                  </p>
                 </div>
 
                 <div>
                   <label className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 block">
-                    Enter UPI ID (Auto-filled for Demo)
+                    Enter UPI ID
                   </label>
                   <div className="relative">
                     <Smartphone
@@ -453,7 +549,7 @@ export default function PaymentPopup({ open, onClose, amount, onSuccess, title =
                       `${selectedUpiApp?.name || "UPI"} (${upiId || "demo@upi"})`
                     )
                   }
-                  className="w-full py-3.5 rounded-xl font-bold text-white bg-[#1A2A49] hover:bg-[#223a61] transition shadow-md text-sm"
+                  className="w-full py-3.5 rounded-xl font-bold text-white bg-[#1A2A49] hover:bg-[#223a61] transition shadow-md text-sm active:scale-95"
                 >
                   Verify & Pay ₹{amount}
                 </button>
@@ -566,7 +662,11 @@ export default function PaymentPopup({ open, onClose, amount, onSuccess, title =
                   <motion.div
                     className="absolute inset-0 border-4 border-[#F37021] border-t-transparent rounded-full"
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 0.9, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 0.9,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                   />
                 </div>
 
@@ -609,7 +709,8 @@ export default function PaymentPopup({ open, onClose, amount, onSuccess, title =
                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 w-full mb-5 text-left space-y-2 text-xs">
                   <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                     <span className="text-slate-500 flex items-center gap-1 font-medium">
-                      <Receipt size={13} className="text-[#F37021]" /> SQL Transaction ID
+                      <Receipt size={13} className="text-[#F37021]" /> SQL
+                      Transaction ID
                     </span>
                     <div className="flex items-center gap-1.5">
                       <span className="font-mono font-extrabold text-[#1A2A49]">
