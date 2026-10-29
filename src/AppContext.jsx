@@ -1,116 +1,198 @@
 // src/AppContext.jsx
-import { createContext, useContext, useEffect, useState } from "react"
-import toast from "react-hot-toast"
+import { createContext, useContext, useState, useEffect } from "react"
 
 const AppContext = createContext()
 
-const DEFAULT_NOTIFICATIONS = [
+const DEFAULT_COUPONS = {
+  PLUGGY20: { code: "PLUGGY20", type: "percent", value: 20, label: "20% OFF" },
+  PLUG20: { code: "PLUG20", type: "percent", value: 20, label: "20% OFF" },
+  SUMMER25: { code: "SUMMER25", type: "percent", value: 25, label: "25% OFF" },
+  SAVE100: { code: "SAVE100", type: "flat", value: 100, label: "₹100 OFF" },
+}
+
+const DEFAULT_ENGINEERS = [
   {
-    id: 101,
-    type: "offer",
-    title: "Welcome Offer Unlocked! 🎉",
-    message: "Use code PLUGGY20 to get 20% OFF on your first service booking.",
-    createdAt: new Date(Date.now() - 3600 * 1000 * 2).toISOString(),
-    time: "2 hours ago",
-    read: false,
+    id: "ENG001",
+    name: "Rajesh Sharma",
+    phone: "9876543210",
+    specialization: "AC & Cooling, Refrigerator",
+    rating: 4.9,
+    completedCount: 342,
+    isOnline: true,
+    lat: 28.7306,
+    lng: 77.7759,
+    area: "Sector 18 / Main Market",
+    walletBalance: 4250,
+    toolKit: ["Digital Clamp Meter", "Foam-Jet Pump", "Vacuum Pump", "35mfd & 2.5mfd Capacitors"],
   },
   {
-    id: 102,
-    type: "service",
-    title: "Same-Day Service Available",
-    message: "Verified technicians are available in your area for instant booking.",
-    createdAt: new Date(Date.now() - 3600 * 1000 * 24).toISOString(),
-    time: "Yesterday",
-    read: true,
+    id: "ENG002",
+    name: "Amit Verma",
+    phone: "9876543211",
+    specialization: "Electrical, Wiring & MCB SOS",
+    rating: 4.8,
+    completedCount: 518,
+    isOnline: true,
+    lat: 28.7345,
+    lng: 77.7812,
+    area: "Civil Lines / Model Town",
+    walletBalance: 6120,
+    toolKit: ["Insulation Megger", "Havells MCB Kit", "FRLS Wire Roll", "Heavy Drill Machine"],
+  },
+  {
+    id: "ENG003",
+    name: "Suresh Kumar",
+    phone: "9876543212",
+    specialization: "Fan, Geyser, Motor & Appliances",
+    rating: 4.9,
+    completedCount: 289,
+    isOnline: true,
+    lat: 28.7261,
+    lng: 77.7704,
+    area: "Railway Road / Indra Nagar",
+    walletBalance: 3190,
+    toolKit: ["SKF Bearing Puller", "2000W Geyser Element", "RO TDS Meter", "Standby Ceiling Fan"],
   },
 ]
 
 export function AppProvider({ children }) {
-  // 🌍 City selection
-  const [city, setCity] = useState(localStorage.getItem("pluggy_city") || null)
-
-  // 👤 Active logged-in user (support both pluggy_activeUser and legacy pluggy_user)
+  // User State
   const [user, setUser] = useState(() => {
-    const active = localStorage.getItem("pluggy_activeUser")
-    if (active && active !== "null") return JSON.parse(active)
-    const legacy = localStorage.getItem("pluggy_user")
-    if (legacy && legacy !== "null") return JSON.parse(legacy)
-    return null
+    const saved = localStorage.getItem("pluggy_activeUser") || localStorage.getItem("pluggy_user")
+    return saved ? JSON.parse(saved) : null
   })
 
-  // 🛠️ Engineer state
-  const [engineer, setEngineer] = useState(
-    JSON.parse(localStorage.getItem("pluggy_engineer") || "null")
-  )
-
-  // 👔 Executive state
-  const [executive, setExecutive] = useState(
-    JSON.parse(localStorage.getItem("pluggy_executive") || "null")
-  )
-
-  // 🛒 Cart state
-  const [cart, setCart] = useState(
-    JSON.parse(localStorage.getItem("pluggy_cart") || "[]")
-  )
-
-  // 📋 Requests state
-  const [requests, setRequests] = useState(
-    JSON.parse(localStorage.getItem("pluggy_requests") || "[]")
-  )
-
-  // 🏠 Address state
-  const [address, setAddress] = useState(
-    localStorage.getItem("pluggy_address") || ""
-  )
-
-  // 📌 Bookings state (user view)
-  const [bookings, setBookings] = useState(
-    JSON.parse(localStorage.getItem("pluggy_bookings") || "[]")
-  )
-
-  // 🔔 Notifications state
-  const [notifications, setNotifications] = useState(() => {
-    const saved = localStorage.getItem("pluggy_notifications")
-    return saved ? JSON.parse(saved) : DEFAULT_NOTIFICATIONS
+  // Engineer State
+  const [engineer, setEngineer] = useState(() => {
+    const saved = localStorage.getItem("pluggy_engineer")
+    return saved ? JSON.parse(saved) : null
   })
 
-  // 🕒 Recently viewed services state
-  const [recent, setRecent] = useState(
-    JSON.parse(localStorage.getItem("pluggy_recent") || "[]")
-  )
+  // Registered Engineers Pool (for Admin Desk & Geo-Radar)
+  const [engineersList, setEngineersList] = useState(() => {
+    const saved = localStorage.getItem("pluggy_engineers_pool")
+    return saved ? JSON.parse(saved) : DEFAULT_ENGINEERS
+  })
 
-  // 💰 Wallet state
+  // Cart State
+  const [cart, setCart] = useState(() => {
+    const saved = localStorage.getItem("pluggy_cart")
+    return saved ? JSON.parse(saved) : []
+  })
+
+  // Recently Viewed Services State
+  const [recent, setRecent] = useState(() => {
+    const saved = localStorage.getItem("pluggy_recent")
+    return saved ? JSON.parse(saved) : ["Foam-Jet Power AC Service", "Single / Double Pole MCB Replacement"]
+  })
+
+  // Applied Coupon State
+  const [appliedCoupon, setAppliedCoupon] = useState(() => {
+    const saved = localStorage.getItem("pluggy_coupon")
+    return saved ? JSON.parse(saved) : null
+  })
+
+  // Wallet Balance & Transactions
   const [walletBalance, setWalletBalance] = useState(() => {
     const saved = localStorage.getItem("pluggy_wallet_balance")
-    return saved !== null ? Number(saved) : 150
+    return saved ? Number(saved) : 250
   })
 
   const [walletTransactions, setWalletTransactions] = useState(() => {
-    const saved = localStorage.getItem("pluggy_wallet_txs")
+    const saved = localStorage.getItem("pluggy_wallet_txns")
     return saved
       ? JSON.parse(saved)
       : [
-          { id: 1, type: "credit", amount: 200, from: "Welcome & Referral Bonus", date: "Recent" },
-          { id: 2, type: "debit", amount: 50, from: "Service Visit Discount", date: "Recent" },
+          { type: "credit", amount: 200, from: "Pluggy Welcome Bonus", date: "Today" },
+          { type: "credit", amount: 100, from: "Referral Reward", date: "Yesterday" },
+          { type: "debit", amount: 50, from: "AC Inspection Cashback Used", date: "3 days ago" },
         ]
   })
 
-  // 🎟️ Applied Coupon state
-  const [appliedCoupon, setAppliedCoupon] = useState(
-    JSON.parse(localStorage.getItem("pluggy_applied_coupon") || "null")
-  )
+  // Customer Preferences (Pet, Parking, Ladder, Preferred Time)
+  const [userPreferences, setUserPreferences] = useState(() => {
+    const saved = localStorage.getItem("pluggy_preferences")
+    return saved
+      ? JSON.parse(saved)
+      : {
+          pet: false,
+          parking: true,
+          bringLadder: true,
+          preferredTime: "morning",
+        }
+  })
 
-  // 🎨 Theme state
-  const [theme, setTheme] = useState(
-    localStorage.getItem("pluggy_theme") || "light"
-  )
+  // Requests State
+  const [requests, setRequests] = useState(() => {
+    const saved = localStorage.getItem("pluggy_requests")
+    return saved ? JSON.parse(saved) : []
+  })
 
-  // 🌍 Update city
+  // Bookings State
+  const [bookings, setBookings] = useState(() => {
+    const saved = localStorage.getItem("pluggy_bookings")
+    return saved ? JSON.parse(saved) : []
+  })
+
+  // City State
+  const [city, setCity] = useState(() => {
+    return localStorage.getItem("pluggy_city") || "Hapur / Delhi NCR"
+  })
+
+  // Address State
+  const [address, setAddress] = useState(() => {
+    return localStorage.getItem("pluggy_address") || ""
+  })
+
+  // Saved Addresses
+  const [savedAddresses, setSavedAddresses] = useState(() => {
+    const saved = localStorage.getItem("pluggy_saved_addresses")
+    return saved ? JSON.parse(saved) : []
+  })
+
+  // Notifications
+  const [notifications, setNotifications] = useState(() => {
+    const saved = localStorage.getItem("pluggy_notifications")
+    return saved
+      ? JSON.parse(saved)
+      : [
+          {
+            id: 1,
+            type: "service",
+            title: "Welcome to Pluggy 2.0!",
+            message: "15-Min Emergency SOS, Official Spare Parts Rate Card & 30-Day Warranty are now live.",
+            time: "Just now",
+            read: false,
+            createdAt: new Date().toISOString(),
+          },
+          {
+            id: 2,
+            type: "offer",
+            title: "Use Code SUMMER25",
+            message: "Flat 25% OFF on Split & Window AC Foam-Jet Servicing.",
+            time: "1 hour ago",
+            read: false,
+            createdAt: new Date().toISOString(),
+          },
+        ]
+  })
+
+  // Theme State
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("pluggy_theme") || "light"
+  })
+
+  // Apply Dark Mode class
   useEffect(() => {
-    if (city) localStorage.setItem("pluggy_city", city)
-  }, [city])
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+    }
+    localStorage.setItem("pluggy_theme", theme)
+  }, [theme])
 
-  // 👤 Update active user
+  // Sync LocalStorage
   useEffect(() => {
     if (user) {
       localStorage.setItem("pluggy_activeUser", JSON.stringify(user))
@@ -121,7 +203,6 @@ export function AppProvider({ children }) {
     }
   }, [user])
 
-  // 🛠️ Update engineer
   useEffect(() => {
     if (engineer) {
       localStorage.setItem("pluggy_engineer", JSON.stringify(engineer))
@@ -130,103 +211,74 @@ export function AppProvider({ children }) {
     }
   }, [engineer])
 
-  // 👔 Update executive
   useEffect(() => {
-    if (executive) {
-      localStorage.setItem("pluggy_executive", JSON.stringify(executive))
-    } else {
-      localStorage.removeItem("pluggy_executive")
-    }
-  }, [executive])
+    localStorage.setItem("pluggy_engineers_pool", JSON.stringify(engineersList))
+  }, [engineersList])
 
-  // 🛒 Update cart
   useEffect(() => {
     localStorage.setItem("pluggy_cart", JSON.stringify(cart))
   }, [cart])
 
-  // 📋 Update requests
-  useEffect(() => {
-    localStorage.setItem("pluggy_requests", JSON.stringify(requests))
-  }, [requests])
-
-  // 🏠 Update address
-  useEffect(() => {
-    if (address) {
-      localStorage.setItem("pluggy_address", address)
-    } else {
-      localStorage.removeItem("pluggy_address")
-    }
-  }, [address])
-
-  // 📌 Update bookings
-  useEffect(() => {
-    localStorage.setItem("pluggy_bookings", JSON.stringify(bookings))
-  }, [bookings])
-
-  // 🔔 Update notifications
-  useEffect(() => {
-    localStorage.setItem("pluggy_notifications", JSON.stringify(notifications))
-  }, [notifications])
-
-  // 🕒 Update recent
   useEffect(() => {
     localStorage.setItem("pluggy_recent", JSON.stringify(recent))
   }, [recent])
 
-  // 💰 Update wallet
+  useEffect(() => {
+    if (appliedCoupon) {
+      localStorage.setItem("pluggy_coupon", JSON.stringify(appliedCoupon))
+    } else {
+      localStorage.removeItem("pluggy_coupon")
+    }
+  }, [appliedCoupon])
+
   useEffect(() => {
     localStorage.setItem("pluggy_wallet_balance", String(walletBalance))
   }, [walletBalance])
 
   useEffect(() => {
-    localStorage.setItem("pluggy_wallet_txs", JSON.stringify(walletTransactions))
+    localStorage.setItem("pluggy_wallet_txns", JSON.stringify(walletTransactions))
   }, [walletTransactions])
 
-  // 🎟️ Update coupon
   useEffect(() => {
-    if (appliedCoupon) {
-      localStorage.setItem("pluggy_applied_coupon", JSON.stringify(appliedCoupon))
-    } else {
-      localStorage.removeItem("pluggy_applied_coupon")
-    }
-  }, [appliedCoupon])
+    localStorage.setItem("pluggy_preferences", JSON.stringify(userPreferences))
+  }, [userPreferences])
 
-  // 🎨 Theme toggle
-  const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light"
-    setTheme(newTheme)
-    localStorage.setItem("pluggy_theme", newTheme)
-    if (newTheme === "dark") {
-      document.documentElement.classList.add("dark")
-    } else {
-      document.documentElement.classList.remove("dark")
-    }
-  }
-
-  // Initialize theme on load
   useEffect(() => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark")
-    }
-  }, [])
+    localStorage.setItem("pluggy_requests", JSON.stringify(requests))
+  }, [requests])
 
-  // 🔑 Auth helpers
-  const loginUser = (data) => setUser(data)
-  const updateUser = (patch) => {
+  useEffect(() => {
+    localStorage.setItem("pluggy_bookings", JSON.stringify(bookings))
+  }, [bookings])
+
+  useEffect(() => {
+    localStorage.setItem("pluggy_city", city)
+  }, [city])
+
+  useEffect(() => {
+    localStorage.setItem("pluggy_address", address)
+  }, [address])
+
+  useEffect(() => {
+    localStorage.setItem("pluggy_saved_addresses", JSON.stringify(savedAddresses))
+  }, [savedAddresses])
+
+  useEffect(() => {
+    localStorage.setItem("pluggy_notifications", JSON.stringify(notifications))
+  }, [notifications])
+
+  // User Functions
+  const loginUser = (userData) => setUser(userData)
+
+  const updateUser = (updatedFields) => {
     setUser((prev) => {
-      const updated = { ...(prev || {}), ...patch }
+      const next = { ...(prev || {}), ...updatedFields }
       const users = JSON.parse(localStorage.getItem("pluggy_users") || "[]")
-      const idx = users.findIndex(
-        (u) =>
-          (u.id && updated.id && u.id === updated.id) ||
-          (u.phone && updated.phone && u.phone === updated.phone) ||
-          (u.email && updated.email && u.email === updated.email)
+      const updatedUsers = users.map((u) =>
+        u.id === next.id || u.email === prev?.email ? { ...u, ...next } : u
       )
-      if (idx !== -1) {
-        users[idx] = { ...users[idx], ...updated }
-        localStorage.setItem("pluggy_users", JSON.stringify(users))
-      }
-      return updated
+      localStorage.setItem("pluggy_users", JSON.stringify(updatedUsers))
+      return next
     })
   }
 
@@ -235,326 +287,486 @@ export function AppProvider({ children }) {
     setCart([])
   }
 
-  const loginEngineer = (data) => setEngineer(data)
+  // Engineer Functions
+  const loginEngineer = (engineerData) => {
+    const found = engineersList.find((e) => e.id === engineerData.id)
+    setEngineer(found || { ...engineerData, isOnline: true, rating: 4.9, walletBalance: 1500 })
+  }
+
   const logoutEngineer = () => setEngineer(null)
 
-  const loginExecutive = (data) => setExecutive(data)
-  const logoutExecutive = () => setExecutive(null)
+  const toggleEngineerDuty = () => {
+    if (!engineer) return
+    const nextOnline = !engineer.isOnline
+    const updated = { ...engineer, isOnline: nextOnline }
+    setEngineer(updated)
+    setEngineersList((prev) => prev.map((e) => (e.id === engineer.id ? updated : e)))
+  }
 
-  // 🕒 Recent helper
-  const addRecent = (serviceName) => {
-    if (!serviceName) return
-    setRecent((prev) => {
-      const filtered = prev.filter((item) => item.toLowerCase() !== serviceName.toLowerCase())
-      return [serviceName, ...filtered].slice(0, 9)
+  const registerNewEngineer = (engData) => {
+    const newId = `ENG00${engineersList.length + 1}`
+    const newEng = {
+      id: newId,
+      name: engData.name,
+      phone: engData.phone,
+      specialization: engData.specialization || "Electrical & Appliances",
+      rating: 4.8,
+      completedCount: 1,
+      isOnline: true,
+      lat: 28.731,
+      lng: 77.776,
+      area: engData.area || city,
+      walletBalance: 500,
+      toolKit: engData.toolKit || ["Standard Electrical Kit", "Digital Multimeter"],
+    }
+    setEngineersList((prev) => [...prev, newEng])
+    setEngineer(newEng)
+    return newEng
+  }
+
+  // Cart Functions
+  const addToCart = (item) => {
+    setCart((prev) => {
+      const exists = prev.find((i) => i.issue === item.issue)
+      if (exists) return prev
+      return [...prev, { ...item, quantity: 1 }]
     })
   }
 
-  // 💰 Wallet helper
+  const removeFromCart = (issue) => {
+    setCart((prev) => prev.filter((i) => i.issue !== issue))
+  }
+
+  const clearCart = () => setCart([])
+
+  // Recent Services Helper
+  const addRecent = (serviceName) => {
+    if (!serviceName) return
+    setRecent((prev) => {
+      const filtered = (prev || []).filter((item) => item !== serviceName)
+      return [serviceName, ...filtered].slice(0, 8)
+    })
+  }
+
+  // Coupon Helper
+  const applyCouponCode = (code) => {
+    if (!code) return { success: false, message: "Enter a coupon code" }
+    const normalized = code.trim().toUpperCase()
+    const found = DEFAULT_COUPONS[normalized]
+    if (found) {
+      setAppliedCoupon(found)
+      return { success: true, coupon: found }
+    }
+    return { success: false, message: "Invalid or expired coupon code" }
+  }
+
+  const removeCoupon = () => setAppliedCoupon(null)
+
+  // Wallet Helpers
   const addWalletMoney = (amount, source = "Wallet Top-up") => {
     const num = Number(amount)
     if (!num || num <= 0) return
     setWalletBalance((prev) => prev + num)
     setWalletTransactions((prev) => [
-      { id: Date.now(), type: "credit", amount: num, from: source, date: "Just now" },
+      { type: "credit", amount: num, from: source, date: "Just now" },
       ...prev,
     ])
-    toast.success(`₹${num} added to wallet!`)
   }
 
-  // 🎟️ Coupon helper
-  const applyCouponCode = (code) => {
-    const clean = (code || "").trim().toUpperCase()
-    const catalog = {
-      PLUGGY20: { code: "PLUGGY20", type: "percent", value: 20, minAmount: 0, desc: "20% OFF on your booking" },
-      PLUG20: { code: "PLUG20", type: "percent", value: 20, minAmount: 0, desc: "20% OFF on your first booking" },
-      SUMMER25: { code: "SUMMER25", type: "percent", value: 25, minAmount: 299, desc: "25% Summer Special OFF" },
-      SAVE100: { code: "SAVE100", type: "flat", value: 100, minAmount: 499, desc: "Flat ₹100 OFF above ₹499" },
-    }
-    if (!catalog[clean]) {
-      toast.error("Invalid coupon code")
-      return false
-    }
-    setAppliedCoupon(catalog[clean])
-    toast.success(`Coupon ${clean} applied! 🎉`)
+  const deductWalletMoney = (amount, reason = "Service Booking") => {
+    const num = Number(amount)
+    if (!num || num <= 0) return false
+    if (walletBalance < num) return false
+    setWalletBalance((prev) => prev - num)
+    setWalletTransactions((prev) => [
+      { type: "debit", amount: num, from: reason, date: "Just now" },
+      ...prev,
+    ])
     return true
   }
 
-  const removeCoupon = () => {
-    setAppliedCoupon(null)
-    toast.success("Coupon removed")
-  }
+  // Generate 4-digit OTPs
+  const generate4DigitPin = () => String(Math.floor(1000 + Math.random() * 9000))
 
-  // 🛒 Cart helpers
-  const addToCart = (item) => {
-    if (Array.isArray(item)) {
-      setCart((prev) => [...prev, ...item])
-    } else {
-      setCart((prev) => [...prev, item])
-    }
-  }
+  // Request & Booking Functions (Full 7-Workflow Support)
+  const addRequest = (request) => {
+    const id = request.id || Date.now()
+    const transactionId = request.transactionId || `PLG${id.toString().slice(-8)}`
+    const startOtp = request.startOtp || generate4DigitPin()
+    const happyOtp = request.happyOtp || generate4DigitPin()
+    const bookingMode = request.bookingMode || (request.priority === "High" ? "SOS_15MIN" : "STANDARD")
 
-  const removeFromCart = (issueName) => {
-    setCart((prev) => prev.filter((item) => item.issue !== issueName))
-  }
+    // If SOS 15-Min Emergency, auto-verify and assign nearest online engineer for instant response!
+    const isSOS = bookingMode === "SOS_15MIN" || request.priority === "High"
+    const onlineEng = engineersList.find((e) => e.isOnline) || DEFAULT_ENGINEERS[0]
 
-  const clearCart = () => {
-    setCart([])
-    localStorage.setItem("pluggy_cart", "[]")
-  }
-
-  // 🔔 Notification helpers
-  const addNotification = (notification) => {
-    const newNotif = {
-      id: Date.now() + Math.floor(Math.random() * 1000),
-      createdAt: new Date().toISOString(),
-      time: "Just now",
-      read: false,
-      ...notification,
-    }
-    setNotifications((prev) => [newNotif, ...prev])
-  }
-
-  const markNotificationRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    )
-  }
-
-  const markAllNotificationsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
-  }
-
-  const clearNotifications = () => {
-    setNotifications([])
-  }
-
-  // 📋 Request helpers (normalized across all booking flows)
-  const addRequest = (req) => {
-    const validStatuses = [
-      "PENDING_EXECUTIVE",
-      "EXECUTIVE_VERIFIED",
-      "ENGINEER_ASSIGNED",
-      "IN_PROGRESS",
-      "COMPLETED",
-      "CANCELLED",
-    ]
-    const normalizedStatus = validStatuses.includes(req.status)
-      ? req.status
-      : "PENDING_EXECUTIVE"
-
-    const id = req.id || Date.now()
-    const createdAt = req.createdAt || new Date().toISOString()
-    const resolvedAddress = req.address || req.userAddress || address || "Not provided"
-
-    const newRequest = {
-      ...req,
+    const normalized = {
+      ...request,
       id,
-      transactionId: req.transactionId || `PLG${String(id).slice(-8)}`,
-      service: req.service || "Home Service",
-      issue: req.issue || "General Service",
-      address: resolvedAddress,
-      userAddress: resolvedAddress,
-      userName: req.userName || req.name || user?.name || "Customer",
-      userPhone: req.userPhone || req.phone || user?.phone || "",
-      userEmail: req.userEmail || req.email || user?.email || "",
-      amount: Number(req.amount) || 0,
-      status: normalizedStatus,
-      createdAt,
+      transactionId,
+      bookingMode,
+      priority: isSOS ? "High" : request.priority || "Medium",
+      status: isSOS && request.autoAssignSOS ? "ENGINEER_ASSIGNED" : "PENDING_EXECUTIVE",
+      assignedEngineerId: isSOS && request.autoAssignSOS ? onlineEng.id : request.assignedEngineerId || null,
+      assignedEngineer: isSOS && request.autoAssignSOS ? onlineEng.name : request.assignedEngineer || null,
+      assignedEngineerPhone: isSOS && request.autoAssignSOS ? onlineEng.phone : "9876543210",
+      startOtp,
+      happyOtp,
+      address: request.address || request.userAddress || address || "Saved Location",
+      userAddress: request.userAddress || request.address || address || "Saved Location",
+      userName: request.userName || request.name || user?.name || "Customer",
+      userPhone: request.userPhone || request.phone || user?.phone || "",
+      userEmail: request.userEmail || user?.email || "",
+      baseAmount: Number(request.baseAmount ?? request.amount ?? request.finalAmount ?? 0),
+      partsAmount: Number(request.partsAmount ?? 0),
+      amount: Number(request.amount ?? request.finalAmount ?? 0),
+      customerPreferences: request.customerPreferences || userPreferences,
+      requiredKit: request.requiredKit || ["Digital Multimeter", "Standard Safety Kit", "Genuine Spare Parts Box"],
+      addedSpareParts: request.addedSpareParts || [],
+      standbyLoaner: request.standbyLoaner || null,
+      createdAt: request.createdAt || new Date().toISOString(),
       date:
-        req.date ||
-        new Date(createdAt).toLocaleDateString("en-IN", {
+        request.date ||
+        new Date().toLocaleDateString("en-IN", {
           day: "numeric",
           month: "short",
           year: "numeric",
         }),
     }
 
-    setRequests((prev) => [newRequest, ...prev.filter((r) => r.id !== id)])
-    setBookings((prev) => [newRequest, ...prev.filter((b) => b.id !== id)])
+    setRequests((prev) => [normalized, ...prev.filter((r) => r.id !== normalized.id)])
+    setBookings((prev) => [normalized, ...prev.filter((b) => b.id !== normalized.id)])
 
     addNotification({
       type: "service",
-      title: "Booking Confirmed ✅",
-      message: `Your request for ${newRequest.service} (${newRequest.transactionId}) has been received.`,
+      title: isSOS ? "🚨 15-Min SOS Responder Activated!" : "Booking Confirmed!",
+      message: `${normalized.service || "Service"} (${normalized.transactionId}) is booked. Start PIN: ${startOtp}`,
     })
 
-    return newRequest
+    return normalized
   }
 
-  const updateRequestStatus = (id, newStatus) => {
+  const updateRequestStatus = (id, status, engineerData = {}) => {
     setRequests((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
+      prev.map((r) => (r.id === id ? { ...r, status, ...engineerData, updatedAt: new Date().toISOString() } : r))
     )
     setBookings((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, status: newStatus } : b))
+      prev.map((b) => (b.id === id ? { ...b, status, ...engineerData, updatedAt: new Date().toISOString() } : b))
     )
+  }
 
-    const statusLabels = {
-      EXECUTIVE_VERIFIED: "Confirmed by Executive",
-      ENGINEER_ASSIGNED: "Engineer Assigned",
-      IN_PROGRESS: "Service In Progress",
-      COMPLETED: "Service Completed",
+  // Workflow 2: Executive Desk Verifies Booking
+  const verifyByExecutive = (requestId, kitItems = [], executiveNote = "") => {
+    const update = {
+      status: "EXECUTIVE_VERIFIED",
+      requiredKit: kitItems.length > 0 ? kitItems : ["Multimeter", "Spare Capacitor/MCB", "Safety Gloves"],
+      executiveNote: executiveNote || "Verified by Pluggy Executive Desk",
+      verifiedAt: new Date().toISOString(),
     }
-    if (statusLabels[newStatus]) {
-      addNotification({
-        type: "update",
-        title: statusLabels[newStatus],
-        message: `Booking #${id} status updated to ${statusLabels[newStatus]}.`,
+    updateRequestStatus(requestId, "EXECUTIVE_VERIFIED", update)
+    addNotification({
+      type: "update",
+      title: "Booking Verified by Executive",
+      message: `Request #${requestId.toString().slice(-6)} has been verified. Assigning nearest expert now.`,
+    })
+  }
+
+  // Workflow 2/3: Assign Engineer
+  const assignEngineer = (requestId, engineerId, engineerName) => {
+    const engObj = engineersList.find((e) => e.id === engineerId)
+    const update = {
+      assignedEngineerId: engineerId,
+      assignedEngineer: engineerName || engObj?.name || "Verified Expert",
+      assignedEngineerPhone: engObj?.phone || "9876543210",
+      assignedAt: new Date().toISOString(),
+    }
+    updateRequestStatus(requestId, "ENGINEER_ASSIGNED", update)
+    addNotification({
+      type: "service",
+      title: "👨‍🔧 Expert Assigned!",
+      message: `${update.assignedEngineer} is on the way to your doorstep.`,
+    })
+  }
+
+  // Workflow 3: Engineer Starts Job with 4-Digit Start OTP
+  const startJobWithOtp = (requestId, enteredOtp) => {
+    const target = requests.find((r) => r.id === requestId)
+    if (!target) return { success: false, message: "Booking not found" }
+    if (enteredOtp && target.startOtp && enteredOtp.trim() !== target.startOtp) {
+      return { success: false, message: `Incorrect Start PIN! Ask customer for 4-digit Start PIN (${target.startOtp})` }
+    }
+    updateRequestStatus(requestId, "IN_PROGRESS", { startedAt: new Date().toISOString() })
+    addNotification({
+      type: "update",
+      title: "🔧 Service Started (PIN Verified)",
+      message: `Your ${target.service} is now in progress.`,
+    })
+    return { success: true }
+  }
+
+  // Workflow 4: Engineer Adds Spare Part from Official Rate Card (Requires Customer Approval)
+  const addSparePartToJob = (requestId, part) => {
+    const newPartEntry = {
+      ...part,
+      entryId: `${part.id}-${Date.now()}`,
+      approvalStatus: "PENDING_APPROVAL",
+      addedAt: new Date().toISOString(),
+    }
+    setRequests((prev) =>
+      prev.map((r) => {
+        if (r.id !== requestId) return r
+        return {
+          ...r,
+          addedSpareParts: [...(r.addedSpareParts || []), newPartEntry],
+        }
       })
+    )
+    addNotification({
+      type: "service",
+      title: "📋 Spare Part Approval Requested",
+      message: `Engineer requested to add ${part.name} (₹${part.price}). Please Approve/Reject in Track Requests.`,
+    })
+  }
+
+  // Workflow 4: Customer Approves or Rejects Spare Part Quote
+  const respondToSparePartQuote = (requestId, entryId, isApproved) => {
+    setRequests((prev) =>
+      prev.map((r) => {
+        if (r.id !== requestId) return r
+        const updatedParts = (r.addedSpareParts || []).map((p) =>
+          p.entryId === entryId ? { ...p, approvalStatus: isApproved ? "APPROVED" : "REJECTED" } : p
+        )
+        const approvedPartsSum = updatedParts
+          .filter((p) => p.approvalStatus === "APPROVED")
+          .reduce((sum, p) => sum + Number(p.price || 0), 0)
+        const base = Number(r.baseAmount ?? r.amount ?? 0)
+        return {
+          ...r,
+          addedSpareParts: updatedParts,
+          partsAmount: approvedPartsSum,
+          amount: base + approvedPartsSum,
+        }
+      })
+    )
+  }
+
+  // Workflow 4: Issue Standby Backup Appliance (Fan / Cooler / Stabilizer) when Motor/PCB goes to Workshop
+  const issueStandbyAppliance = (requestId, loanerItem = "Pluggy Standby High-Speed Fan") => {
+    const loaner = {
+      active: true,
+      item: loanerItem,
+      dailyRate: 99,
+      receiptNo: `STBY-${Date.now().toString().slice(-5)}`,
+      issuedAt: new Date().toISOString(),
     }
+    setRequests((prev) =>
+      prev.map((r) => {
+        if (r.id !== requestId) return r
+        const nextAmount = Number(r.amount || 0) + 99
+        return {
+          ...r,
+          standbyLoaner: loaner,
+          amount: nextAmount,
+        }
+      })
+    )
+    addNotification({
+      type: "update",
+      title: "🔄 Standby Appliance Issued",
+      message: `${loanerItem} (Receipt: ${loaner.receiptNo}) provided while your part is being repaired at the workshop.`,
+    })
+  }
+
+  // Workflow 5: Complete Job with 4-Digit Happy OTP + Activate 30-Day Warranty + QR Health Sticker
+  const completeJobWithOtp = (requestId, enteredOtp) => {
+    const target = requests.find((r) => r.id === requestId)
+    if (!target) return { success: false, message: "Booking not found" }
+    if (enteredOtp && target.happyOtp && enteredOtp.trim() !== target.happyOtp) {
+      return { success: false, message: `Incorrect Happy PIN! Ask customer for 4-digit Happy PIN (${target.happyOtp})` }
+    }
+
+    const expiry = new Date()
+    expiry.setDate(expiry.getDate() + 30)
+    const qrCodeId = `PLG-QR-${requestId.toString().slice(-5)}`
+
+    const completionData = {
+      status: "COMPLETED",
+      completedAt: new Date().toISOString(),
+      warrantyExpiresAt: expiry.toISOString(),
+      applianceQrId: qrCodeId,
+    }
+
+    updateRequestStatus(requestId, "COMPLETED", completionData)
+
+    // Credit 80% service fee + 100% spare parts to engineer
+    if (target.assignedEngineerId) {
+      const payout = Math.round(Number(target.baseAmount || target.amount || 0) * 0.8) + Number(target.partsAmount || 0)
+      setEngineersList((prev) =>
+        prev.map((e) =>
+          e.id === target.assignedEngineerId
+            ? { ...e, walletBalance: (e.walletBalance || 0) + payout, completedCount: (e.completedCount || 0) + 1 }
+            : e
+        )
+      )
+      if (engineer && engineer.id === target.assignedEngineerId) {
+        setEngineer((prev) => ({
+          ...prev,
+          walletBalance: (prev.walletBalance || 0) + payout,
+          completedCount: (prev.completedCount || 0) + 1,
+        }))
+      }
+    }
+
+    addNotification({
+      type: "service",
+      title: "✅ Service Completed & 30-Day Warranty Active!",
+      message: `Digital QR Health Card (${qrCodeId}) generated for your ${target.service}.`,
+    })
+
+    return { success: true }
+  }
+
+  // Workflow 6: Claim Free 30-Day Warranty Re-Visit
+  const claimWarrantyRevisit = (originalRequest) => {
+    const revisit = addRequest({
+      service: `${originalRequest.service} (Warranty Free Re-Visit)`,
+      issue: `30-Day Warranty Claim for Booking #${originalRequest.transactionId || originalRequest.id}`,
+      address: originalRequest.address || originalRequest.userAddress,
+      amount: 0,
+      baseAmount: 0,
+      priority: "High",
+      bookingMode: "WARRANTY_CLAIM",
+      autoAssignSOS: true,
+      parentBookingId: originalRequest.id,
+    })
+    return revisit
+  }
+
+  const cancelRequest = (id, reason) => {
+    const cancellationData = {
+      status: "CANCELLED",
+      cancelledAt: new Date().toISOString(),
+      cancellationReason: reason,
+    }
+    updateRequestStatus(id, "CANCELLED", cancellationData)
   }
 
   const rateRequest = (id, rating, review = "") => {
-    setRequests((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, rating, review } : r))
-    )
-    setBookings((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, rating, review } : b))
-    )
-    toast.success("Thank you for your feedback! ⭐")
-  }
-
-  // ❌ Cancel Request
-  const cancelRequest = (requestId, reason = "User cancelled") => {
-    setRequests((prev) =>
-      prev.map((r) => {
-        if (r.id === requestId) {
-          return {
-            ...r,
-            status: "CANCELLED",
-            cancelledAt: new Date().toISOString(),
-            cancelReason: reason,
-          }
-        }
-        return r
-      })
-    )
-
-    setBookings((prev) =>
-      prev.map((b) => {
-        if (b.id === requestId) {
-          return { ...b, status: "CANCELLED" }
-        }
-        return b
-      })
-    )
-
-    addNotification({
-      type: "update",
-      title: "Booking Cancelled",
-      message: `Booking #${requestId} has been cancelled.`,
-    })
-
-    toast.success("Request cancelled successfully")
-  }
-
-  // 📌 Booking helper
-  const addBooking = (booking) => {
-    const newBooking = {
-      ...booking,
-      id: booking.id || Date.now(),
-      createdAt: booking.createdAt || new Date().toISOString(),
+    const ratingData = {
+      rating,
+      review,
+      ratedAt: new Date().toISOString(),
     }
-    setBookings((prev) => [newBooking, ...prev.filter((b) => b.id !== newBooking.id)])
+    setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, ...ratingData } : r)))
+    setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, ...ratingData } : b)))
   }
 
-  // 👔 Assign Engineer
-  const assignEngineer = (requestId, engineerId, engineerName) => {
-    setRequests((prev) =>
-      prev.map((r) => {
-        if (r.id === requestId) {
-          return {
-            ...r,
-            status: "ENGINEER_ASSIGNED",
-            assignedEngineerId: engineerId,
-            assignedEngineer: engineerName,
-            assignedAt: new Date().toISOString(),
-          }
-        }
-        return r
-      })
-    )
+  const addBooking = (booking) => addRequest(booking)
 
-    setBookings((prev) =>
-      prev.map((b) => {
-        if (b.id === requestId) {
-          return {
-            ...b,
-            status: "ENGINEER_ASSIGNED",
-            assignedEngineerId: engineerId,
-            assignedEngineer: engineerName,
-          }
-        }
-        return b
-      })
-    )
-
-    addNotification({
-      type: "service",
-      title: "Engineer Assigned 👨‍🔧",
-      message: `${engineerName} has been assigned to your booking.`,
-    })
-
-    toast.success(`Engineer ${engineerName} assigned!`)
+  // Saved Addresses Functions
+  const addSavedAddress = (newAddress) => {
+    setSavedAddresses((prev) => [...prev, { id: Date.now(), ...newAddress }])
   }
 
-  return (
-    <AppContext.Provider
-      value={{
-        city,
-        setCity,
-        user,
-        setUser,
-        updateUser,
-        loginUser,
-        logoutUser,
-        engineer,
-        setEngineer,
-        loginEngineer,
-        logoutEngineer,
-        executive,
-        setExecutive,
-        loginExecutive,
-        logoutExecutive,
-        cart,
-        setCart,
-        addToCart,
-        removeFromCart,
-        clearCart,
-        requests,
-        setRequests,
-        addRequest,
-        updateRequestStatus,
-        rateRequest,
-        cancelRequest,
-        address,
-        setAddress,
-        bookings,
-        addBooking,
-        notifications,
-        setNotifications,
-        addNotification,
-        markNotificationRead,
-        markAllNotificationsRead,
-        clearNotifications,
-        recent,
-        setRecent,
-        addRecent,
-        walletBalance,
-        walletTransactions,
-        addWalletMoney,
-        appliedCoupon,
-        applyCouponCode,
-        removeCoupon,
-        assignEngineer,
-        theme,
-        toggleTheme,
-      }}
-    >
-      {children}
-    </AppContext.Provider>
-  )
+  const removeSavedAddress = (id) => {
+    setSavedAddresses((prev) => prev.filter((a) => a.id !== id))
+  }
+
+  const updateSavedAddress = (id, updated) => {
+    setSavedAddresses((prev) => prev.map((a) => (a.id === id ? { ...a, ...updated } : a)))
+  }
+
+  // Notification Functions
+  const addNotification = (notif) => {
+    setNotifications((prev) => [
+      { id: Date.now(), read: false, time: "Just now", createdAt: new Date().toISOString(), ...notif },
+      ...prev,
+    ])
+  }
+
+  const markNotificationRead = (id) => {
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
+  }
+
+  const markAllNotificationsRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
+  }
+
+  const clearNotifications = () => setNotifications([])
+
+  // Theme Toggle
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"))
+  }
+
+  const value = {
+    user,
+    setUser,
+    loginUser,
+    updateUser,
+    logoutUser,
+    engineer,
+    loginEngineer,
+    logoutEngineer,
+    toggleEngineerDuty,
+    registerNewEngineer,
+    engineersList,
+    cart,
+    setCart,
+    addToCart,
+    removeFromCart,
+    clearCart,
+    recent,
+    setRecent,
+    addRecent,
+    appliedCoupon,
+    applyCouponCode,
+    removeCoupon,
+    walletBalance,
+    walletTransactions,
+    addWalletMoney,
+    deductWalletMoney,
+    userPreferences,
+    setUserPreferences,
+    requests,
+    addRequest,
+    updateRequestStatus,
+    verifyByExecutive,
+    assignEngineer,
+    startJobWithOtp,
+    addSparePartToJob,
+    respondToSparePartQuote,
+    issueStandbyAppliance,
+    completeJobWithOtp,
+    claimWarrantyRevisit,
+    cancelRequest,
+    rateRequest,
+    bookings,
+    addBooking,
+    city,
+    setCity,
+    address,
+    setAddress,
+    savedAddresses,
+    addSavedAddress,
+    removeSavedAddress,
+    updateSavedAddress,
+    notifications,
+    addNotification,
+    markNotificationRead,
+    markAllNotificationsRead,
+    clearNotifications,
+    theme,
+    toggleTheme,
+  }
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>
 }
 
-export const useApp = () => useContext(AppContext)
+export function useApp() {
+  const context = useContext(AppContext)
+  if (!context) {
+    throw new Error("useApp must be used within AppProvider")
+  }
+  return context
+}

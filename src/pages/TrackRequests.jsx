@@ -4,18 +4,44 @@ import { useApp } from "../AppContext"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import {
-  PackageSearch, User, Wrench,
-  CheckCircle2, Phone, MapPin, Star, FileText,
-  XCircle, ChevronDown, ChevronUp, Search,
-  AlertCircle, MessageCircle, Copy, Check,
-  Sparkles, Home, X
+  PackageSearch,
+  User,
+  Wrench,
+  CheckCircle2,
+  Phone,
+  MapPin,
+  Star,
+  FileText,
+  XCircle,
+  ChevronDown,
+  ChevronUp,
+  Search,
+  AlertCircle,
+  MessageCircle,
+  Copy,
+  Check,
+  Sparkles,
+  Home,
+  X,
+  ShieldCheck,
+  KeyRound,
+  RefreshCw,
+  QrCode,
+  AlertTriangle,
 } from "lucide-react"
 import BackButton from "../components/BackButton"
 import toast from "react-hot-toast"
 
 export default function TrackRequests() {
   const navigate = useNavigate()
-  const { requests, user, cancelRequest, rateRequest } = useApp()
+  const {
+    requests,
+    user,
+    cancelRequest,
+    rateRequest,
+    respondToSparePartQuote,
+    claimWarrantyRevisit,
+  } = useApp()
 
   const [filterStatus, setFilterStatus] = useState("All")
   const [searchQuery, setSearchQuery] = useState("")
@@ -29,54 +55,54 @@ export default function TrackRequests() {
 
   const statusConfig = {
     PENDING_EXECUTIVE: {
-      label: "Processing",
+      label: "Executive Verifying",
       icon: AlertCircle,
-      color: "text-amber-600",
+      color: "text-amber-700",
       bg: "bg-amber-50",
       border: "border-amber-200",
-      gradient: "from-amber-400 to-amber-500",
-      progress: 15,
-      description: "Executive will call shortly",
+      gradient: "from-amber-500 to-orange-500",
+      progress: 20,
+      description: "Control Desk verifying fault & assigning toolkit",
     },
     EXECUTIVE_VERIFIED: {
-      label: "Confirmed",
+      label: "Verified & Dispatching",
       icon: CheckCircle2,
-      color: "text-blue-600",
+      color: "text-blue-700",
       bg: "bg-blue-50",
       border: "border-blue-200",
-      gradient: "from-blue-400 to-blue-500",
-      progress: 35,
-      description: "Finding best expert",
+      gradient: "from-[#1A2A49] to-[#223a61]",
+      progress: 40,
+      description: "Matching nearest background-verified engineer",
     },
     ENGINEER_ASSIGNED: {
-      label: "Expert Assigned",
+      label: "Engineer En-Route",
       icon: User,
-      color: "text-indigo-600",
+      color: "text-indigo-700",
       bg: "bg-indigo-50",
       border: "border-indigo-200",
-      gradient: "from-indigo-400 to-indigo-500",
-      progress: 55,
-      description: "Expert is on the way",
+      gradient: "from-[#1A2A49] to-[#F37021]",
+      progress: 65,
+      description: "Share 4-Digit Start PIN on arrival",
     },
     IN_PROGRESS: {
-      label: "In Progress",
+      label: "Repair In Progress",
       icon: Wrench,
-      color: "text-orange-600",
+      color: "text-[#F37021]",
       bg: "bg-orange-50",
       border: "border-orange-200",
-      gradient: "from-orange-400 to-orange-500",
-      progress: 80,
-      description: "Service in progress",
+      gradient: "from-[#F37021] to-[#FF8C42]",
+      progress: 85,
+      description: "Job started • Share Happy PIN after satisfaction",
     },
     COMPLETED: {
-      label: "Completed",
+      label: "Completed • Under Warranty",
       icon: CheckCircle2,
-      color: "text-emerald-600",
+      color: "text-emerald-700",
       bg: "bg-emerald-50",
       border: "border-emerald-200",
-      gradient: "from-emerald-400 to-emerald-500",
+      gradient: "from-emerald-600 to-teal-600",
       progress: 100,
-      description: "Service completed",
+      description: "30-Day QR Warranty Active",
     },
     CANCELLED: {
       label: "Cancelled",
@@ -84,10 +110,18 @@ export default function TrackRequests() {
       color: "text-rose-600",
       bg: "bg-rose-50",
       border: "border-rose-200",
-      gradient: "from-rose-400 to-rose-500",
+      gradient: "from-rose-500 to-red-600",
       progress: 0,
       description: "Booking cancelled",
     },
+  }
+
+  const bookingModeBadge = {
+    SOS_15MIN: { label: "🚨 15-Min Emergency SOS", cls: "bg-red-600 text-white" },
+    EVENT_STANDBY: { label: "🎪 Function Standby Guard", cls: "bg-[#F37021] text-white" },
+    VIDEO_DIAGNOSIS: { label: "📹 ₹29 Video Diagnosis", cls: "bg-[#1A2A49] text-white" },
+    VOICE_PHOTO: { label: "🎙️ Voice / Photo Booking", cls: "bg-emerald-600 text-white" },
+    WARRANTY_CLAIM: { label: "🛡️ ₹0 Warranty Re-Visit", cls: "bg-teal-700 text-white" },
   }
 
   const filteredRequests = useMemo(() => {
@@ -104,19 +138,13 @@ export default function TrackRequests() {
       .sort((a, b) => new Date(b.createdAt || b.id) - new Date(a.createdAt || a.id))
   }, [requests, filterStatus, searchQuery])
 
-  const activeCount = (requests || []).filter((r) => !["COMPLETED", "CANCELLED"].includes(r.status)).length
+  const activeCount = (requests || []).filter(
+    (r) => !["COMPLETED", "CANCELLED"].includes(r.status)
+  ).length
   const completedCount = (requests || []).filter((r) => r.status === "COMPLETED").length
 
   const canCancel = (status) => {
     return ["PENDING_EXECUTIVE", "EXECUTIVE_VERIFIED", "ENGINEER_ASSIGNED"].includes(status)
-  }
-
-  const handleCancelRequest = (request) => {
-    if (!canCancel(request.status)) {
-      toast.error("Cannot cancel at this stage")
-      return
-    }
-    setShowCancelModal(request)
   }
 
   const confirmCancel = () => {
@@ -141,356 +169,565 @@ export default function TrackRequests() {
   const copyBookingId = (id) => {
     navigator.clipboard?.writeText(id)
     setCopiedId(id)
-    toast.success("ID copied!")
+    toast.success("Copied to clipboard!")
     setTimeout(() => setCopiedId(null), 2000)
   }
 
-  const getStatusBadge = (status) => {
-    const config = statusConfig[status] || statusConfig.PENDING_EXECUTIVE
-    const Icon = config.icon
-    return (
-      <div className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full ${config.bg} ${config.border} border`}>
-        <Icon size={12} className={config.color} />
-        <span className={`text-[10px] sm:text-xs font-medium ${config.color}`}>{config.label}</span>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-[#F1F5F9] flex items-center justify-center p-4">
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="bg-white rounded-2xl p-8 text-center max-w-sm w-full shadow-xl"
-        >
-          <div className="w-20 h-20 bg-gradient-to-br from-[#1A2A49] to-[#223a61] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <User size={36} className="text-white" />
-          </div>
-          <h2 className="text-xl font-bold text-[#1A2A49] mb-2">Login Required</h2>
-          <p className="text-gray-500 text-sm mb-6">Please login to view your requests</p>
-          <button
-            onClick={() => navigate("/login")}
-            className="w-full py-3 bg-[#1A2A49] text-white rounded-xl font-medium"
-          >
-            Login
-          </button>
-        </motion.div>
-      </div>
-    )
+  const getWarrantyDaysLeft = (warrantyValidTill) => {
+    if (!warrantyValidTill) return 30
+    const diff = new Date(warrantyValidTill).getTime() - Date.now()
+    return Math.max(0, Math.ceil(diff / (24 * 60 * 60 * 1000)))
   }
 
   return (
-    <div className="min-h-screen bg-[#F1F5F9] font-inter">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-30 safe-top">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-1">
+    <div className="min-h-screen bg-[#F4F6F9] pt-[128px] md:pt-[140px] pb-20">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4">
+        {/* Top Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+          <div className="flex items-center gap-2">
             <BackButton />
-            <h2 className="text-lg font-bold text-[#1A2A49] font-poppins">My Requests</h2>
-          </div>
-          <button onClick={() => navigate("/")} className="p-2 hover:bg-gray-100 rounded-full active:bg-gray-200">
-            <Home size={20} className="text-[#1A2A49]" />
-          </button>
-        </div>
-      </div>
-
-      <div className="max-w-3xl mx-auto px-4 py-4">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-            <p className="text-xl font-bold text-[#1A2A49]">{requests?.length || 0}</p>
-            <p className="text-[10px] text-gray-500">Total</p>
-          </div>
-          <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-            <p className="text-xl font-bold text-[#F97316]">{activeCount}</p>
-            <p className="text-[10px] text-gray-500">Active</p>
-          </div>
-          <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-            <p className="text-xl font-bold text-[#10B981]">{completedCount}</p>
-            <p className="text-[10px] text-gray-500">Done</p>
-          </div>
-        </div>
-
-        {/* Search Bar */}
-        <div className="relative mb-4">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by service or ID"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#F37021]"
-          />
-        </div>
-
-        {/* Filter Pills */}
-        <div className="flex gap-2 overflow-x-auto pb-3 -mx-1 px-1 scrollbar-hide">
-          {["All", "PENDING_EXECUTIVE", "ENGINEER_ASSIGNED", "IN_PROGRESS", "COMPLETED"].map((status) => {
-            const config = statusConfig[status]
-            return (
-              <button
-                key={status}
-                onClick={() => setFilterStatus(status)}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition active:scale-95 ${
-                  filterStatus === status
-                    ? `bg-gradient-to-r ${config?.gradient || "from-[#1A2A49] to-[#223a61]"} text-white shadow-md`
-                    : "bg-white text-gray-600 border border-gray-200"
-                }`}
-              >
-                {status === "All" ? "All" : config?.label || status}
-              </button>
-            )
-          })}
-        </div>
-
-        {/* Requests List */}
-        <div className="space-y-3 pb-4">
-          {filteredRequests.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl p-10 text-center shadow-sm border border-gray-100"
-            >
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <PackageSearch size={28} className="text-gray-400" />
-              </div>
-              <h3 className="text-base font-bold text-[#1A2A49] mb-1">No requests found</h3>
-              <p className="text-gray-500 text-xs mb-5">
-                {searchQuery ? "Try different search" : "Book your first service"}
+            <div>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-[#1A2A49]">
+                Track Live Bookings & Digital Warranty
+              </h1>
+              <p className="text-xs text-gray-500">
+                Dual-PIN Verification • Live Spare Part Quotes • 30-Day QR Appliance Health Cards
               </p>
-              {!searchQuery && (
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() =>
+                window.dispatchEvent(
+                  new CustomEvent("pluggy:open-rate-card", { detail: { category: "ac-repair" } })
+                )
+              }
+              className="px-3.5 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-[#1A2A49] hover:border-[#F37021] flex items-center gap-1.5 shadow-sm"
+            >
+              <ShieldCheck size={14} className="text-emerald-600" /> Official Rate Card
+            </button>
+            <button
+              onClick={() => navigate("/admin")}
+              className="px-3.5 py-2 rounded-xl bg-[#1A2A49] text-white text-xs font-bold hover:bg-[#223a61] shadow-sm"
+            >
+              Control Desk
+            </button>
+          </div>
+        </div>
+
+        {/* Summary KPI Strip */}
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200/80">
+            <p className="text-2xl font-extrabold text-[#1A2A49]">{requests?.length || 0}</p>
+            <p className="text-xs text-gray-500 font-medium">Total Bookings</p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200/80">
+            <p className="text-2xl font-extrabold text-[#F37021]">{activeCount}</p>
+            <p className="text-xs text-gray-500 font-medium">Active / Live</p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200/80">
+            <p className="text-2xl font-extrabold text-emerald-600">{completedCount}</p>
+            <p className="text-xs text-gray-500 font-medium">Under 30-Day Warranty</p>
+          </div>
+        </div>
+
+        {/* Search & Status Filters */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-5">
+          <div className="relative flex-1">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by service name or Booking ID..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#F37021]"
+            />
+          </div>
+
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+            {[
+              "All",
+              "PENDING_EXECUTIVE",
+              "ENGINEER_ASSIGNED",
+              "IN_PROGRESS",
+              "COMPLETED",
+            ].map((st) => {
+              const cfg = statusConfig[st]
+              return (
                 <button
-                  onClick={() => navigate("/book-service")}
-                  className="px-5 py-2.5 bg-[#F37021] text-white rounded-full font-medium text-sm active:scale-95"
+                  key={st}
+                  onClick={() => setFilterStatus(st)}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${
+                    filterStatus === st
+                      ? "bg-[#1A2A49] text-white shadow-sm"
+                      : "bg-white text-gray-600 border border-gray-200 hover:border-[#F37021]"
+                  }`}
                 >
-                  <Sparkles size={16} className="inline mr-1" />
-                  Book a Service
+                  {st === "All" ? "All Bookings" : cfg?.label}
                 </button>
-              )}
-            </motion.div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Bookings List */}
+        <div className="space-y-4">
+          {filteredRequests.length === 0 ? (
+            <div className="bg-white rounded-3xl p-12 text-center shadow-sm border border-gray-200/80">
+              <div className="w-16 h-16 bg-[#F4F6F9] rounded-full flex items-center justify-center mx-auto mb-3">
+                <PackageSearch size={30} className="text-gray-400" />
+              </div>
+              <h3 className="text-lg font-extrabold text-[#1A2A49] mb-1">No service requests found</h3>
+              <p className="text-gray-500 text-xs sm:text-sm mb-5">
+                Book an instant doorstep electrical, AC or appliance repair to track it live here.
+              </p>
+              <button
+                onClick={() => navigate("/services")}
+                className="px-6 py-3 bg-[#F37021] text-white rounded-xl font-bold text-xs sm:text-sm shadow-md"
+              >
+                Explore Services & Book
+              </button>
+            </div>
           ) : (
-            filteredRequests.map((request, index) => {
+            filteredRequests.map((request) => {
               const status = statusConfig[request.status] || statusConfig.PENDING_EXECUTIVE
               const StatusIcon = status.icon
-              const isExpanded = expandedId === request.id
+              const isExpanded = expandedId === request.id || !["COMPLETED", "CANCELLED"].includes(request.status)
+              const modeBadge = bookingModeBadge[request.bookingMode]
+              const pendingSpares = (request.addedSpareParts || []).filter(
+                (p) => p.status === "PENDING_APPROVAL"
+              )
 
               return (
                 <motion.div
                   key={request.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.03 }}
-                  className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden ${
-                    isExpanded ? "ring-1 ring-[#F37021]/30" : ""
-                  }`}
+                  layout
+                  className="bg-white rounded-3xl shadow-sm border border-gray-200/90 overflow-hidden"
                 >
-                  {/* Card Header */}
+                  {/* Booking Top Header */}
                   <div
-                    className="p-4 cursor-pointer active:bg-gray-50 transition"
-                    onClick={() => setExpandedId(isExpanded ? null : request.id)}
+                    onClick={() => setExpandedId(expandedId === request.id ? null : request.id)}
+                    className="p-5 cursor-pointer hover:bg-gray-50/60 transition"
                   >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className={`w-11 h-11 rounded-xl bg-gradient-to-br ${status.gradient} flex items-center justify-center shadow-sm flex-shrink-0`}
-                      >
-                        <Wrench size={20} className="text-white" />
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-mono text-xs font-extrabold px-2.5 py-1 rounded-lg bg-[#F4F6F9] text-[#1A2A49]">
+                          #{request.transactionId || `PLG${request.id}`}
+                        </span>
+                        {modeBadge && (
+                          <span className={`text-[11px] font-extrabold px-2.5 py-1 rounded-lg ${modeBadge.cls}`}>
+                            {modeBadge.label}
+                          </span>
+                        )}
+                        <div
+                          className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${status.bg} ${status.border} border`}
+                        >
+                          <StatusIcon size={13} className={status.color} />
+                          <span className={`text-xs font-bold ${status.color}`}>{status.label}</span>
+                        </div>
                       </div>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-0.5">
-                          <h3 className="font-bold text-[#1A2A49] text-base truncate font-poppins">
-                            {request.service || "Service"}
-                          </h3>
-                          {getStatusBadge(request.status)}
-                        </div>
-
-                        <p className="text-gray-400 text-[10px] mb-2">
-                          {request.date ||
-                            (request.createdAt
-                              ? new Date(request.createdAt).toLocaleDateString("en-IN", {
-                                  day: "numeric",
-                                  month: "short",
-                                })
-                              : "Today")}
-                        </p>
-
-                        <div className="mb-2">
-                          <div className="flex justify-between text-[10px] text-gray-500 mb-1">
-                            <span>Progress</span>
-                            <span className="font-medium text-[#1A2A49]">{status.progress}%</span>
-                          </div>
-                          <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                            <motion.div
-                              className={`h-full rounded-full bg-gradient-to-r ${status.gradient}`}
-                              initial={{ width: 0 }}
-                              animate={{ width: `${status.progress}%` }}
-                              transition={{ duration: 0.6 }}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1">
-                            <StatusIcon size={12} className={status.color} />
-                            <span className="text-[10px] text-gray-500 truncate max-w-[130px]">
-                              {status.description}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-[#1A2A49] text-base">₹{request.amount || 0}</span>
-                            {isExpanded ? (
-                              <ChevronUp size={16} className="text-gray-400" />
-                            ) : (
-                              <ChevronDown size={16} className="text-gray-400" />
-                            )}
-                          </div>
-                        </div>
+                      <div className="flex items-center justify-between sm:justify-end gap-3">
+                        <span className="text-lg font-extrabold text-[#1A2A49]">
+                          ₹{request.amount || 0}
+                        </span>
+                        {expandedId === request.id ? (
+                          <ChevronUp size={18} className="text-gray-400" />
+                        ) : (
+                          <ChevronDown size={18} className="text-gray-400" />
+                        )}
                       </div>
                     </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <h3 className="text-base sm:text-lg font-extrabold text-[#1A2A49]">
+                          {request.service || "Doorstep Service"}
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          📍 {request.address || request.userAddress || "Doorstep Address"} • 🗓️{" "}
+                          {request.date || "Today"} {request.timeSlot ? `(${request.timeSlot})` : ""}
+                        </p>
+                      </div>
+
+                      {/* Dual-PIN Quick Pill on Active Bookings */}
+                      {!["COMPLETED", "CANCELLED"].includes(request.status) && (
+                        <div className="flex items-center gap-2 shrink-0">
+                          {request.status !== "IN_PROGRESS" ? (
+                            <div className="px-3 py-1.5 rounded-xl bg-[#1A2A49] text-white text-xs flex items-center gap-1.5">
+                              <KeyRound size={13} className="text-amber-300" />
+                              <span>Start PIN:</span>
+                              <strong className="font-mono text-sm tracking-wider text-amber-300">
+                                {request.startOtp || "4821"}
+                              </strong>
+                            </div>
+                          ) : (
+                            <div className="px-3 py-1.5 rounded-xl bg-emerald-700 text-white text-xs flex items-center gap-1.5">
+                              <KeyRound size={13} className="text-amber-300" />
+                              <span>Happy PIN:</span>
+                              <strong className="font-mono text-sm tracking-wider text-amber-300">
+                                {request.happyOtp || "9134"}
+                              </strong>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="mt-3">
+                      <div className="flex justify-between text-[11px] text-gray-500 mb-1">
+                        <span>{status.description}</span>
+                        <span className="font-bold text-[#1A2A49]">{status.progress}%</span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <motion.div
+                          className={`h-full rounded-full bg-gradient-to-r ${status.gradient}`}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${status.progress}%` }}
+                          transition={{ duration: 0.5 }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Alert if spare parts quote is waiting for approval */}
+                    {pendingSpares.length > 0 && (
+                      <div className="mt-3 p-2.5 rounded-xl bg-amber-50 border border-amber-300 flex items-center justify-between text-xs text-amber-900 font-bold">
+                        <span className="flex items-center gap-1.5">
+                          <AlertTriangle size={15} className="text-[#F37021]" />
+                          Action Required: Engineer sent {pendingSpares.length} official spare part quote(s) for your approval!
+                        </span>
+                        <span className="underline">Review Below ↓</span>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Expanded Details */}
+                  {/* Expanded Body */}
                   <AnimatePresence>
                     {isExpanded && (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="border-t border-gray-100 bg-gray-50/50"
+                        className="border-t border-gray-100 bg-[#F4F6F9]/60 p-5 space-y-4"
                       >
-                        <div className="p-4 space-y-3">
-                          {/* Booking ID */}
-                          <div className="flex items-center justify-between bg-white p-3 rounded-lg">
-                            <span className="text-xs text-gray-500">Booking ID</span>
-                            <div className="flex items-center gap-1">
-                              <span className="font-mono text-xs font-medium">
-                                {request.transactionId || `PLG${request.id}`}
-                              </span>
-                              <button
-                                onClick={() => copyBookingId(request.transactionId || `PLG${request.id}`)}
-                                className="p-1.5 hover:bg-gray-100 rounded active:bg-gray-200"
-                              >
-                                {copiedId === (request.transactionId || `PLG${request.id}`) ? (
-                                  <Check size={14} className="text-green-600" />
-                                ) : (
-                                  <Copy size={14} className="text-gray-400" />
-                                )}
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Issue */}
-                          <div className="bg-white p-3 rounded-lg">
-                            <span className="text-xs text-gray-500 block mb-1">Issue</span>
-                            <p className="text-sm text-gray-800">{request.issue || "General Service"}</p>
-                          </div>
-
-                          {/* Address */}
-                          <div className="bg-white p-3 rounded-lg">
-                            <span className="text-xs text-gray-500 block mb-1 flex items-center gap-1">
-                              <MapPin size={12} /> Address
-                            </span>
-                            <p className="text-sm text-gray-800">
-                              {request.address || request.userAddress || "Not provided"}
-                            </p>
-                          </div>
-
-                          {/* Payment */}
-                          <div className="bg-white p-3 rounded-lg">
-                            <span className="text-xs text-gray-500 block mb-1">Payment</span>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">Total Paid</span>
-                              <span className="font-bold text-[#1A2A49]">₹{request.amount || 0}</span>
-                            </div>
-                          </div>
-
-                          {/* Rating if already rated */}
-                          {request.rating && (
-                            <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg flex items-center justify-between">
+                        {/* 1. Dual-PIN Verification & Toolkit Strip */}
+                        {!["COMPLETED", "CANCELLED"].includes(request.status) && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="bg-white p-4 rounded-2xl border border-gray-200/80 flex items-center justify-between">
                               <div>
-                                <span className="text-xs text-amber-800 font-medium block">Your Rating</span>
-                                {request.review && <p className="text-xs text-gray-600 mt-0.5">"{request.review}"</p>}
+                                <span className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400">
+                                  Step 1: Arrival Verification
+                                </span>
+                                <h4 className="font-bold text-sm text-[#1A2A49] mt-0.5">
+                                  4-Digit Start PIN
+                                </h4>
+                                <p className="text-[11px] text-gray-500">
+                                  Share when engineer reaches your door
+                                </p>
                               </div>
-                              <div className="flex items-center gap-1 text-amber-500 font-bold text-sm">
-                                <Star size={16} className="fill-amber-400" /> {request.rating}/5
+                              <div className="px-3.5 py-2 rounded-xl bg-[#1A2A49] text-amber-300 font-mono text-lg font-extrabold tracking-widest">
+                                {request.startOtp || "4821"}
                               </div>
                             </div>
-                          )}
 
-                          {/* Engineer */}
-                          {(request.status === "ENGINEER_ASSIGNED" || request.status === "IN_PROGRESS") && (
-                            <div className="bg-white p-3 rounded-lg">
-                              <span className="text-xs text-gray-500 block mb-2">Assigned Expert</span>
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gradient-to-br from-[#1A2A49] to-[#F37021] rounded-full flex items-center justify-center text-white font-bold">
-                                  {request.assignedEngineer?.charAt(0) || "E"}
-                                </div>
-                                <div className="flex-1">
-                                  <p className="font-medium text-[#1A2A49]">{request.assignedEngineer || "Expert"}</p>
-                                  <p className="text-xs text-gray-500 flex items-center gap-1">
-                                    <Star size={12} className="text-yellow-500 fill-yellow-500" /> 4.8
-                                  </p>
+                            <div className="bg-white p-4 rounded-2xl border border-gray-200/80 flex items-center justify-between">
+                              <div>
+                                <span className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400">
+                                  Step 2: Completion Sign-Off
+                                </span>
+                                <h4 className="font-bold text-sm text-[#1A2A49] mt-0.5">
+                                  4-Digit Happy PIN
+                                </h4>
+                                <p className="text-[11px] text-gray-500">
+                                  Share ONLY when 100% satisfied
+                                </p>
+                              </div>
+                              <div className="px-3.5 py-2 rounded-xl bg-emerald-700 text-white font-mono text-lg font-extrabold tracking-widest">
+                                {request.happyOtp || "9134"}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 2. Assigned Engineer + Toolkit + Household Preferences */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="bg-white p-4 rounded-2xl border border-gray-200/80">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400 block mb-2">
+                              Assigned Expert & Toolkit
+                            </span>
+                            {request.assignedEngineer ? (
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#1A2A49] to-[#F37021] text-white font-extrabold flex items-center justify-center text-lg">
+                                    {request.assignedEngineer.charAt(0)}
+                                  </div>
+                                  <div>
+                                    <p className="font-bold text-sm text-[#1A2A49]">
+                                      {request.assignedEngineer}
+                                    </p>
+                                    <p className="text-xs text-emerald-700 font-semibold">
+                                      🛡️ Police Verified • ⭐ 4.9
+                                    </p>
+                                  </div>
                                 </div>
                                 <a
                                   href="tel:+919876543210"
-                                  className="p-2.5 bg-[#1A2A49] text-white rounded-full active:scale-95"
+                                  className="px-3 py-2 rounded-xl bg-[#1A2A49] text-white text-xs font-bold flex items-center gap-1.5"
                                 >
-                                  <Phone size={16} />
+                                  <Phone size={13} /> Call
                                 </a>
                               </div>
-                            </div>
-                          )}
-
-                          {/* Actions */}
-                          <div className="flex gap-2 pt-1">
-                            {request.status === "COMPLETED" ? (
-                              <>
-                                <button
-                                  onClick={() => {
-                                    setRatingValue(request.rating || 5)
-                                    setReviewText(request.review || "")
-                                    setShowRateModal(request)
-                                  }}
-                                  className="flex-1 py-3 bg-[#F37021] text-white rounded-xl font-medium text-sm flex items-center justify-center gap-1 active:scale-[0.98]"
-                                >
-                                  <Star size={16} /> {request.rating ? "Update Rating" : "Rate"}
-                                </button>
-                                <button
-                                  onClick={() => setShowInvoiceModal(request)}
-                                  className="flex-1 py-3 border border-[#1A2A49] text-[#1A2A49] rounded-xl font-medium text-sm flex items-center justify-center gap-1 active:bg-gray-50"
-                                >
-                                  <FileText size={16} /> Invoice
-                                </button>
-                              </>
-                            ) : request.status === "CANCELLED" ? (
-                              <button
-                                onClick={() => navigate("/book-service")}
-                                className="w-full py-3 bg-[#1A2A49] text-white rounded-xl font-medium text-sm active:scale-[0.98]"
-                              >
-                                Book Again
-                              </button>
                             ) : (
-                              <>
-                                {canCancel(request.status) && (
-                                  <button
-                                    onClick={() => handleCancelRequest(request)}
-                                    className="flex-1 py-3 border border-red-200 text-red-600 rounded-xl font-medium text-sm active:bg-red-50"
-                                  >
-                                    Cancel
-                                  </button>
-                                )}
-                                <button
-                                  onClick={() => {
-                                    toast.success("Support team notified! Calling +91 98765 43210...")
-                                  }}
-                                  className="flex-1 py-3 bg-[#1A2A49] text-white rounded-xl font-medium text-sm flex items-center justify-center gap-1 active:scale-[0.98]"
-                                >
-                                  <MessageCircle size={16} /> Support
-                                </button>
-                              </>
+                              <p className="text-xs text-gray-600 font-medium">
+                                ⏳ Executive is assigning the closest master technician...
+                              </p>
                             )}
+                            <div className="mt-3 pt-2.5 border-t border-gray-100 text-xs text-gray-600 flex items-center gap-1.5">
+                              <Wrench size={13} className="text-[#F37021]" />
+                              <span>
+                                <strong>Mandatory Kit:</strong>{" "}
+                                {request.requiredKit || "Standard Digital Multimeter & Safety Kit"}
+                              </span>
+                            </div>
                           </div>
+
+                          <div className="bg-white p-4 rounded-2xl border border-gray-200/80">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400 block mb-2">
+                              Fault Notes & Household Preferences
+                            </span>
+                            <p className="text-xs text-[#1A2A49] font-semibold mb-2">
+                              {request.issue || "Standard Service Inspection & Repair"}
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {request.preferences?.pet && (
+                                <span className="text-[11px] px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 font-semibold">
+                                  🐕 Pet at Home
+                                </span>
+                              )}
+                              {request.preferences?.parking && (
+                                <span className="text-[11px] px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 border border-blue-200 font-semibold">
+                                  🚗 Parking Available
+                                </span>
+                              )}
+                              {request.preferences?.bringLadder && (
+                                <span className="text-[11px] px-2.5 py-1 rounded-lg bg-purple-50 text-purple-800 border border-purple-200 font-semibold">
+                                  🪜 Bring Tall Ladder
+                                </span>
+                              )}
+                              {request.preferences?.callBeforeArrival && (
+                                <span className="text-[11px] px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">
+                                  📞 Call Before Arrival
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 3. In-App Official Spare Parts Quote Approval Section */}
+                        {request.addedSpareParts && request.addedSpareParts.length > 0 && (
+                          <div className="bg-white p-4 rounded-2xl border-2 border-[#F37021]/40 space-y-3">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#F37021]">
+                                  Anti-Fraud Official Rate Card Quote
+                                </span>
+                                <h4 className="font-extrabold text-sm text-[#1A2A49]">
+                                  Spare Parts Added by Engineer
+                                </h4>
+                              </div>
+                              <button
+                                onClick={() =>
+                                  window.dispatchEvent(
+                                    new CustomEvent("pluggy:open-rate-card", {
+                                      detail: { category: "ac-repair" },
+                                    })
+                                  )
+                                }
+                                className="text-xs font-bold text-[#F37021] underline"
+                              >
+                                Verify Rate Card
+                              </button>
+                            </div>
+
+                            <div className="space-y-2">
+                              {request.addedSpareParts.map((part) => (
+                                <div
+                                  key={part.uid}
+                                  className="p-3 rounded-xl bg-[#F4F6F9] border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                                >
+                                  <div>
+                                    <p className="font-bold text-xs sm:text-sm text-[#1A2A49]">
+                                      {part.part}{" "}
+                                      <span className="text-xs font-extrabold text-[#F37021]">
+                                        (₹{part.price})
+                                      </span>
+                                    </p>
+                                    <p className="text-[11px] text-gray-500">
+                                      Code: {part.code} • Official Replacement Warranty:{" "}
+                                      <strong>{part.warranty}</strong>
+                                    </p>
+                                  </div>
+
+                                  {part.status === "PENDING_APPROVAL" ? (
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      <button
+                                        onClick={() =>
+                                          respondToSparePartQuote(request.id, part.uid, true)
+                                        }
+                                        className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold"
+                                      >
+                                        ✓ Approve (₹{part.price})
+                                      </button>
+                                      <button
+                                        onClick={() =>
+                                          respondToSparePartQuote(request.id, part.uid, false)
+                                        }
+                                        className="px-3 py-1.5 rounded-lg bg-white border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold"
+                                      >
+                                        ✕ Reject
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <span
+                                      className={`text-xs font-extrabold px-2.5 py-1 rounded-lg ${
+                                        part.status === "APPROVED"
+                                          ? "bg-emerald-100 text-emerald-800"
+                                          : "bg-red-100 text-red-700"
+                                      }`}
+                                    >
+                                      {part.status === "APPROVED"
+                                        ? "✓ Approved & Added to Bill"
+                                        : "✕ Rejected by Customer"}
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 4. Standby Backup Loaner Appliance Card (If Issued) */}
+                        {request.standbyLoaner && (
+                          <div className="bg-blue-50 border border-blue-200 p-4 rounded-2xl flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-[#1A2A49] text-white flex items-center justify-center shrink-0">
+                                <RefreshCw size={18} />
+                              </div>
+                              <div>
+                                <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-700">
+                                  Standby Backup Appliance Active
+                                </span>
+                                <h4 className="font-bold text-sm text-[#1A2A49]">
+                                  {request.standbyLoaner.unitName} (@ ₹
+                                  {request.standbyLoaner.dailyRent}/day)
+                                </h4>
+                                <p className="text-xs text-gray-600">
+                                  Issued while your main motor/PCB is being repaired at Pluggy Workshop.
+                                </p>
+                              </div>
+                            </div>
+                            <span className="px-3 py-1 rounded-full bg-white text-[#1A2A49] font-bold text-xs border border-blue-200 shrink-0">
+                              Active Loaner
+                            </span>
+                          </div>
+                        )}
+
+                        {/* 5. 30-Day QR Appliance Health Card & Free Re-Visit Claim (When Completed) */}
+                        {request.status === "COMPLETED" && (
+                          <div className="bg-gradient-to-r from-emerald-900 to-[#1A2A49] text-white p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div className="flex items-start gap-3.5">
+                              <div className="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center shrink-0">
+                                <QrCode size={26} className="text-amber-300" />
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="px-2 py-0.5 rounded bg-emerald-500 text-white text-[10px] font-extrabold uppercase">
+                                    30-Day Warranty Active
+                                  </span>
+                                  <span className="font-mono text-xs text-amber-300">
+                                    QR ID: {request.applianceQrId || `QR-PLG-${request.id}`}
+                                  </span>
+                                </div>
+                                <h4 className="font-extrabold text-sm sm:text-base mt-1">
+                                  { getWarrantyDaysLeft(request.warrantyValidTill) } Days Remaining on Free Service Guarantee
+                                </h4>
+                                <p className="text-xs text-white/80 mt-0.5">
+                                  Same problem came back? Click to dispatch our senior engineer at ₹0 visit & labour fee!
+                                </p>
+                              </div>
+                            </div>
+
+                            <button
+                              onClick={() => claimWarrantyRevisit(request.id)}
+                              className="px-4 py-2.5 rounded-xl bg-[#F37021] hover:bg-[#e05e15] text-white text-xs font-extrabold shrink-0 shadow-md"
+                            >
+                              🛡️ Claim ₹0 Free Re-Visit
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Bottom Action Buttons */}
+                        <div className="flex flex-wrap gap-2.5 pt-1">
+                          {request.status === "COMPLETED" ? (
+                            <>
+                              <button
+                                onClick={() => {
+                                  setRatingValue(request.rating || 5)
+                                  setReviewText(request.review || "")
+                                  setShowRateModal(request)
+                                }}
+                                className="flex-1 py-2.5 px-4 bg-[#F37021] text-white rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5"
+                              >
+                                <Star size={15} />{" "}
+                                {request.rating ? `Rated ${request.rating}/5 ★ (Edit)` : "Rate Engineer"}
+                              </button>
+                              <button
+                                onClick={() => setShowInvoiceModal(request)}
+                                className="flex-1 py-2.5 px-4 bg-white border border-[#1A2A49] text-[#1A2A49] rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5"
+                              >
+                                <FileText size={15} /> View Tax Invoice & QR Card
+                              </button>
+                            </>
+                          ) : request.status === "CANCELLED" ? (
+                            <button
+                              onClick={() => navigate("/services")}
+                              className="w-full py-2.5 bg-[#1A2A49] text-white rounded-xl font-bold text-xs sm:text-sm"
+                            >
+                              Book Service Again
+                            </button>
+                          ) : (
+                            <>
+                              {canCancel(request.status) && (
+                                <button
+                                  onClick={() => setShowCancelModal(request)}
+                                  className="px-4 py-2.5 bg-white border border-red-200 text-red-600 rounded-xl font-bold text-xs sm:text-sm hover:bg-red-50"
+                                >
+                                  Cancel Booking
+                                </button>
+                              )}
+                              <button
+                                onClick={() => copyBookingId(request.transactionId || `PLG${request.id}`)}
+                                className="px-4 py-2.5 bg-white border border-gray-200 text-[#1A2A49] rounded-xl font-bold text-xs sm:text-sm flex items-center gap-1.5"
+                              >
+                                {copiedId === (request.transactionId || `PLG${request.id}`) ? (
+                                  <Check size={14} className="text-emerald-600" />
+                                ) : (
+                                  <Copy size={14} />
+                                )}
+                                Copy Booking ID
+                              </button>
+                              <button
+                                onClick={() =>
+                                  toast.success("24/7 Pluggy Control Desk notified! Calling your registered number...")
+                                }
+                                className="flex-1 py-2.5 px-4 bg-[#1A2A49] text-white rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5"
+                              >
+                                <MessageCircle size={15} /> Priority Help Desk
+                              </button>
+                            </>
+                          )}
                         </div>
                       </motion.div>
                     )}
@@ -522,22 +759,22 @@ export default function TrackRequests() {
               <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <AlertCircle size={28} className="text-red-600" />
               </div>
-              <h3 className="text-lg font-bold text-center text-[#1A2A49] mb-1">Cancel Request?</h3>
-              <p className="text-gray-500 text-sm text-center mb-6">
+              <h3 className="text-lg font-bold text-center text-[#1A2A49] mb-1">Cancel Booking?</h3>
+              <p className="text-gray-500 text-xs sm:text-sm text-center mb-6">
                 {showCancelModal.status === "ENGINEER_ASSIGNED"
-                  ? "Expert is already assigned. Charges may apply."
-                  : "This cannot be undone."}
+                  ? "Engineer is already assigned & en-route."
+                  : "Are you sure you want to cancel this doorstep booking?"}
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowCancelModal(null)}
-                  className="flex-1 py-3 border border-gray-300 rounded-xl font-medium active:bg-gray-50"
+                  className="flex-1 py-2.5 border border-gray-300 rounded-xl font-bold text-xs sm:text-sm"
                 >
-                  Keep It
+                  Keep Booking
                 </button>
                 <button
                   onClick={confirmCancel}
-                  className="flex-1 py-3 bg-red-500 text-white rounded-xl font-medium active:bg-red-600"
+                  className="flex-1 py-2.5 bg-red-600 text-white rounded-xl font-bold text-xs sm:text-sm"
                 >
                   Yes, Cancel
                 </button>
@@ -564,7 +801,9 @@ export default function TrackRequests() {
               className="bg-white rounded-2xl p-6 max-w-sm w-full"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-lg font-bold text-[#1A2A49] text-center mb-1">Rate Your Service</h3>
+              <h3 className="text-lg font-bold text-[#1A2A49] text-center mb-1">
+                Rate Your Pluggy Engineer
+              </h3>
               <p className="text-xs text-gray-500 text-center mb-4">{showRateModal.service}</p>
 
               <form onSubmit={handleSubmitRating} className="space-y-4">
@@ -588,7 +827,7 @@ export default function TrackRequests() {
 
                 <textarea
                   rows={3}
-                  placeholder="Share your feedback about the engineer..."
+                  placeholder="Share your feedback about punctuality, toolkit & behaviour..."
                   value={reviewText}
                   onChange={(e) => setReviewText(e.target.value)}
                   className="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#F37021]"
@@ -604,7 +843,7 @@ export default function TrackRequests() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 py-2.5 bg-[#F37021] text-white rounded-xl text-sm font-semibold"
+                    className="flex-1 py-2.5 bg-[#F37021] text-white rounded-xl text-sm font-bold"
                   >
                     Submit Review
                   </button>
@@ -629,14 +868,17 @@ export default function TrackRequests() {
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
-              className="bg-white rounded-2xl p-6 max-w-sm w-full"
+              className="bg-white rounded-2xl p-6 max-w-md w-full"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
                 <div>
-                  <h3 className="text-lg font-bold text-[#1A2A49]">Pluggy Tax Invoice</h3>
+                  <h3 className="text-lg font-extrabold text-[#1A2A49]">
+                    Pluggy GST Invoice & Warranty Card
+                  </h3>
                   <p className="text-xs text-gray-400">
-                    #{showInvoiceModal.transactionId || `PLG${showInvoiceModal.id}`}
+                    #{showInvoiceModal.transactionId || `PLG${showInvoiceModal.id}`} • QR:{" "}
+                    {showInvoiceModal.applianceQrId || `QR-PLG-${showInvoiceModal.id}`}
                   </p>
                 </div>
                 <button
@@ -647,36 +889,42 @@ export default function TrackRequests() {
                 </button>
               </div>
 
-              <div className="space-y-2 text-sm mb-6">
+              <div className="space-y-2 text-xs sm:text-sm mb-5">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Customer</span>
-                  <span className="font-medium text-[#1A2A49]">{showInvoiceModal.userName || user.name}</span>
+                  <span className="font-bold text-[#1A2A49]">
+                    {showInvoiceModal.userName || user?.name || "Customer"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Service</span>
-                  <span className="font-medium text-[#1A2A49]">{showInvoiceModal.service}</span>
+                  <span className="font-bold text-[#1A2A49]">{showInvoiceModal.service}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Date</span>
-                  <span className="text-gray-700">{showInvoiceModal.date || "Today"}</span>
+                  <span className="text-gray-500">Assigned Engineer</span>
+                  <span className="text-gray-700">
+                    {showInvoiceModal.assignedEngineer || "Verified Master Tech"}
+                  </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Payment Mode</span>
-                  <span className="uppercase text-gray-700">{showInvoiceModal.paymentMethod || "Online"}</span>
-                </div>
-                <div className="border-t border-gray-100 pt-2 mt-2 flex justify-between text-base font-bold text-[#1A2A49]">
-                  <span>Total Paid</span>
-                  <span className="text-green-600">₹{showInvoiceModal.amount || 0}</span>
+                {(showInvoiceModal.addedSpareParts || [])
+                  .filter((p) => p.status === "APPROVED")
+                  .map((p) => (
+                    <div key={p.uid} className="flex justify-between text-emerald-700">
+                      <span>Spare: {p.part}</span>
+                      <span className="font-bold">₹{p.price}</span>
+                    </div>
+                  ))}
+                <div className="border-t border-gray-200 pt-2 mt-2 flex justify-between text-base font-extrabold text-[#1A2A49]">
+                  <span>Total Amount</span>
+                  <span className="text-emerald-700">₹{showInvoiceModal.amount || 0}</span>
                 </div>
               </div>
 
               <button
-                onClick={() => {
-                  window.print()
-                }}
-                className="w-full py-3 bg-[#1A2A49] text-white rounded-xl font-medium text-sm"
+                onClick={() => window.print()}
+                className="w-full py-3 bg-[#1A2A49] text-white rounded-xl font-bold text-sm"
               >
-                Print / Download PDF
+                Print / Download PDF Invoice
               </button>
             </motion.div>
           </motion.div>

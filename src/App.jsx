@@ -19,8 +19,9 @@ import RequestForm from "./pages/RequestForm";
 import ServiceDetail from "./pages/ServiceDetail";
 import EngineerLogin from "./pages/EngineerLogin";
 import EngineerDashboard from "./pages/EngineerDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 
-// Account pages
+// Account & Tracking pages
 import TrackRequests from "./pages/TrackRequests";
 import CartPage from "./pages/CartPage";
 import SecurityPage from "./pages/SecurityPage";
@@ -51,7 +52,7 @@ export default function App() {
   useEffect(() => {
     const handleLoad = () => setLoading(false);
     window.addEventListener("load", handleLoad);
-    const timer = setTimeout(() => setLoading(false), 1800);
+    const timer = setTimeout(() => setLoading(false), 1200);
     return () => {
       window.removeEventListener("load", handleLoad);
       clearTimeout(timer);
@@ -61,14 +62,14 @@ export default function App() {
   if (loading) return <Preloader />;
   if (!city) return <LocationGate onSelect={(c) => setCity(c)} />;
 
-  const hideNavbarRoutes = ["/login", "/signup", "/engineer-login", "/engineer", "/account"];
-  const hideFooterRoutes = ["/login", "/signup", "/engineer-login", "/engineer", "/services", "/request", "/account"];
+  const hideNavbarRoutes = ["/login", "/signup", "/engineer-login", "/account"];
+  const hideFooterRoutes = ["/login", "/signup", "/engineer-login", "/engineer", "/account"];
 
   const hideNavbar = hideNavbarRoutes.includes(location.pathname);
   const hideFooter = hideFooterRoutes.some((path) => location.pathname.startsWith(path));
 
   return (
-    <div className="flex flex-col min-h-screen bg-white dark:bg-[#0B1120] transition-colors duration-300">
+    <div className="flex flex-col min-h-screen bg-[#F4F6F9] dark:bg-[#0B1120] transition-colors duration-300">
       {!hideNavbar && <Navbar />}
 
       <main className="flex-1">
@@ -80,6 +81,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/track" element={<TrackRequests />} />
           <Route path="/account/track" element={<TrackRequests />} />
           <Route path="/account/cart" element={<CartPage />} />
           <Route path="/account/security" element={<SecurityPage />} />
@@ -96,6 +98,7 @@ export default function App() {
           <Route path="/request/:service" element={<RequestForm />} />
           <Route path="/engineer-login" element={<EngineerLogin />} />
           <Route path="/engineer" element={<EngineerDashboard />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
@@ -110,9 +113,25 @@ export default function App() {
         containerStyle={{ bottom: 85 }}
         toastOptions={{
           duration: 3000,
-          style: { background: '#1A2A49', color: '#fff', borderRadius: '50px', padding: '10px 16px', fontSize: '13px', fontWeight: '500', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)', maxWidth: '320px' },
-          success: { style: { background: '#10B981' }, iconTheme: { primary: 'white', secondary: '#10B981' } },
-          error: { style: { background: '#EF4444' }, iconTheme: { primary: 'white', secondary: '#EF4444' }, duration: 4000 },
+          style: {
+            background: "#1A2A49",
+            color: "#fff",
+            borderRadius: "50px",
+            padding: "10px 16px",
+            fontSize: "13px",
+            fontWeight: "500",
+            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+            maxWidth: "340px",
+          },
+          success: {
+            style: { background: "#10B981" },
+            iconTheme: { primary: "white", secondary: "#10B981" },
+          },
+          error: {
+            style: { background: "#EF4444" },
+            iconTheme: { primary: "white", secondary: "#EF4444" },
+            duration: 4000,
+          },
         }}
       />
       <div id="portal-root"></div>

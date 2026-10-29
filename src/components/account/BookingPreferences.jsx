@@ -1,15 +1,24 @@
 // src/components/account/BookingPreferences.jsx
-import { useState } from "react"
 import { motion } from "framer-motion"
-import { Dog, Car, Clock, Wrench } from "lucide-react"
+import { Dog, Car, Clock, Wrench, PhoneCall } from "lucide-react"
+import { useApp } from "../../AppContext"
+import toast from "react-hot-toast"
 
 export default function BookingPreferences() {
-  const [preferences, setPreferences] = useState({
+  const { userPreferences, setUserPreferences } = useApp()
+
+  const preferences = userPreferences || {
     pet: false,
     parking: true,
     preferredTime: "morning",
-    preferredService: "ac-repair",
-  })
+    callBeforeArrival: true,
+    bringLadder: false,
+  }
+
+  const updatePref = (key, value) => {
+    setUserPreferences((prev) => ({ ...(prev || {}), [key]: value }))
+    toast.success("Household preference saved for Engineers!")
+  }
 
   const timeSlots = [
     { id: "morning", label: "Morning (9-11 AM)" },
@@ -18,15 +27,22 @@ export default function BookingPreferences() {
   ]
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3.5">
       {/* Pet Alert */}
       <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
         <div className="flex items-center gap-3">
           <Dog size={18} className="text-amber-600" />
-          <span className="text-sm font-medium text-[#1A2A49] dark:text-white">Pet at home</span>
+          <div>
+            <span className="text-sm font-medium text-[#1A2A49] dark:text-white block">
+              Pet at home 🐕
+            </span>
+            <span className="text-[11px] text-gray-500">
+              Alerts the engineer before ringing doorbell
+            </span>
+          </div>
         </div>
         <button
-          onClick={() => setPreferences(prev => ({ ...prev, pet: !prev.pet }))}
+          onClick={() => updatePref("pet", !preferences.pet)}
           className={`relative w-11 h-6 rounded-full transition ${
             preferences.pet ? "bg-[#F37021]" : "bg-gray-300 dark:bg-gray-600"
           }`}
@@ -42,10 +58,17 @@ export default function BookingPreferences() {
       <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
         <div className="flex items-center gap-3">
           <Car size={18} className="text-blue-600" />
-          <span className="text-sm font-medium text-[#1A2A49] dark:text-white">Parking available</span>
+          <div>
+            <span className="text-sm font-medium text-[#1A2A49] dark:text-white block">
+              Bike/Car Parking available 🚗
+            </span>
+            <span className="text-[11px] text-gray-500">
+              Helps engineer carry heavy jet pumps & gas kits
+            </span>
+          </div>
         </div>
         <button
-          onClick={() => setPreferences(prev => ({ ...prev, parking: !prev.parking }))}
+          onClick={() => updatePref("parking", !preferences.parking)}
           className={`relative w-11 h-6 rounded-full transition ${
             preferences.parking ? "bg-[#F37021]" : "bg-gray-300 dark:bg-gray-600"
           }`}
@@ -57,17 +80,45 @@ export default function BookingPreferences() {
         </button>
       </div>
 
+      {/* Tall Ladder */}
+      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
+        <div className="flex items-center gap-3">
+          <Wrench size={18} className="text-[#F37021]" />
+          <div>
+            <span className="text-sm font-medium text-[#1A2A49] dark:text-white block">
+              Bring Tall Foldable Ladder 🪜
+            </span>
+            <span className="text-[11px] text-gray-500">
+              For high ceiling fans, lights or AC units
+            </span>
+          </div>
+        </div>
+        <button
+          onClick={() => updatePref("bringLadder", !preferences.bringLadder)}
+          className={`relative w-11 h-6 rounded-full transition ${
+            preferences.bringLadder ? "bg-[#F37021]" : "bg-gray-300 dark:bg-gray-600"
+          }`}
+        >
+          <motion.div
+            className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow"
+            animate={{ x: preferences.bringLadder ? 20 : 0 }}
+          />
+        </button>
+      </div>
+
       {/* Preferred Time */}
       <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
         <div className="flex items-center gap-3 mb-3">
           <Clock size={18} className="text-purple-600" />
-          <span className="text-sm font-medium text-[#1A2A49] dark:text-white">Preferred Time</span>
+          <span className="text-sm font-medium text-[#1A2A49] dark:text-white">
+            Preferred Slot Window
+          </span>
         </div>
         <div className="flex gap-2">
-          {timeSlots.map(slot => (
+          {timeSlots.map((slot) => (
             <button
               key={slot.id}
-              onClick={() => setPreferences(prev => ({ ...prev, preferredTime: slot.id }))}
+              onClick={() => updatePref("preferredTime", slot.id)}
               className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${
                 preferences.preferredTime === slot.id
                   ? "bg-[#1A2A49] dark:bg-[#F37021] text-white"

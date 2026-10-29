@@ -2,7 +2,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom"
 import { useState } from "react"
 import toast from "react-hot-toast"
 import { sendRequestEmail } from "../lib/email"
-import { ChevronLeft, Shield, Info, AlarmClock, Home, MapPin } from "lucide-react"
+import { ChevronLeft, Shield, Info, AlarmClock, Home, MapPin, KeyRound } from "lucide-react"
 import { DotLottieReact } from "@lottiefiles/dotlottie-react"
 import successAnim from "../assets/success.lottie"
 import PaymentPopup from "../components/PaymentPopup"
@@ -12,7 +12,13 @@ export default function RequestForm() {
   const { service } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
-  const { user, addRequest, address: savedAddress, setAddress: setGlobalAddress, clearCart } = useApp()
+  const {
+    user,
+    addRequest,
+    address: savedAddress,
+    setAddress: setGlobalAddress,
+    clearCart,
+  } = useApp()
 
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -21,21 +27,19 @@ export default function RequestForm() {
 
   const initialIssue =
     (Array.isArray(location.state?.selectedItems) && location.state.selectedItems.length > 0
-      ? location.state.selectedItems.map((i) => i.issue).join(", ")
+      ? location.state.selectedItems.map((i) => i.name || i.issue).join(", ")
       : "") ||
     location.state?.selectedIssue?.issue ||
     (typeof location.state?.selectedIssue === "string" ? location.state.selectedIssue : "") ||
     cleanService
 
   const resolvedAmount =
-    location.state?.finalTotal ||
-    location.state?.finalAmount ||
-    249
+    location.state?.finalTotal || location.state?.finalAmount || 249
 
   const [form, setForm] = useState({
-    name: user?.name || "",
+    name: user?.name || "Customer",
     email: user?.email || "",
-    phone: user?.phone || "",
+    phone: user?.phone || "+91 9876543210",
     issue: initialIssue,
     address: location.state?.address || savedAddress || "",
   })
@@ -52,9 +56,9 @@ export default function RequestForm() {
       id: Date.now(),
       transactionId: transactionId || `PLG${String(Date.now()).slice(-8)}`,
       service: cleanService.replace(/\b\w/g, (c) => c.toUpperCase()),
-      userName: form.name,
+      userName: form.name || "Customer",
       userEmail: form.email,
-      userPhone: form.phone,
+      userPhone: form.phone || "+91 9876543210",
       issue: form.issue,
       amount: resolvedAmount,
       address: form.address,
@@ -79,10 +83,10 @@ export default function RequestForm() {
         address: form.address,
         created_at: new Date(createdAt).toLocaleString(),
       })
-      toast.success("Booking confirmed! ✅")
+      toast.success("Booking confirmed with 4-Digit Start & Happy PINs! ✅")
     } catch (err) {
       console.error(err)
-      toast.success("Booking saved! ✅")
+      toast.success("Booking confirmed with 4-Digit Start & Happy PINs! ✅")
     } finally {
       setSubmitted(true)
     }
@@ -102,38 +106,37 @@ export default function RequestForm() {
     setTimeout(() => {
       setLoading(false)
       setPaymentOpen(true)
-    }, 500)
+    }, 400)
   }
 
-  // ✅ Success Page
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="bg-white w-full max-w-2xl rounded-2xl shadow-lg p-6 sm:p-8 text-center">
+      <div className="min-h-screen bg-[#F4F6F9] pt-[128px] flex items-center justify-center px-4 pb-16">
+        <div className="bg-white w-full max-w-xl rounded-3xl shadow-lg p-6 sm:p-8 text-center border border-gray-200">
           <div className="w-32 sm:w-40 h-32 sm:h-40 mx-auto">
             <DotLottieReact src={successAnim} loop={false} autoplay />
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-[#1A2A49] mt-4">
-            Request Submitted
+          <h2 className="text-xl sm:text-2xl font-extrabold text-[#1A2A49] mt-4">
+            Booking Confirmed!
           </h2>
-          <p className="text-gray-600 mt-2">
-            Your request for{" "}
-            <span className="font-semibold capitalize">{cleanService}</span> has been
-            received.
+          <p className="text-gray-600 text-xs sm:text-sm mt-2">
+            Your doorstep request for{" "}
+            <span className="font-bold capitalize text-[#1A2A49]">{cleanService}</span> has been
+            sent to the Pluggy 24/7 Control Desk. Your 4-Digit Start PIN & Happy PIN are ready!
           </p>
 
           <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
             <button
-              onClick={() => navigate("/account/track")}
-              className="px-5 py-2.5 rounded-xl bg-[#1A2A49] text-white hover:bg-[#223a61] font-medium"
+              onClick={() => navigate("/track")}
+              className="px-6 py-3 rounded-xl bg-[#F37021] text-white hover:bg-[#e05e15] font-extrabold text-xs sm:text-sm shadow-md"
             >
-              Track your request
+              Track Live Request & View Start PIN →
             </button>
             <button
               onClick={() => navigate("/")}
-              className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
+              className="px-6 py-3 rounded-xl border border-gray-300 text-[#1A2A49] hover:bg-gray-50 font-bold text-xs sm:text-sm"
             >
-              Back to Home
+              Back to Storefront
             </button>
           </div>
         </div>
@@ -141,165 +144,143 @@ export default function RequestForm() {
     )
   }
 
-  // ✅ If user not logged in
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg text-center w-full max-w-md">
-          <h2 className="text-lg sm:text-xl font-bold text-[#1A2A49] mb-4">
-            Please log in first
-          </h2>
-          <p className="text-gray-600 mb-6">
-            You need to log in or sign up before raising a request.
-          </p>
-          <div className="flex gap-3 justify-center">
-            <button
-              onClick={() => navigate("/login")}
-              className="px-5 py-2 bg-[#1A2A49] text-white rounded-lg hover:bg-[#223a61]"
-            >
-              Log In
-            </button>
-            <button
-              onClick={() => navigate("/signup")}
-              className="px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
-            >
-              Sign Up
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // ✅ Main Form
   return (
-    <div className="min-h-screen bg-gray-50 font-inter">
-      {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-1 text-gray-700 hover:text-[#1A2A49]"
-          >
-            <ChevronLeft size={20} />
-            <span className="text-sm">Back</span>
-          </button>
-          <button
-            onClick={() => navigate("/")}
-            className="flex items-center gap-1 text-gray-700 hover:text-[#1A2A49]"
-          >
-            <Home size={20} />
-            <span className="text-sm">Home</span>
-          </button>
-        </div>
-      </div>
+    <div className="min-h-screen bg-[#F4F6F9] pt-[128px] md:pt-[140px] pb-16">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 md:grid-cols-12 gap-6">
+        {/* Left Summary Box (5 Cols) */}
+        <div className="md:col-span-5 bg-white rounded-3xl shadow-sm border border-gray-200/80 p-6 h-fit space-y-5">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-[#1A2A49]"
+            >
+              <ChevronLeft size={16} /> Back
+            </button>
+            <span className="px-2.5 py-0.5 rounded-full bg-orange-50 text-[#F37021] text-[10px] font-extrabold uppercase">
+              Instant Dispatch
+            </span>
+          </div>
 
-      {/* Form Section */}
-      <div className="max-w-6xl mx-auto px-4 py-6 sm:py-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Info Box */}
-        <div className="bg-white rounded-2xl shadow-sm border p-5 sm:p-6 h-fit">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-[#1A2A49] text-white flex items-center justify-center">
-              <AlarmClock size={20} />
+          <div className="flex items-center gap-3.5">
+            <div className="h-12 w-12 rounded-2xl bg-[#1A2A49] text-white flex items-center justify-center shrink-0">
+              <AlarmClock size={22} />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-[#1A2A49]">
-                Raise a Request
-              </h2>
-              <p className="text-xs text-gray-500 capitalize">{cleanService}</p>
+              <h2 className="text-lg font-extrabold text-[#1A2A49] capitalize">{cleanService}</h2>
+              <p className="text-xs text-gray-500">Doorstep Inspection & Repair</p>
             </div>
           </div>
-          <div className="mt-6 space-y-3">
-            <div className="flex items-start gap-3">
-              <Shield size={18} className="text-[#1A2A49]" />
-              <p className="text-sm text-gray-600">
-                Verified technicians, 30 days service guarantee
+
+          <div className="space-y-3 pt-2 border-t border-gray-100 text-xs sm:text-sm">
+            <div className="flex items-start gap-2.5">
+              <Shield size={17} className="text-emerald-600 shrink-0 mt-0.5" />
+              <p className="text-gray-600">
+                <strong>30-Day QR Service Guarantee:</strong> Free re-visit if the same fault returns within 30 days.
               </p>
             </div>
-            <div className="flex items-start gap-3">
-              <Info size={18} className="text-[#1A2A49]" />
-              <p className="text-sm text-gray-600">
-                Estimated Total: <span className="font-bold text-[#1A2A49]">₹{resolvedAmount}</span> (incl. visit/labour charges)
+            <div className="flex items-start gap-2.5">
+              <KeyRound size={17} className="text-[#F37021] shrink-0 mt-0.5" />
+              <p className="text-gray-600">
+                <strong>Dual-PIN Protection:</strong> You receive a 4-Digit Start PIN & Happy PIN immediately after booking.
+              </p>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <Info size={17} className="text-[#1A2A49] shrink-0 mt-0.5" />
+              <p className="text-gray-600">
+                Total Payable:{" "}
+                <span className="font-extrabold text-[#1A2A49] text-base">₹{resolvedAmount}</span>
               </p>
             </div>
           </div>
         </div>
 
-        {/* Form */}
-        <div className="bg-white rounded-2xl shadow-sm border p-5 sm:p-6">
-          <h3 className="text-lg font-semibold text-[#1A2A49] mb-4">
-            Your Details
+        {/* Right Form Box (7 Cols) */}
+        <div className="md:col-span-7 bg-white rounded-3xl shadow-sm border border-gray-200/80 p-6">
+          <h3 className="text-lg font-extrabold text-[#1A2A49] mb-4">
+            Confirm Doorstep Details
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <input
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="Full Name"
-              className="w-full rounded-lg border px-4 py-3 text-sm"
-              required
-            />
-            <input
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="Email Address (Optional)"
-              className="w-full rounded-lg border px-4 py-3 text-sm"
-            />
-            <input
-              name="phone"
-              value={form.phone}
-              onChange={handleChange}
-              placeholder="Phone Number"
-              className="w-full rounded-lg border px-4 py-3 text-sm"
-              required
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-gray-400 mb-1">
+                  Full Name
+                </label>
+                <input
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="Full Name"
+                  className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-xs sm:text-sm bg-[#F4F6F9]"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-gray-400 mb-1">
+                  Mobile Number
+                </label>
+                <input
+                  name="phone"
+                  value={form.phone}
+                  onChange={handleChange}
+                  placeholder="Phone Number"
+                  className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-xs sm:text-sm bg-[#F4F6F9]"
+                  required
+                />
+              </div>
+            </div>
 
-            {/* ✅ Address Input */}
-            <div className="flex items-center border rounded-lg px-3 py-2">
-              <MapPin size={18} className="text-gray-400 mr-2" />
-              <input
-                name="address"
-                value={form.address}
+            <div>
+              <label className="block text-[11px] font-bold uppercase text-gray-400 mb-1">
+                Complete Doorstep Address
+              </label>
+              <div className="flex items-center border border-gray-200 rounded-xl px-3.5 py-2 bg-[#F4F6F9]">
+                <MapPin size={16} className="text-[#F37021] mr-2 shrink-0" />
+                <input
+                  name="address"
+                  value={form.address}
+                  onChange={handleChange}
+                  placeholder="House/Flat No, Society, Landmark..."
+                  className="flex-1 outline-none text-xs sm:text-sm bg-transparent py-0.5"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold uppercase text-gray-400 mb-1">
+                Selected Services / Fault Description
+              </label>
+              <textarea
+                name="issue"
+                value={form.issue}
                 onChange={handleChange}
-                placeholder="Service Address"
-                className="flex-1 outline-none text-sm py-1"
+                placeholder="Describe your issue"
+                rows={3}
+                className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-xs sm:text-sm bg-[#F4F6F9]"
                 required
               />
             </div>
 
-            <textarea
-              name="issue"
-              value={form.issue}
-              onChange={handleChange}
-              placeholder="Describe your issue"
-              rows={4}
-              className="w-full rounded-lg border px-4 py-3 text-sm"
-              required
-            />
-
-            <div className="flex justify-end gap-3 pt-4 border-t">
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
               <button
                 type="button"
                 onClick={() => navigate("/")}
-                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+                className="px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs sm:text-sm font-bold"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-5 py-2 rounded-lg bg-[#1A2A49] text-white hover:bg-[#223a61] disabled:opacity-60 font-medium"
+                className="px-6 py-2.5 rounded-xl bg-[#F37021] text-white hover:bg-[#e05e15] disabled:opacity-60 font-extrabold text-xs sm:text-sm shadow-md"
               >
-                {loading ? "Processing..." : `Proceed to Pay ₹${resolvedAmount}`}
+                {loading ? "Processing..." : `Confirm & Pay ₹${resolvedAmount} →`}
               </button>
             </div>
           </form>
         </div>
       </div>
 
-      {/* ✅ Payment Popup */}
       <PaymentPopup
         open={paymentOpen}
         onClose={() => setPaymentOpen(false)}

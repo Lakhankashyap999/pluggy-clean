@@ -4,18 +4,49 @@ import { useApp } from "../AppContext"
 import { useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import {
-  Wrench, LogOut, Phone, MapPin, CircleDollarSign,
-  CheckCircle2, User, Star, Package, Home, Sparkles, ShieldCheck
+  Wrench,
+  LogOut,
+  Phone,
+  MapPin,
+  CircleDollarSign,
+  CheckCircle2,
+  User,
+  Star,
+  Package,
+  Home,
+  ShieldCheck,
+  KeyRound,
+  RefreshCw,
+  PlusCircle,
+  Power,
 } from "lucide-react"
+import { SPARE_PARTS_RATE_CARD } from "../data/servicesCatalog"
 import toast from "react-hot-toast"
+
+const ALL_OFFICIAL_SPARES = Object.values(SPARE_PARTS_RATE_CARD).flat()
 
 export default function EngineerDashboard() {
   const navigate = useNavigate()
-  const { engineer, logoutEngineer, requests, updateRequestStatus, assignEngineer } = useApp()
+  const {
+    engineer,
+    logoutEngineer,
+    toggleEngineerDuty,
+    requests,
+    assignEngineer,
+    startJobWithOtp,
+    addSparePartToJob,
+    issueStandbyAppliance,
+    completeJobWithOtp,
+  } = useApp()
 
   const [expandedId, setExpandedId] = useState(null)
   const [activeTab, setActiveTab] = useState("jobs")
-  const [jobFilter, setJobFilter] = useState("available") // "available" | "assigned"
+  const [jobFilter, setJobFilter] = useState("available")
+
+  // OTP & Spare Part inputs keyed by job.id
+  const [startOtpInputs, setStartOtpInputs] = useState({})
+  const [happyOtpInputs, setHappyOtpInputs] = useState({})
+  const [selectedSpareCode, setSelectedSpareCode] = useState(ALL_OFFICIAL_SPARES[0]?.code || "")
 
   // Unassigned jobs available for engineers to pick up
   const availableJobs = useMemo(() => {
@@ -35,17 +66,11 @@ export default function EngineerDashboard() {
       .sort((a, b) => new Date(b.createdAt || b.id) - new Date(a.createdAt || a.id))
   }, [requests, engineer])
 
-  const todayJobs = myJobs.filter((j) => {
-    const today = new Date().toDateString()
-    return new Date(j.createdAt || Date.now()).toDateString() === today
-  })
-
-  const totalEarnings = myJobs
-    .filter((j) => j.status === "COMPLETED")
-    .reduce((sum, j) => sum + Number(j.amount || 0), 0)
-
-  const todayEarnings = todayJobs.reduce((sum, j) => sum + Number(j.amount || 0), 0)
-  const completedJobsCount = myJobs.filter((j) => j.status === "COMPLETED").length
+  const completedJobs = myJobs.filter((j) => j.status === "COMPLETED")
+  const totalEarnings = completedJobs.reduce(
+    (sum, j) => sum + Number(j.engineerPayout || Math.round(Number(j.amount || 0) * 0.85)),
+    0
+  )
 
   const handleAcceptJob = (job) => {
     assignEngineer(job.id, engineer.id, engineer.name)
@@ -54,30 +79,49 @@ export default function EngineerDashboard() {
     setExpandedId(job.id)
   }
 
-  const handleStatusUpdate = (jobId, newStatus) => {
-    updateRequestStatus(jobId, newStatus)
-    toast.success(`Status updated to ${newStatus.replace("_", " ")}`)
+  const handleStartWithPin = (job) => {
+    const pin = startOtpInputs[job.id] || job.startOtp || "4821"
+    const ok = startJobWithOtp(job.id, pin)
+    if (ok) {
+      setStartOtpInputs((prev) => ({ ...prev, [job.id]: "" }))
+    }
+  }
+
+  const handleCompleteWithPin = (job) => {
+    const pin = happyOtpInputs[job.id] || job.happyOtp || "9134"
+    const ok = completeJobWithOtp(job.id, pin)
+    if (ok) {
+      setHappyOtpInputs((prev) => ({ ...prev, [job.id]: "" }))
+    }
+  }
+
+  const handleSendSpareQuote = (jobId) => {
+    const partObj = ALL_OFFICIAL_SPARES.find((p) => p.code === selectedSpareCode)
+    if (!partObj) return
+    addSparePartToJob(jobId, partObj)
   }
 
   if (!engineer) {
     return (
-      <div className="min-h-screen bg-[#F1F5F9] flex items-center justify-center p-4">
-        <div className="text-center bg-white p-8 rounded-2xl shadow-md max-w-sm w-full">
+      <div className="min-h-screen bg-[#F4F6F9] pt-[128px] flex items-center justify-center p-4">
+        <div className="text-center bg-white p-8 rounded-3xl shadow-md max-w-sm w-full border border-gray-200">
           <Wrench size={48} className="text-[#F37021] mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-[#1A2A49] mb-2">Engineer Access Required</h2>
-          <p className="text-gray-500 mb-6 text-sm">Please login with your Engineer credentials</p>
+          <h2 className="text-xl font-extrabold text-[#1A2A49] mb-2">Engineer Partner Portal</h2>
+          <p className="text-gray-500 mb-6 text-xs sm:text-sm">
+            Login with your Pluggy Engineer Partner ID to accept doorstep jobs, verify OTPs & track payouts.
+          </p>
           <div className="flex gap-3">
             <button
               onClick={() => navigate("/")}
-              className="flex-1 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium"
+              className="flex-1 py-3 border border-gray-300 text-gray-700 rounded-xl font-bold text-xs sm:text-sm"
             >
               Home
             </button>
             <button
               onClick={() => navigate("/engineer-login")}
-              className="flex-1 py-3 bg-[#1A2A49] text-white rounded-xl font-medium"
+              className="flex-1 py-3 bg-[#1A2A49] text-white rounded-xl font-bold text-xs sm:text-sm"
             >
-              Login
+              Partner Login
             </button>
           </div>
         </div>
@@ -88,22 +132,49 @@ export default function EngineerDashboard() {
   const displayedJobs = jobFilter === "available" ? availableJobs : myJobs
 
   return (
-    <div className="min-h-screen bg-[#F1F5F9] font-inter pb-24">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white pb-6 pt-4">
-        <div className="max-w-3xl mx-auto px-4">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-xl font-bold font-poppins">👨‍🔧 {engineer.name}</h1>
-              <p className="text-white/70 text-sm">Engineer ID: {engineer.id}</p>
+    <div className="min-h-screen bg-[#F4F6F9] pt-[128px] md:pt-[138px] pb-24">
+      {/* Partner Header Banner */}
+      <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white py-6">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+            <div className="flex items-center gap-3.5">
+              <div className="w-13 h-13 rounded-2xl bg-[#F37021] text-white font-extrabold text-xl flex items-center justify-center p-3 shadow-md">
+                👨‍🔧
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-lg sm:text-xl font-extrabold">{engineer.name}</h1>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[10px] font-bold">
+                    ID: {engineer.id}
+                  </span>
+                </div>
+                <p className="text-white/75 text-xs mt-0.5">
+                  {engineer.specialization || "AC & Electrical Master Tech"} • ⭐{" "}
+                  {engineer.rating || 4.9}
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
+
+            <div className="flex items-center gap-2.5">
+              {/* Online / Offline Duty Toggle */}
+              <button
+                onClick={toggleEngineerDuty}
+                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition ${
+                  engineer.onDuty !== false
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "bg-white/15 text-white/80"
+                }`}
+              >
+                <Power size={14} />
+                {engineer.onDuty !== false ? "ON DUTY (Receiving SOS)" : "OFF DUTY"}
+              </button>
+
               <button
                 onClick={() => navigate("/")}
-                className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition"
-                title="Back to Main Site"
+                className="p-2.5 bg-white/10 rounded-xl hover:bg-white/20 transition"
+                title="Main Storefront"
               >
-                <Home size={20} />
+                <Home size={18} />
               </button>
               <button
                 onClick={() => {
@@ -111,208 +182,354 @@ export default function EngineerDashboard() {
                   toast.success("Engineer logged out")
                   navigate("/engineer-login")
                 }}
-                className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition"
+                className="p-2.5 bg-white/10 rounded-xl hover:bg-white/20 transition"
                 title="Logout"
               >
-                <LogOut size={20} />
+                <LogOut size={18} />
               </button>
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-2">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
-              <p className="text-2xl font-bold">{availableJobs.length}</p>
-              <p className="text-xs text-white/70">New Requests</p>
+          {/* KPI Cards */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3.5 border border-white/10">
+              <p className="text-2xl font-extrabold">{availableJobs.length}</p>
+              <p className="text-xs text-white/75">New Open Jobs</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
-              <p className="text-2xl font-bold">{myJobs.length}</p>
-              <p className="text-xs text-white/70">My Jobs</p>
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3.5 border border-white/10">
+              <p className="text-2xl font-extrabold text-amber-300">{myJobs.length}</p>
+              <p className="text-xs text-white/75">My Assigned Jobs</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
-              <p className="text-2xl font-bold">₹{totalEarnings || todayEarnings}</p>
-              <p className="text-xs text-white/70">Earnings</p>
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3.5 border border-white/10">
+              <p className="text-2xl font-extrabold text-emerald-300">
+                ₹{engineer.walletBalance || totalEarnings}
+              </p>
+              <p className="text-xs text-white/75">Partner Wallet (80% + 100% Spares)</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-3xl mx-auto px-4 -mt-3">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 mt-5">
         {activeTab === "jobs" && (
           <>
             {/* Sub-tabs: Available vs Assigned */}
-            <div className="bg-white p-1.5 rounded-xl shadow-sm border border-gray-100 flex gap-2 mb-4">
+            <div className="bg-white p-1.5 rounded-2xl shadow-sm border border-gray-200/80 flex gap-2 mb-5">
               <button
                 onClick={() => setJobFilter("available")}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-2 ${
+                className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition flex items-center justify-center gap-2 ${
                   jobFilter === "available"
                     ? "bg-[#F37021] text-white shadow-sm"
                     : "text-gray-600 hover:bg-gray-50"
                 }`}
               >
-                Available Requests
-                {availableJobs.length > 0 && (
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full ${
-                      jobFilter === "available"
-                        ? "bg-white text-[#F37021]"
-                        : "bg-[#F37021]/10 text-[#F37021]"
-                    }`}
-                  >
-                    {availableJobs.length}
-                  </span>
-                )}
+                Available Radar Requests ({availableJobs.length})
               </button>
               <button
                 onClick={() => setJobFilter("assigned")}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-2 ${
+                className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition flex items-center justify-center gap-2 ${
                   jobFilter === "assigned"
                     ? "bg-[#1A2A49] text-white shadow-sm"
                     : "text-gray-600 hover:bg-gray-50"
                 }`}
               >
-                My Assigned Jobs
-                {myJobs.length > 0 && (
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full ${
-                      jobFilter === "assigned"
-                        ? "bg-white text-[#1A2A49]"
-                        : "bg-gray-200 text-gray-700"
-                    }`}
-                  >
-                    {myJobs.length}
-                  </span>
-                )}
+                My Active & Completed Jobs ({myJobs.length})
               </button>
             </div>
 
             {displayedJobs.length === 0 ? (
-              <div className="bg-white rounded-2xl p-10 text-center shadow-sm">
-                <Package size={40} className="text-gray-300 mx-auto mb-3" />
-                <h3 className="font-bold text-[#1A2A49] mb-1">
-                  {jobFilter === "available" ? "No new service requests" : "No assigned jobs yet"}
-                </h3>
-                <p className="text-gray-500 text-sm">
+              <div className="bg-white rounded-3xl p-12 text-center shadow-sm border border-gray-200/80">
+                <Package size={42} className="text-gray-300 mx-auto mb-3" />
+                <h3 className="font-extrabold text-[#1A2A49] text-base mb-1">
                   {jobFilter === "available"
-                    ? "When customers book a service, it will appear here to accept."
+                    ? "No unassigned requests right now"
+                    : "No jobs assigned to you yet"}
+                </h3>
+                <p className="text-gray-500 text-xs sm:text-sm">
+                  {jobFilter === "available"
+                    ? "New customer bookings & 15-Min SOS alerts appear here automatically."
                     : "Accept a request from the Available tab to start working."}
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {displayedJobs.map((job) => {
-                  const isExpanded = expandedId === job.id
+                  const isExpanded = expandedId === job.id || job.status !== "COMPLETED"
 
                   return (
                     <motion.div
                       key={job.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+                      layout
+                      className="bg-white rounded-3xl shadow-sm border border-gray-200/90 overflow-hidden"
                     >
                       {/* Job Header */}
                       <div
-                        className="p-4 cursor-pointer active:bg-gray-50"
-                        onClick={() => setExpandedId(isExpanded ? null : job.id)}
+                        className="p-5 cursor-pointer hover:bg-gray-50/60"
+                        onClick={() => setExpandedId(expandedId === job.id ? null : job.id)}
                       >
-                        <div className="flex items-start gap-3">
-                          <div className="w-12 h-12 bg-gradient-to-br from-[#F37021]/20 to-[#FF8C42]/20 rounded-xl flex items-center justify-center">
-                            <Wrench size={22} className="text-[#F37021]" />
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs font-extrabold px-2.5 py-1 rounded-lg bg-[#F4F6F9] text-[#1A2A49]">
+                              #{job.transactionId || `PLG${job.id}`}
+                            </span>
+                            {job.bookingMode === "SOS_15MIN" && (
+                              <span className="px-2.5 py-1 rounded-lg bg-red-600 text-white text-[11px] font-extrabold">
+                                🚨 15-MIN SOS
+                              </span>
+                            )}
+                            <span
+                              className={`text-xs px-3 py-1 rounded-full font-bold ${
+                                job.status === "IN_PROGRESS"
+                                  ? "bg-orange-100 text-[#F37021]"
+                                  : job.status === "COMPLETED"
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : "bg-blue-100 text-[#1A2A49]"
+                              }`}
+                            >
+                              {job.status}
+                            </span>
                           </div>
-
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-1">
-                              <h3 className="font-bold text-[#1A2A49]">{job.service}</h3>
-                              <span
-                                className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                                  job.status === "IN_PROGRESS"
-                                    ? "bg-orange-100 text-orange-700"
-                                    : job.status === "COMPLETED"
-                                    ? "bg-green-100 text-green-700"
-                                    : job.status === "ENGINEER_ASSIGNED"
-                                    ? "bg-blue-100 text-blue-700"
-                                    : "bg-amber-100 text-amber-700"
-                                }`}
-                              >
-                                {job.status}
-                              </span>
-                            </div>
-
-                            <p className="text-gray-500 text-xs mb-2">
-                              {job.userName || "Customer"} • {job.userPhone || "N/A"}
-                            </p>
-
-                            <div className="flex items-center gap-3 text-xs text-gray-500">
-                              <span className="flex items-center gap-1">
-                                <MapPin size={12} /> {(job.address || job.userAddress || "Location")?.slice(0, 28)}
-                              </span>
-                              <span className="flex items-center gap-1 font-semibold text-[#1A2A49]">
-                                <CircleDollarSign size={12} /> ₹{job.amount || 0}
-                              </span>
-                            </div>
-                          </div>
+                          <span className="text-lg font-extrabold text-[#1A2A49]">
+                            ₹{job.amount || 0}
+                          </span>
                         </div>
+
+                        <h3 className="font-extrabold text-[#1A2A49] text-base sm:text-lg">
+                          {job.service}
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          👤 {job.userName || "Customer"} ({job.userPhone || "+91 9876543210"}) • 📍{" "}
+                          {job.address || job.userAddress || "Doorstep Location"}
+                        </p>
                       </div>
 
-                      {/* Expanded Details */}
+                      {/* Expanded Partner Controls */}
                       {isExpanded && (
-                        <div className="border-t border-gray-100 bg-gray-50/50 p-4 space-y-4">
-                          {/* Customer Details */}
-                          <div className="bg-white p-3 rounded-lg">
-                            <h4 className="font-medium text-xs text-gray-400 uppercase mb-1">Customer</h4>
-                            <p className="font-semibold text-[#1A2A49]">{job.userName || "Customer"}</p>
-                            <p className="text-sm text-gray-600">{job.userPhone || "N/A"}</p>
-                            <p className="text-sm text-gray-600 mt-1 flex items-start gap-1">
-                              <MapPin size={14} className="mt-0.5 text-[#F37021] flex-shrink-0" />
-                              {job.address || job.userAddress || "Address not specified"}
-                            </p>
+                        <div className="border-t border-gray-100 bg-[#F4F6F9]/60 p-5 space-y-4">
+                          {/* Pre-Departure Checklist & Customer Household Preferences */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="bg-white p-3.5 rounded-2xl border border-gray-200">
+                              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#F37021] block mb-1">
+                                🧰 Mandatory Toolkit to Carry
+                              </span>
+                              <p className="text-xs sm:text-sm font-bold text-[#1A2A49]">
+                                {job.requiredKit || "Digital Clamp Meter, Insulated Tools & Genuine Spares"}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Fault Note: {job.issue || "Standard Inspection"}
+                              </p>
+                            </div>
+
+                            <div className="bg-white p-3.5 rounded-2xl border border-gray-200">
+                              <span className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400 block mb-1.5">
+                                🏠 Customer Household Tags
+                              </span>
+                              <div className="flex flex-wrap gap-1.5">
+                                {job.preferences?.pet && (
+                                  <span className="text-xs px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 font-bold border border-amber-200">
+                                    🐕 Pet at Home
+                                  </span>
+                                )}
+                                {job.preferences?.parking && (
+                                  <span className="text-xs px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 font-bold border border-blue-200">
+                                    🚗 Bike/Car Parking Available
+                                  </span>
+                                )}
+                                {job.preferences?.bringLadder && (
+                                  <span className="text-xs px-2.5 py-1 rounded-lg bg-purple-50 text-purple-800 font-bold border border-purple-200">
+                                    🪜 Bring Tall Ladder
+                                  </span>
+                                )}
+                                <a
+                                  href={`tel:${job.userPhone || "+919876543210"}`}
+                                  className="text-xs px-3 py-1 rounded-lg bg-[#1A2A49] text-white font-bold flex items-center gap-1"
+                                >
+                                  <Phone size={12} /> Call Customer
+                                </a>
+                              </div>
+                            </div>
                           </div>
 
-                          {/* Issue */}
-                          <div className="bg-white p-3 rounded-lg">
-                            <h4 className="font-medium text-xs text-gray-400 uppercase mb-1">Issue / Details</h4>
-                            <p className="text-sm text-gray-800">{job.issue || "General Service"}</p>
-                          </div>
+                          {/* Step 1: Unassigned -> Accept Job */}
+                          {!job.assignedEngineerId && (
+                            <button
+                              onClick={() => handleAcceptJob(job)}
+                              className="w-full py-3 bg-[#F37021] hover:bg-[#e05e15] text-white rounded-xl text-sm font-extrabold flex items-center justify-center gap-2 shadow-md"
+                            >
+                              <CheckCircle2 size={18} /> Accept Job & Dispatch Now
+                            </button>
+                          )}
 
-                          {/* Actions */}
-                          <div className="flex flex-wrap gap-2">
-                            {job.userPhone && (
-                              <a
-                                href={`tel:${job.userPhone}`}
-                                className="flex-1 py-3 bg-[#1A2A49] text-white rounded-xl text-sm font-medium flex items-center justify-center gap-2"
-                              >
-                                <Phone size={16} /> Call Customer
-                              </a>
+                          {/* Step 2: ENGINEER_ASSIGNED -> Enter 4-Digit Start PIN */}
+                          {job.assignedEngineerId === engineer.id &&
+                            job.status === "ENGINEER_ASSIGNED" && (
+                              <div className="bg-white p-4 rounded-2xl border-2 border-[#1A2A49]/20 space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#F37021]">
+                                      Doorstep Arrival Verification
+                                    </span>
+                                    <h4 className="font-extrabold text-sm text-[#1A2A49]">
+                                      Enter Customer&apos;s 4-Digit Start PIN to Begin Work
+                                    </h4>
+                                  </div>
+                                  <span className="text-xs bg-amber-50 border border-amber-200 text-amber-900 px-2.5 py-1 rounded-lg font-mono font-bold">
+                                    Demo Hint: {job.startOtp || "4821"}
+                                  </span>
+                                </div>
+
+                                <div className="flex gap-2">
+                                  <input
+                                    type="text"
+                                    maxLength={4}
+                                    placeholder={`Enter Start PIN (${job.startOtp || "4821"})`}
+                                    value={startOtpInputs[job.id] || ""}
+                                    onChange={(e) =>
+                                      setStartOtpInputs((prev) => ({
+                                        ...prev,
+                                        [job.id]: e.target.value,
+                                      }))
+                                    }
+                                    className="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl font-mono text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#F37021]"
+                                  />
+                                  <button
+                                    onClick={() => handleStartWithPin(job)}
+                                    className="px-5 py-2.5 bg-[#1A2A49] hover:bg-[#223a61] text-white rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-1.5"
+                                  >
+                                    <KeyRound size={15} /> Verify & Start Job
+                                  </button>
+                                </div>
+                              </div>
                             )}
 
-                            {!job.assignedEngineerId && (
-                              <button
-                                onClick={() => handleAcceptJob(job)}
-                                className="flex-1 py-3 bg-[#F37021] hover:bg-[#e05e15] text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-1"
-                              >
-                                <CheckCircle2 size={16} /> Accept Job
-                              </button>
-                            )}
+                          {/* Step 3: IN_PROGRESS -> Official Spare Parts Quote + Standby Loaner + Happy PIN */}
+                          {job.assignedEngineerId === engineer.id &&
+                            job.status === "IN_PROGRESS" && (
+                              <div className="space-y-4">
+                                {/* Add Spare Part from Official Rate Card */}
+                                <div className="bg-white p-4 rounded-2xl border border-gray-200 space-y-3">
+                                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#F37021] block">
+                                    🛠️ Need a Spare Part? Send Official Rate Card Quote to Customer App
+                                  </span>
+                                  <div className="flex flex-col sm:flex-row gap-2">
+                                    <select
+                                      value={selectedSpareCode}
+                                      onChange={(e) => setSelectedSpareCode(e.target.value)}
+                                      className="flex-1 px-3 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm font-semibold text-[#1A2A49] bg-[#F4F6F9]"
+                                    >
+                                      {ALL_OFFICIAL_SPARES.map((sp) => (
+                                        <option key={sp.code} value={sp.code}>
+                                          {sp.part} — ₹{sp.price} (Warranty: {sp.warranty})
+                                        </option>
+                                      ))}
+                                    </select>
+                                    <button
+                                      onClick={() => handleSendSpareQuote(job.id)}
+                                      className="px-4 py-2.5 bg-[#F37021] hover:bg-[#e05e15] text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 shrink-0"
+                                    >
+                                      <PlusCircle size={15} /> Send Quote to Customer
+                                    </button>
+                                  </div>
 
-                            {job.assignedEngineerId === engineer.id && job.status === "ENGINEER_ASSIGNED" && (
-                              <button
-                                onClick={() => handleStatusUpdate(job.id, "IN_PROGRESS")}
-                                className="flex-1 py-3 bg-[#F37021] text-white rounded-xl text-sm font-medium"
-                              >
-                                Start Job
-                              </button>
-                            )}
+                                  {/* Existing Spare Quotes on this Job */}
+                                  {job.addedSpareParts && job.addedSpareParts.length > 0 && (
+                                    <div className="pt-2 space-y-1.5">
+                                      {job.addedSpareParts.map((p) => (
+                                        <div
+                                          key={p.uid}
+                                          className="flex items-center justify-between text-xs p-2 rounded-lg bg-[#F4F6F9]"
+                                        >
+                                          <span className="font-bold text-[#1A2A49]">
+                                            {p.part} (₹{p.price})
+                                          </span>
+                                          <span
+                                            className={`font-extrabold ${
+                                              p.status === "APPROVED"
+                                                ? "text-emerald-700"
+                                                : p.status === "REJECTED"
+                                                ? "text-red-600"
+                                                : "text-amber-700"
+                                            }`}
+                                          >
+                                            {p.status}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
 
-                            {job.assignedEngineerId === engineer.id && job.status === "IN_PROGRESS" && (
-                              <button
-                                onClick={() => handleStatusUpdate(job.id, "COMPLETED")}
-                                className="flex-1 py-3 bg-green-600 text-white rounded-xl text-sm font-medium"
-                              >
-                                Mark Complete
-                              </button>
+                                {/* Issue ₹99/day Standby Backup Appliance */}
+                                <div className="bg-white p-4 rounded-2xl border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                  <div>
+                                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-700">
+                                      🔄 Workshop Motor/PCB Repair Continuity
+                                    </span>
+                                    <h4 className="font-bold text-xs sm:text-sm text-[#1A2A49]">
+                                      Issue ₹99/day Standby Backup Fan or Cooler to Customer
+                                    </h4>
+                                  </div>
+                                  {job.standbyLoaner ? (
+                                    <span className="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-extrabold">
+                                      ✓ {job.standbyLoaner.unitName} Issued
+                                    </span>
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        issueStandbyAppliance(
+                                          job.id,
+                                          "Pluggy High-Speed Standby Fan/Cooler Unit",
+                                          99
+                                        )
+                                      }
+                                      className="px-4 py-2 bg-[#1A2A49] hover:bg-[#223a61] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0"
+                                    >
+                                      <RefreshCw size={14} /> Issue Standby Unit (₹99)
+                                    </button>
+                                  )}
+                                </div>
+
+                                {/* Complete Job with 4-Digit Happy PIN */}
+                                <div className="bg-emerald-50 p-4 rounded-2xl border-2 border-emerald-300 space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800">
+                                        Final Sign-Off & Instant Wallet Payout
+                                      </span>
+                                      <h4 className="font-extrabold text-sm text-[#1A2A49]">
+                                        Enter Customer&apos;s 4-Digit Happy PIN to Complete Job
+                                      </h4>
+                                    </div>
+                                    <span className="text-xs bg-white border border-emerald-300 text-emerald-900 px-2.5 py-1 rounded-lg font-mono font-bold">
+                                      Demo Hint: {job.happyOtp || "9134"}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex gap-2">
+                                    <input
+                                      type="text"
+                                      maxLength={4}
+                                      placeholder={`Enter Happy PIN (${job.happyOtp || "9134"})`}
+                                      value={happyOtpInputs[job.id] || ""}
+                                      onChange={(e) =>
+                                        setHappyOtpInputs((prev) => ({
+                                          ...prev,
+                                          [job.id]: e.target.value,
+                                        }))
+                                      }
+                                      className="flex-1 px-4 py-2.5 bg-white border border-emerald-300 rounded-xl font-mono text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                                    />
+                                    <button
+                                      onClick={() => handleCompleteWithPin(job)}
+                                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-1.5 shadow-sm"
+                                    >
+                                      <CheckCircle2 size={16} /> Complete & Claim Payout
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
                             )}
-                          </div>
                         </div>
                       )}
                     </motion.div>
@@ -327,20 +544,22 @@ export default function EngineerDashboard() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl p-6 shadow-sm space-y-5"
+            className="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 space-y-5"
           >
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
               <div>
-                <p className="text-xs text-gray-500">Total Completed Earnings</p>
-                <h2 className="text-3xl font-bold text-[#1A2A49]">₹{totalEarnings}</h2>
+                <p className="text-xs text-gray-500">Partner Wallet Balance (80% Service + 100% Spares)</p>
+                <h2 className="text-3xl font-extrabold text-[#1A2A49]">
+                  ₹{engineer.walletBalance || totalEarnings}
+                </h2>
               </div>
               <div className="text-right">
                 <p className="text-xs text-gray-500">Completed Jobs</p>
-                <p className="text-xl font-bold text-green-600">{completedJobsCount}</p>
+                <p className="text-xl font-extrabold text-emerald-600">{completedJobs.length}</p>
               </div>
             </div>
 
-            <h3 className="font-semibold text-[#1A2A49] text-sm">Job History & Payouts</h3>
+            <h3 className="font-bold text-[#1A2A49] text-sm">Job History & Instant Payout Split</h3>
             {myJobs.length === 0 ? (
               <p className="text-sm text-gray-500 py-4 text-center">No jobs completed yet.</p>
             ) : (
@@ -348,20 +567,20 @@ export default function EngineerDashboard() {
                 {myJobs.map((j) => (
                   <div
                     key={j.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-xl"
+                    className="flex items-center justify-between p-3.5 bg-[#F4F6F9] rounded-2xl"
                   >
                     <div>
-                      <p className="font-semibold text-sm text-[#1A2A49]">{j.service}</p>
+                      <p className="font-bold text-sm text-[#1A2A49]">{j.service}</p>
                       <p className="text-xs text-gray-500">
-                        {j.userName} • {j.status}
+                        {j.userName} • {j.status} • QR: {j.applianceQrId || "Pending"}
                       </p>
                     </div>
                     <span
-                      className={`font-bold text-sm ${
-                        j.status === "COMPLETED" ? "text-green-600" : "text-amber-600"
+                      className={`font-extrabold text-sm ${
+                        j.status === "COMPLETED" ? "text-emerald-700" : "text-amber-600"
                       }`}
                     >
-                      ₹{j.amount || 0}
+                      ₹{j.engineerPayout || Math.round(Number(j.amount || 0) * 0.8)}
                     </span>
                   </div>
                 ))}
@@ -374,31 +593,19 @@ export default function EngineerDashboard() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl p-6 shadow-sm space-y-4"
+            className="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 space-y-4"
           >
             <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#1A2A49] to-[#F37021] rounded-2xl flex items-center justify-center text-white text-2xl font-bold">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#1A2A49] to-[#F37021] rounded-2xl flex items-center justify-center text-white text-2xl font-extrabold">
                 {engineer.name?.charAt(0) || "E"}
               </div>
               <div>
-                <h3 className="text-lg font-bold text-[#1A2A49]">{engineer.name}</h3>
-                <p className="text-sm text-gray-500">ID: {engineer.id}</p>
-                <div className="flex items-center gap-1 text-xs text-green-600 font-medium mt-1">
-                  <ShieldCheck size={14} /> Verified Pluggy Expert • <Star size={12} className="fill-yellow-400 text-yellow-400" /> 4.9
+                <h3 className="text-lg font-extrabold text-[#1A2A49]">{engineer.name}</h3>
+                <p className="text-sm text-gray-500">Partner ID: {engineer.id}</p>
+                <div className="flex items-center gap-1 text-xs text-emerald-700 font-bold mt-1">
+                  <ShieldCheck size={14} /> Police Verified Master Tech •{" "}
+                  <Star size={12} className="fill-amber-400 text-amber-400" /> 4.9
                 </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="p-3 bg-gray-50 rounded-xl">
-                <p className="text-xs text-gray-400">Completed Jobs</p>
-                <p className="font-bold text-[#1A2A49] text-lg">{completedJobsCount}</p>
-              </div>
-              <div className="p-3 bg-gray-50 rounded-xl">
-                <p className="text-xs text-gray-400">Active Jobs</p>
-                <p className="font-bold text-[#F37021] text-lg">
-                  {myJobs.filter((j) => j.status !== "COMPLETED").length}
-                </p>
               </div>
             </div>
 
@@ -408,43 +615,43 @@ export default function EngineerDashboard() {
                 toast.success("Logged out")
                 navigate("/engineer-login")
               }}
-              className="w-full py-3 bg-red-50 text-red-600 rounded-xl font-semibold text-sm hover:bg-red-100 transition flex items-center justify-center gap-2"
+              className="w-full py-3 bg-red-50 text-red-600 rounded-xl font-bold text-sm hover:bg-red-100 transition flex items-center justify-center gap-2"
             >
-              <LogOut size={16} /> Sign Out of Engineer Portal
+              <LogOut size={16} /> Sign Out of Partner Portal
             </button>
           </motion.div>
         )}
       </div>
 
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-bottom z-30">
+      {/* Bottom Partner Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30">
         <div className="flex justify-around py-2 max-w-3xl mx-auto">
           <button
             onClick={() => setActiveTab("jobs")}
             className={`flex flex-col items-center p-2 ${
-              activeTab === "jobs" ? "text-[#F37021] font-semibold" : "text-gray-500"
+              activeTab === "jobs" ? "text-[#F37021] font-bold" : "text-gray-500"
             }`}
           >
-            <Wrench size={22} />
-            <span className="text-xs">Jobs</span>
+            <Wrench size={20} />
+            <span className="text-xs">Radar & Jobs</span>
           </button>
           <button
             onClick={() => setActiveTab("earnings")}
             className={`flex flex-col items-center p-2 ${
-              activeTab === "earnings" ? "text-[#F37021] font-semibold" : "text-gray-500"
+              activeTab === "earnings" ? "text-[#F37021] font-bold" : "text-gray-500"
             }`}
           >
-            <CircleDollarSign size={22} />
-            <span className="text-xs">Earnings</span>
+            <CircleDollarSign size={20} />
+            <span className="text-xs">Wallet & Payouts</span>
           </button>
           <button
             onClick={() => setActiveTab("profile")}
             className={`flex flex-col items-center p-2 ${
-              activeTab === "profile" ? "text-[#F37021] font-semibold" : "text-gray-500"
+              activeTab === "profile" ? "text-[#F37021] font-bold" : "text-gray-500"
             }`}
           >
-            <User size={22} />
-            <span className="text-xs">Profile</span>
+            <User size={20} />
+            <span className="text-xs">Partner Profile</span>
           </button>
         </div>
       </div>
