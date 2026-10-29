@@ -27,148 +27,114 @@ export default function ServicesPage() {
   })
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] pt-[92px] md:pt-[112px] pb-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <div className="min-h-screen bg-white pt-[72px] md:pt-[112px] pb-28 md:pb-16">
+      <div className="max-w-5xl mx-auto px-5 sm:px-6 py-4">
         <BackButton />
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-2 mb-6">
-          <div>
-            <span className="text-xs font-extrabold uppercase tracking-wider text-[#F37021]">
-              8 Master Departments • 32+ Sub-Categories • 60+ Services
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1A2A49] flex items-center gap-2 mt-0.5">
-              <Wrench size={24} className="text-[#F37021]" /> Complete Services Directory
-            </h1>
-          </div>
+        <div className="mt-4 mb-8 sm:mb-10">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#F37021]">
+            8 departments • 60+ services
+          </p>
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[#1A2A49] mt-2">
+            All services.
+            <span className="block text-gray-400">One fixed price.</span>
+          </h1>
 
-          <div className="relative w-full md:w-80">
-            <Search size={16} className="absolute left-3.5 top-3 text-gray-400" />
+          <div className="relative mt-5 w-full md:w-96">
+            <Search size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search AC, MCB, Fan, Geyser, RO..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-gray-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#F37021]"
+              className="w-full pl-11 pr-4 h-12 rounded-full bg-[#F5F5F7] text-sm focus:outline-none focus:ring-2 focus:ring-[#F37021]/60"
             />
           </div>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-14 sm:space-y-20">
           {filteredCategories.map((cat) => (
-            <div
-              key={cat.slug}
-              className="bg-white rounded-3xl shadow-sm border border-gray-200/80 overflow-hidden"
-            >
-              {/* Category Header Bar */}
-              <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <span className="text-3xl sm:text-4xl">{cat.emoji}</span>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-lg sm:text-xl font-extrabold">{cat.name}</h2>
-                      <span className="px-2.5 py-0.5 rounded-full bg-[#F37021] text-white text-[10px] font-extrabold uppercase">
-                        {cat.badge}
-                      </span>
-                    </div>
-                    <p className="text-xs sm:text-sm text-white/80 mt-0.5">{cat.tagline}</p>
+            <section key={cat.slug}>
+              {/* Category heading — plain text, no box */}
+              <div className="flex items-end justify-between gap-4 pb-4 border-b border-gray-200">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-3xl sm:text-4xl">{cat.emoji}</span>
+                    <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1A2A49]">
+                      {cat.name}
+                    </h2>
                   </div>
+                  <p className="text-sm text-gray-500 mt-1.5 leading-snug">{cat.tagline}</p>
                 </div>
-
-                <div className="flex items-center gap-2.5 shrink-0">
-                  <button
-                    onClick={() =>
-                      window.dispatchEvent(
-                        new CustomEvent("pluggy:open-rate-card", {
-                          detail: { category: cat.slug },
-                        })
-                      )
-                    }
-                    className="px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold flex items-center gap-1.5"
-                  >
-                    <FileText size={14} className="text-amber-300" /> Official Rate Card
-                  </button>
-                  <button
-                    onClick={() => navigate(`/services/${cat.slug}`)}
-                    className="px-4 py-2 rounded-xl bg-[#F37021] hover:bg-[#e05e15] text-white text-xs font-extrabold flex items-center gap-1"
-                  >
-                    Open Store <ChevronRight size={14} />
-                  </button>
-                </div>
+                <button
+                  onClick={() => navigate(`/services/${cat.slug}`)}
+                  className="shrink-0 text-sm font-semibold text-[#F37021] flex items-center gap-0.5"
+                >
+                  View all <ChevronRight size={16} />
+                </button>
               </div>
 
-              {/* Subcategories Grid */}
-              <div className="p-5 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="mt-2 grid grid-cols-1 md:grid-cols-2 md:gap-x-12">
                 {cat.subcategories.map((sub) => (
-                  <div
-                    key={sub.id}
-                    className="rounded-2xl bg-[#F4F6F9] p-4 border border-gray-200/70 flex flex-col justify-between"
-                  >
-                    <div>
-                      <div
-                        onClick={() => navigate(`/services/${cat.slug}?sub=${sub.id}`)}
-                        className="flex items-center justify-between gap-2 pb-2.5 mb-3 border-b border-gray-200 cursor-pointer group"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="text-xl">{sub.icon}</span>
-                          <h3 className="font-bold text-sm text-[#1A2A49] group-hover:text-[#F37021]">
-                            {sub.name}
-                          </h3>
-                        </div>
-                        <ChevronRight size={15} className="text-gray-400 group-hover:text-[#F37021]" />
-                      </div>
+                  <div key={sub.id} className="pt-6">
+                    <button
+                      onClick={() => navigate(`/services/${cat.slug}?sub=${sub.id}`)}
+                      className="flex items-center gap-2 text-left mb-1"
+                    >
+                      <span className="text-xl">{sub.icon}</span>
+                      <h3 className="font-bold text-base text-[#1A2A49]">{sub.name}</h3>
+                      <ChevronRight size={16} className="text-gray-400" />
+                    </button>
 
-                      <div className="space-y-2">
-                        {sub.services.map((srv) => {
-                          const inCart = cart.some((c) => c.id === srv.id)
-                          return (
+                    <ul className="divide-y divide-gray-100">
+                      {sub.services.map((srv) => {
+                        const inCart = cart.some((c) => c.id === srv.id)
+                        return (
+                          <li key={srv.id} className="flex items-center justify-between gap-4 py-3.5">
                             <div
-                              key={srv.id}
-                              className="bg-white rounded-xl p-2.5 border border-gray-200/60 flex items-center justify-between gap-2"
+                              onClick={() => navigate(`/services/${cat.slug}?sub=${sub.id}`)}
+                              className="min-w-0 cursor-pointer"
                             >
-                              <div
-                                onClick={() => navigate(`/services/${cat.slug}?sub=${sub.id}`)}
-                                className="min-w-0 cursor-pointer"
-                              >
-                                <p className="text-xs font-bold text-[#1A2A49] truncate">
-                                  {srv.name}
-                                </p>
-                                <p className="text-[11px] text-[#F37021] font-extrabold">
-                                  ₹{srv.price}{" "}
-                                  <span className="text-gray-400 line-through font-normal">
-                                    ₹{srv.originalPrice}
-                                  </span>
-                                </p>
-                              </div>
-                              <button
-                                onClick={() => {
-                                  if (!addToCart({
-                                    id: srv.id,
-                                    name: srv.name,
-                                    price: srv.price,
-                                    category: cat.slug,
-                                    categoryName: cat.name,
-                                    duration: srv.duration,
-                                    warranty: srv.warranty,
-                                  })) return
-                                  toast.success(`${srv.name} added to cart!`)
-                                }}
-                                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 ${
-                                  inCart
-                                    ? "bg-emerald-600 text-white"
-                                    : "bg-[#1A2A49] text-white hover:bg-[#F37021]"
-                                }`}
-                              >
-                                {inCart ? <Check size={12} /> : <Plus size={12} />}
-                              </button>
+                              <p className="text-[15px] font-medium text-[#1A2A49] leading-snug">
+                                {srv.name}
+                              </p>
+                              <p className="text-sm mt-0.5">
+                                <span className="font-bold text-[#1A2A49]">₹{srv.price}</span>{" "}
+                                <span className="text-gray-400 line-through text-xs">
+                                  ₹{srv.originalPrice}
+                                </span>
+                              </p>
                             </div>
-                          )
-                        })}
-                      </div>
-                    </div>
+                            <button
+                              onClick={() => {
+                                if (!addToCart({
+                                  id: srv.id,
+                                  name: srv.name,
+                                  price: srv.price,
+                                  category: cat.slug,
+                                  categoryName: cat.name,
+                                  duration: srv.duration,
+                                  warranty: srv.warranty,
+                                })) return
+                                toast.success(`${srv.name} added to cart!`)
+                              }}
+                              className={`shrink-0 h-9 px-4 rounded-full text-sm font-semibold flex items-center gap-1 ${
+                                inCart
+                                  ? "bg-emerald-600 text-white"
+                                  : "bg-[#F5F5F7] text-[#1A2A49] active:bg-[#F37021] active:text-white"
+                              }`}
+                            >
+                              {inCart ? <Check size={15} /> : <Plus size={15} />}
+                              {inCart ? "Added" : "Add"}
+                            </button>
+                          </li>
+                        )
+                      })}
+                    </ul>
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
           ))}
         </div>
       </div>

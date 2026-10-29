@@ -24,10 +24,10 @@ export default function ProfileStrengthMeter({ user }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-white/80 text-sm">Profile Strength</span>
-        <span className="text-white font-bold">{strength}%</span>
+        <span className="text-gray-500 text-sm">Profile Strength</span>
+        <span className="text-[#1A2A49] font-bold">{strength}%</span>
       </div>
-      <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
         <motion.div
           className={`h-full rounded-full ${
             strength === 100 ? "bg-green-400" : "bg-[#F37021]"
@@ -38,7 +38,7 @@ export default function ProfileStrengthMeter({ user }) {
         />
       </div>
       {strength < 100 && (
-        <p className="text-white/60 text-xs mt-2 flex items-center gap-1">
+        <p className="text-gray-400 text-xs mt-2 flex items-center gap-1">
           <AlertCircle size={12} />
           {getSuggestion()} to improve
         </p>

@@ -102,7 +102,7 @@ export default function ExtraSections() {
             {steps.map((step, index) => (
               <div
                 key={index}
-                className="min-w-[245px] md:min-w-0 snap-start bg-white rounded-2xl p-5 border border-gray-200 shadow-xs flex flex-col justify-between"
+                className="min-w-[245px] md:min-w-0 snap-start bg-[#F5F5F7] rounded-3xl p-5 flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">

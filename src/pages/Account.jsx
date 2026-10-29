@@ -151,66 +151,59 @@ export default function Account() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] font-inter pb-10">
+    <div className="min-h-screen bg-white font-inter pb-28 md:pb-10">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-30 safe-top">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div className="bg-white/90 backdrop-blur-xl border-b border-black/5 sticky top-0 z-30 safe-top">
+        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           <BackButton />
-          <h2 className="text-lg font-bold text-[#1A2A49] font-poppins">Your Account</h2>
-          <button onClick={toggleTheme} className="p-2 hover:bg-gray-100 rounded-full transition">
-            {theme === "dark" ? <Sun size={20} className="text-gray-600" /> : <Moon size={20} className="text-gray-600" />}
+          <h2 className="text-base font-bold text-[#1A2A49]">Account</h2>
+          <button onClick={toggleTheme} className="w-10 h-10 hover:bg-gray-100 rounded-full transition flex items-center justify-center">
+            {theme === "dark" ? <Sun size={19} className="text-gray-600" /> : <Moon size={19} className="text-gray-600" />}
           </button>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* Profile Card */}
+      <div className="max-w-3xl mx-auto px-5 py-8">
+        {/* Profile — centered, no box */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white rounded-2xl shadow-md p-6 mb-6"
+          className="text-center mb-8"
         >
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#F37021] to-[#FF8C42] rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-md">
-              {user.name?.charAt(0).toUpperCase() || "U"}
+          <div className="w-24 h-24 mx-auto bg-gradient-to-br from-[#F37021] to-[#FF8C42] rounded-full flex items-center justify-center text-white text-4xl font-bold shadow-lg shadow-orange-200">
+            {user.name?.charAt(0).toUpperCase() || "U"}
+          </div>
+          <h3 className="text-2xl font-extrabold tracking-tight text-[#1A2A49] mt-4 break-words">
+            {user.name}
+          </h3>
+          <p className="text-sm text-gray-500 mt-1 break-all">{user.email}</p>
+          {user.phone && <p className="text-sm text-gray-500 mt-0.5">{user.phone}</p>}
+
+          <button
+            onClick={() => navigate("/account/edit")}
+            className="mt-4 h-10 px-6 rounded-full bg-[#F5F5F7] text-sm font-semibold text-[#1A2A49] inline-flex items-center gap-1.5 active:bg-gray-200"
+          >
+            <Edit3 size={14} /> Edit profile
+          </button>
+
+          {/* Stats — three clean columns */}
+          <div className="grid grid-cols-3 mt-8 py-5 border-y border-gray-100">
+            <div>
+              <p className="text-2xl font-extrabold text-[#1A2A49]">{activeBookings}</p>
+              <p className="text-xs text-gray-500 mt-0.5">Active</p>
             </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-bold">{user.name}</h3>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
-                <span className="text-sm text-white/80 flex items-center gap-1">
-                  <Mail size={14} /> {user.email}
-                </span>
-                {user.phone && (
-                  <span className="text-sm text-white/80 flex items-center gap-1">
-                    <Phone size={14} /> {user.phone}
-                  </span>
-                )}
-              </div>
+            <div className="border-x border-gray-100">
+              <p className="text-2xl font-extrabold text-[#1A2A49]">{completedBookings}</p>
+              <p className="text-xs text-gray-500 mt-0.5">Completed</p>
             </div>
-            <button
-              onClick={() => navigate("/account/edit")}
-              className="px-4 py-2 bg-white/15 hover:bg-white/25 rounded-full text-sm font-medium text-white transition flex items-center gap-1"
-            >
-              <Edit3 size={14} /> Edit
-            </button>
+            <div>
+              <p className="text-2xl font-extrabold text-[#1A2A49]">{cart?.length || 0}</p>
+              <p className="text-xs text-gray-500 mt-0.5">In cart</p>
+            </div>
           </div>
 
-          <ProfileStrengthMeter user={user} />
-
-          {/* Quick Stats */}
-          <div className="flex gap-4 mt-4 pt-4 border-t border-white/15">
-            <div className="flex items-center gap-2">
-              <Package size={18} className="text-[#F37021]" />
-              <span className="text-sm text-white/90">{activeBookings} Active</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Award size={18} className="text-[#F37021]" />
-              <span className="text-sm text-white/90">{completedBookings} Completed</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Heart size={18} className="text-[#F37021]" />
-              <span className="text-sm text-white/90">{cart?.length || 0} In Cart</span>
-            </div>
+          <div className="mt-6 text-left">
+            <ProfileStrengthMeter user={user} />
           </div>
         </motion.div>
 
@@ -232,7 +225,7 @@ export default function Account() {
         </div>
 
         {/* Grid Sections with Inline Expand */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-4">
           {sections.map((section, index) => (
             <div key={section.id}>
               <motion.div
@@ -247,7 +240,7 @@ export default function Account() {
                     navigate(section.link)
                   }
                 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 cursor-pointer hover:border-[#F37021]/50 transition-all group"
+                className="bg-[#F5F5F7] rounded-2xl p-4 sm:p-5 cursor-pointer active:bg-gray-200 transition-all group"
               >
                 <div className="flex items-start gap-4">
                   <div
@@ -280,7 +273,7 @@ export default function Account() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="mt-2 bg-white rounded-xl shadow-sm border border-gray-200 p-5"
+                  className="mt-2 bg-[#F5F5F7] rounded-2xl p-5"
                 >
                   <PaymentMethodsCard />
                 </motion.div>
@@ -291,7 +284,7 @@ export default function Account() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="mt-2 bg-white rounded-xl shadow-sm border border-gray-200 p-5"
+                  className="mt-2 bg-[#F5F5F7] rounded-2xl p-5"
                 >
                   <SupportCard />
                 </motion.div>
@@ -302,7 +295,7 @@ export default function Account() {
 
         {/* Preferences & Activity Timeline */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+          <div className="bg-[#F5F5F7] rounded-3xl p-5">
             <h3 className="font-bold text-[#1A2A49] mb-4 flex items-center gap-2">
               <Settings size={18} className="text-[#F37021]" />
               Service Preferences
@@ -310,7 +303,7 @@ export default function Account() {
             <BookingPreferences />
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+          <div className="bg-[#F5F5F7] rounded-3xl p-5">
             <h3 className="font-bold text-[#1A2A49] mb-4 flex items-center gap-2">
               <Clock size={18} className="text-[#F37021]" />
               Recent Activity
@@ -324,7 +317,7 @@ export default function Account() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+          className="mt-6 bg-[#F5F5F7] rounded-2xl overflow-hidden"
         >
           <div
             onClick={() => navigate("/account/services")}

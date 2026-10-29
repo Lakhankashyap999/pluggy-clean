@@ -113,7 +113,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] pt-[88px] md:pt-[104px]">
+    <div className="min-h-screen bg-white pt-[72px] md:pt-[104px]">
       <FilterDrawer
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
@@ -144,9 +144,9 @@ export default function Dashboard() {
           <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-5 pb-6 sm:py-9">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
               {/* LEFT 7 COLUMNS: Clean Headline + 8 Category Icons + 4 Action Pills */}
-              <div className="lg:col-span-7 bg-white rounded-3xl p-5 sm:p-8 shadow-xs border border-gray-200/80">
+              <div className="lg:col-span-7 px-1 sm:px-2">
                 <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-emerald-700">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
                     18 Verified Engineers Nearby
                   </span>
@@ -158,11 +158,11 @@ export default function Dashboard() {
                   </button>
                 </div>
 
-                <h1 className="text-xl sm:text-3xl font-extrabold text-[#1A2A49] leading-tight mb-2">
+                <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[#1A2A49] leading-[1.1] mb-3">
                   Home Electrical & Appliance Services,{" "}
                   <span className="text-[#F37021]">Done Right.</span>
                 </h1>
-                <p className="text-xs sm:text-sm text-gray-500 mb-5">
+                <p className="text-sm sm:text-base text-gray-500 mb-6">
                   What do you need help with today? Select a category for instant doorstep booking:
                 </p>
 
@@ -174,7 +174,7 @@ export default function Dashboard() {
                       whileHover={{ y: -3 }}
                       whileTap={{ scale: 0.96 }}
                       onClick={() => navigate(`/services/${cat.slug}`)}
-                      className="flex flex-col items-center justify-center text-center py-3 px-2 rounded-2xl bg-[#F4F6F9] hover:bg-[#1A2A49] text-[#1A2A49] hover:text-white border border-gray-200/60 transition-all group"
+                      className="flex flex-col items-center justify-center text-center py-3.5 px-1 rounded-2xl bg-[#F5F5F7] hover:bg-[#1A2A49] text-[#1A2A49] hover:text-white transition-all group"
                     >
                       <span className="text-2xl sm:text-3xl mb-1.5 group-hover:scale-110 transition-transform">
                         {cat.emoji}
@@ -187,10 +187,10 @@ export default function Dashboard() {
                 </div>
 
                 {/* 4 Compact Quick-Action Pills Below Categories */}
-                <div className="mt-5 pt-4 border-t border-gray-100 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <button
                     onClick={() => openConsultModal("sos")}
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold border border-red-200 transition"
+                    className="flex items-center justify-center gap-1.5 py-3 px-3 rounded-2xl bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold transition"
                   >
                     <AlertTriangle size={14} className="shrink-0" />
                     <span className="truncate">15-Min SOS</span>
@@ -198,7 +198,7 @@ export default function Dashboard() {
 
                   <button
                     onClick={() => openConsultModal("video")}
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#1A2A49] text-xs font-bold border border-blue-200 transition"
+                    className="flex items-center justify-center gap-1.5 py-3 px-3 rounded-2xl bg-[#F5F5F7] hover:bg-gray-200 text-[#1A2A49] text-xs font-bold transition"
                   >
                     <Video size={14} className="shrink-0 text-[#F37021]" />
                     <span className="truncate">₹29 Video Call</span>
@@ -206,7 +206,7 @@ export default function Dashboard() {
 
                   <button
                     onClick={() => openConsultModal("event")}
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-[#1A2A49] text-xs font-bold border border-amber-200 transition"
+                    className="flex items-center justify-center gap-1.5 py-3 px-3 rounded-2xl bg-[#F5F5F7] hover:bg-gray-200 text-[#1A2A49] text-xs font-bold transition"
                   >
                     <PartyPopper size={14} className="shrink-0 text-[#F37021]" />
                     <span className="truncate">Shaadi Guard</span>
@@ -214,7 +214,7 @@ export default function Dashboard() {
 
                   <button
                     onClick={() => openConsultModal("voice")}
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200 transition"
+                    className="flex items-center justify-center gap-1.5 py-3 px-3 rounded-2xl bg-[#F5F5F7] hover:bg-gray-200 text-[#1A2A49] text-xs font-bold transition"
                   >
                     <Mic size={14} className="shrink-0" />
                     <span className="truncate">Voice Book</span>
@@ -224,20 +224,20 @@ export default function Dashboard() {
 
               {/* RIGHT 5 COLUMNS: Clean Visual Promo Slider + 3 Trust Badges */}
               <div className="lg:col-span-5 flex flex-col gap-4">
-                <div className="rounded-3xl overflow-hidden shadow-xs border border-gray-200/80 bg-white">
+                <div className="rounded-3xl overflow-hidden">
                   <Slider />
                 </div>
 
                 <div className="grid grid-cols-3 gap-2.5 text-center">
-                  <div className="bg-white rounded-2xl py-3 px-2 border border-gray-200/80">
+                  <div className="py-2 px-2">
                     <p className="text-xs sm:text-sm font-extrabold text-[#1A2A49]">⭐ 4.8 / 5</p>
                     <p className="text-[10px] text-gray-500 mt-0.5">12.4k+ Bookings</p>
                   </div>
-                  <div className="bg-white rounded-2xl py-3 px-2 border border-gray-200/80">
+                  <div className="py-2 px-2">
                     <p className="text-xs sm:text-sm font-extrabold text-[#F37021]">Fixed MRP</p>
                     <p className="text-[10px] text-gray-500 mt-0.5">Official Rate Card</p>
                   </div>
-                  <div className="bg-white rounded-2xl py-3 px-2 border border-gray-200/80">
+                  <div className="py-2 px-2">
                     <p className="text-xs sm:text-sm font-extrabold text-emerald-700">30-Day</p>
                     <p className="text-[10px] text-gray-500 mt-0.5">Free Warranty</p>
                   </div>
@@ -355,11 +355,11 @@ export default function Dashboard() {
                   <div
                     key={srv.id}
                     onClick={() => navigate(`/services/${srv.categorySlug}?sub=${srv.subCategoryId}`)}
-                    className="min-w-[235px] sm:min-w-[260px] md:min-w-0 snap-start bg-white rounded-2xl p-4 shadow-xs hover:shadow-md border border-gray-200/80 flex flex-col justify-between cursor-pointer transition-all"
+                    className="min-w-[240px] sm:min-w-[260px] md:min-w-0 snap-start bg-[#F5F5F7] rounded-3xl p-5 flex flex-col justify-between cursor-pointer transition-all"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-2.5">
-                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#F4F6F9] text-[#1A2A49] truncate">
+                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white text-[#1A2A49] truncate">
                           {srv.categoryEmoji} {srv.subCategoryName}
                         </span>
                         <span className="flex items-center gap-0.5 text-xs font-bold text-amber-600 shrink-0">
@@ -373,7 +373,7 @@ export default function Dashboard() {
                       <p className="text-xs text-gray-500 line-clamp-2 mb-4">{srv.desc}</p>
                     </div>
 
-                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
+                    <div className="pt-3 flex items-center justify-between gap-2">
                       <div>
                         <span className="text-base font-extrabold text-[#1A2A49]">
                           ₹{srv.price}
@@ -423,7 +423,7 @@ export default function Dashboard() {
           {/* ===================================================================
               4. TABBED DEPARTMENT & SUB-CATEGORY EXPLORER (CLEAN VIEW)
              =================================================================== */}
-          <section id="our-services" className="px-4 sm:px-6 py-10 sm:py-14 bg-white border-y border-gray-200">
+          <section id="our-services" className="px-4 sm:px-6 py-12 sm:py-16 bg-[#F5F5F7]">
             <div className="max-w-7xl mx-auto">
               <div className="flex items-end justify-between mb-5 gap-2">
                 <div>
@@ -501,7 +501,7 @@ export default function Dashboard() {
             {/* Clean 2-Card Split: Shaadi Standby + ₹99/Day Loaner Guarantee */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               {/* Card 1: Shaadi / Function Standby */}
-              <div className="bg-white rounded-3xl p-5 sm:p-6 border border-gray-200 shadow-xs flex flex-col justify-between">
+              <div className="bg-[#F5F5F7] rounded-3xl p-5 sm:p-7 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-3">
                     <span className="text-xs font-extrabold uppercase tracking-wider text-[#F37021]">
@@ -523,7 +523,7 @@ export default function Dashboard() {
                       <div
                         key={pkg.id}
                         onClick={() => openConsultModal("event")}
-                        className="p-3 rounded-2xl bg-[#F4F6F9] hover:border-[#F37021] border border-gray-200 cursor-pointer text-center"
+                        className="p-3 rounded-2xl bg-white cursor-pointer text-center"
                       >
                         <p className="text-[11px] font-bold text-[#1A2A49] truncate">{pkg.name}</p>
                         <p className="text-sm font-extrabold text-[#F37021] mt-1">₹{pkg.price}</p>
@@ -535,7 +535,7 @@ export default function Dashboard() {
               </div>
 
               {/* Card 2: Standby Backup Appliance + Dual-PIN */}
-              <div className="bg-white rounded-3xl p-5 sm:p-6 border border-gray-200 shadow-xs flex flex-col justify-between">
+              <div className="bg-[#F5F5F7] rounded-3xl p-5 sm:p-7 flex flex-col justify-between">
                 <div>
                   <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-700">
                     🛡️ Pluggy Exclusive Protection
@@ -545,21 +545,21 @@ export default function Dashboard() {
                   </h3>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                    <div className="p-3 rounded-2xl bg-[#F4F6F9]">
+                    <div className="p-3.5 rounded-2xl bg-white">
                       <RefreshCw size={16} className="text-[#1A2A49] mb-1.5" />
                       <p className="text-xs font-bold text-[#1A2A49]">₹99/Day Loaner Fan</p>
                       <p className="text-[11px] text-gray-500 mt-0.5">
                         Backup unit during 24h motor repairs
                       </p>
                     </div>
-                    <div className="p-3 rounded-2xl bg-[#F4F6F9]">
+                    <div className="p-3.5 rounded-2xl bg-white">
                       <ShieldCheck size={16} className="text-[#F37021] mb-1.5" />
                       <p className="text-xs font-bold text-[#1A2A49]">Dual-PIN Escrow</p>
                       <p className="text-[11px] text-gray-500 mt-0.5">
                         Share Happy PIN only when satisfied
                       </p>
                     </div>
-                    <div className="p-3 rounded-2xl bg-[#F4F6F9]">
+                    <div className="p-3.5 rounded-2xl bg-white">
                       <QrCode size={16} className="text-emerald-600 mb-1.5" />
                       <p className="text-xs font-bold text-[#1A2A49]">30-Day QR Warranty</p>
                       <p className="text-[11px] text-gray-500 mt-0.5">
@@ -589,7 +589,7 @@ export default function Dashboard() {
             </div>
           </section>
 
-          <section className="px-4 sm:px-6 lg:px-12 py-12 sm:py-16 bg-white border-b border-gray-200">
+          <section className="px-4 sm:px-6 lg:px-12 py-12 sm:py-16 bg-white">
             <div className="max-w-7xl mx-auto">
               <CustomerReviews />
             </div>

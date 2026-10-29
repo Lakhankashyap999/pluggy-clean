@@ -46,7 +46,7 @@ export default function OurServices() {
               className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap flex items-center gap-2 transition-all shrink-0 ${
                 isActive
                   ? "bg-[#1A2A49] text-white shadow-md"
-                  : "bg-[#F4F6F9] text-[#1A2A49] hover:bg-gray-200"
+                  : "bg-white text-[#1A2A49] hover:bg-gray-200"
               }`}
             >
               <span className="text-base">{cat.emoji}</span>
@@ -57,7 +57,7 @@ export default function OurServices() {
       </div>
 
       {/* 2. Selected Category Header Strip */}
-      <div className="bg-[#F4F6F9] rounded-2xl p-4 sm:px-6 mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-gray-200/70">
+      <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="text-3xl">{activeCategory.emoji}</span>
           <div>
@@ -65,7 +65,7 @@ export default function OurServices() {
               <h3 className="text-base sm:text-lg font-extrabold text-[#1A2A49]">
                 {activeCategory.name}
               </h3>
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 bg-white px-2 py-0.5 rounded-full border border-gray-200">
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 bg-white px-2 py-0.5 rounded-full">
                 <Star size={11} className="fill-amber-400 text-amber-400" /> {activeCategory.rating}
               </span>
             </div>
@@ -101,13 +101,13 @@ export default function OurServices() {
           <div
             key={sub.id}
             onClick={() => navigate(`/services/${activeCategory.slug}?sub=${sub.id}`)}
-            className="min-w-[265px] sm:min-w-[280px] md:min-w-0 snap-start bg-white rounded-2xl p-5 border border-gray-200 hover:border-[#1A2A49]/40 shadow-xs hover:shadow-md transition flex flex-col justify-between cursor-pointer"
+            className="min-w-[265px] sm:min-w-[280px] md:min-w-0 snap-start bg-white rounded-3xl p-5 transition flex flex-col justify-between cursor-pointer"
           >
             <div>
               {/* Subcategory Title */}
-              <div className="flex items-center justify-between gap-2 mb-4 pb-3 border-b border-gray-100">
+              <div className="flex items-center justify-between gap-2 mb-3">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="w-10 h-10 rounded-xl bg-[#F4F6F9] flex items-center justify-center text-xl shrink-0">
+                  <span className="w-10 h-10 rounded-xl bg-[#F5F5F7] flex items-center justify-center text-xl shrink-0">
                     {sub.icon}
                   </span>
                   <div className="min-w-0">
@@ -119,16 +119,16 @@ export default function OurServices() {
               </div>
 
               {/* Services inside Subcategory */}
-              <div className="space-y-2.5">
+              <div className="divide-y divide-gray-100">
                 {sub.services.slice(0, 2).map((srv) => {
                   const inCart = cart.some((item) => item.id === srv.id)
                   return (
                     <div
                       key={srv.id}
-                      className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-[#F4F6F9]/70"
+                      className="flex items-center justify-between gap-2 py-3"
                     >
                       <div className="min-w-0">
-                        <p className="text-xs font-bold text-[#1A2A49] truncate">{srv.name}</p>
+                        <p className="text-xs font-bold text-[#1A2A49] leading-snug">{srv.name}</p>
                         <p className="text-xs font-extrabold text-[#F37021] mt-0.5">
                           ₹{srv.price}{" "}
                           <span className="text-[10px] text-gray-400 line-through font-normal">
@@ -141,7 +141,7 @@ export default function OurServices() {
                         className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1 shrink-0 transition ${
                           inCart
                             ? "bg-emerald-600 text-white"
-                            : "bg-white text-[#1A2A49] border border-gray-200 hover:bg-[#1A2A49] hover:text-white"
+                            : "bg-[#F5F5F7] text-[#1A2A49] hover:bg-[#1A2A49] hover:text-white"
                         }`}
                       >
                         {inCart ? (
@@ -165,7 +165,7 @@ export default function OurServices() {
                 e.stopPropagation()
                 navigate(`/services/${activeCategory.slug}?sub=${sub.id}`)
               }}
-              className="mt-4 pt-3 border-t border-gray-100 text-xs font-bold text-[#1A2A49] hover:text-[#F37021] flex items-center justify-between w-full"
+              className="mt-3 pt-3 border-t border-gray-100 text-xs font-bold text-[#1A2A49] hover:text-[#F37021] flex items-center justify-between w-full"
             >
               <span>Explore {sub.name}</span>
               <span>→</span>

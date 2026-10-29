@@ -193,66 +193,63 @@ export default function Navbar() {
   return (
     <>
       {/* ===================================================================== */}
-      {/* 📱 MOBILE 2-ROW CLEAN HEADER (88px, Auto-Hides on Downward Scroll)     */}
+      {/* MOBILE CLEAN SINGLE-ROW HEADER (56px, frosted white, auto-hides on scroll) */}
       {/* ===================================================================== */}
       <div
-        className={`md:hidden fixed top-0 left-0 right-0 bg-[#1A2A49] text-white z-50 shadow-md border-b border-white/10 transition-transform duration-300 ${
+        className={`md:hidden fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-xl text-[#1A2A49] z-50 border-b border-black/5 transition-transform duration-300 ${
           mobileNavVisible ? "translate-y-0" : "-translate-y-full"
         }`}
       >
-        {/* ROW 1 (44px): Menu + Logo + City + SOS + Cart + Account */}
-        <div className="h-11 px-3 flex items-center justify-between gap-2">
+        <div className="h-14 px-3 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <button
               onClick={() => setMobileDrawerOpen(true)}
-              className="w-8 h-8 rounded-lg bg-white/10 active:bg-white/20 flex items-center justify-center text-white shrink-0"
+              className="w-9 h-9 rounded-full active:bg-gray-100 flex items-center justify-center text-[#1A2A49] shrink-0"
               aria-label="Open Menu"
             >
-              <Menu size={17} />
+              <Menu size={20} />
             </button>
 
             <Link to="/" className="flex items-center gap-1.5 shrink-0">
-              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-[#F37021] to-[#FF8C42] p-1 flex items-center justify-center">
+              <div className="w-7 h-7 rounded-lg bg-[#1A2A49] p-1 flex items-center justify-center">
                 <img
                   src="/image/logos.png"
                   alt="Pluggy"
                   className="h-full w-full object-contain filter brightness-0 invert"
                 />
               </div>
-              <span className="font-extrabold text-base tracking-tight text-white">
+              <span className="font-extrabold text-[17px] tracking-tight text-[#1A2A49]">
                 Pluggy
               </span>
             </Link>
-
-            <button
-              onClick={() => setLocationOpen(true)}
-              className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#223a61] text-[11px] font-semibold text-white/90 truncate max-w-[110px]"
-            >
-              <MapPin size={11} className="text-[#F37021] shrink-0" />
-              <span className="truncate">{city || "Select City"}</span>
-              <ChevronDown size={10} className="text-gray-300 shrink-0" />
-            </button>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-0.5 shrink-0">
             <button
-              onClick={() => {
-                setConsultInitialTab("sos")
-                setConsultModalOpen(true)
-              }}
-              className="px-2 py-1 rounded-md bg-[#F37021] text-white font-extrabold text-[10px] flex items-center gap-1"
+              onClick={() => setLocationOpen(true)}
+              className="flex items-center gap-1 h-8 px-2 rounded-full bg-gray-100 text-[11px] font-semibold text-[#1A2A49] max-w-[88px]"
+              aria-label="Change location"
             >
-              <Zap size={11} /> SOS
+              <MapPin size={12} className="text-[#F37021] shrink-0" />
+              <span className="truncate">{city || "City"}</span>
+            </button>
+
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="w-9 h-9 rounded-full active:bg-gray-100 flex items-center justify-center"
+              aria-label="Search"
+            >
+              <Search size={19} />
             </button>
 
             <button
               onClick={() => setCartOpen(true)}
-              className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center relative"
+              className="w-9 h-9 rounded-full active:bg-gray-100 flex items-center justify-center relative"
               aria-label="Cart"
             >
-              <ShoppingCart size={15} className="text-white" />
+              <ShoppingCart size={19} />
               {cart.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#F37021] text-white text-[9px] font-extrabold w-4 h-4 flex items-center justify-center rounded-full">
+                <span className="absolute top-0.5 right-0.5 bg-[#F37021] text-white text-[9px] font-extrabold min-w-4 h-4 px-0.5 flex items-center justify-center rounded-full">
                   {cart.length}
                 </span>
               )}
@@ -260,35 +257,12 @@ export default function Navbar() {
 
             <button
               onClick={() => navigate(user ? "/account" : "/login")}
-              className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center relative"
+              className="w-9 h-9 rounded-full active:bg-gray-100 flex items-center justify-center"
               aria-label="Account"
             >
-              <User size={15} className="text-white" />
+              <User size={19} />
             </button>
           </div>
-        </div>
-
-        {/* ROW 2 (44px): Clean Search Bar + ₹29 Video Pill */}
-        <div className="h-11 px-3 pb-2 flex items-center gap-2">
-          <button
-            onClick={() => setSearchOpen(true)}
-            className="flex-1 h-9 flex items-center gap-2 bg-white rounded-xl px-3 text-gray-500 shadow-xs min-w-0"
-          >
-            <Search size={14} className="text-[#F37021] shrink-0" />
-            <span className="text-xs font-medium text-gray-500 truncate">
-              Search AC, Wiring, Fan, Appliances...
-            </span>
-          </button>
-
-          <button
-            onClick={() => {
-              setConsultInitialTab("video")
-              setConsultModalOpen(true)
-            }}
-            className="h-9 px-2.5 rounded-xl bg-[#223a61] border border-white/15 text-emerald-300 font-bold text-[11px] flex items-center gap-1 shrink-0"
-          >
-            <Video size={13} /> ₹29 Call
-          </button>
         </div>
       </div>
 

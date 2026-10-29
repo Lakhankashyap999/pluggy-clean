@@ -128,7 +128,7 @@ export default function CustomerReviews() {
           return (
             <div
               key={review.id}
-              className="min-w-[275px] sm:min-w-[300px] md:min-w-0 snap-start bg-[#F4F6F9]/60 rounded-2xl p-5 border border-gray-200 flex flex-col justify-between text-left"
+              className="min-w-[275px] sm:min-w-[300px] md:min-w-0 snap-start bg-[#F5F5F7] rounded-3xl p-5 flex flex-col justify-between text-left"
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-3">

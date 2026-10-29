@@ -12,7 +12,7 @@ export default function QuickActions({ navigate }) {
   ]
 
   return (
-    <div className="bg-white dark:bg-[#1E293B] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+    <div className="bg-[#F5F5F7] dark:bg-[#1E293B] rounded-3xl p-4">
       <div className="flex justify-around">
         {actions.map((action, i) => (
           <motion.button

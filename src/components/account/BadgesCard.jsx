@@ -15,7 +15,7 @@ export default function BadgesCard({ completedCount }) {
   const progress = (completedCount / 5) * 100 // For 5 services tier
 
   return (
-    <div className="bg-white dark:bg-[#1E293B] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
+    <div className="bg-[#F5F5F7] dark:bg-[#1E293B] rounded-3xl p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-bold text-[#1A2A49] dark:text-white flex items-center gap-2">
           <Award size={18} className="text-[#F37021]" />

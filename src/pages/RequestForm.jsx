@@ -157,7 +157,7 @@ export default function RequestForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] pt-[92px] md:pt-[112px] pb-16">
+    <div className="min-h-screen bg-[#F4F6F9] pt-[72px] md:pt-[112px] pb-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* Left Summary Box (5 Cols) */}
         <div className="md:col-span-5 bg-white rounded-3xl shadow-sm border border-gray-200/80 p-6 h-fit space-y-5">
