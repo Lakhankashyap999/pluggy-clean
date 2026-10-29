@@ -118,3 +118,11 @@ button:active:not(:disabled) {
 .pluggy-float {
   animation: pluggyFloat 3.2s ease-in-out infinite;
 }
+
+/* Mobile hardening: nothing may exceed the viewport width */
+img, video, canvas, svg { max-width: 100%; }
+select, input, textarea { max-width: 100%; }
+@media (max-width: 767px) {
+  .Toastify, [role=status] { max-width: 92vw; }
+}
+

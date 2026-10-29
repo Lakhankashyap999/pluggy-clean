@@ -306,18 +306,18 @@ export default function Dashboard() {
                 </div>
 
                 {/* Result + Book Button */}
-                <div className="bg-[#223a61] rounded-2xl p-3.5 sm:px-5 flex items-center justify-between gap-4 lg:w-auto shrink-0 border border-white/10">
-                  <div>
+                <div className="bg-[#223a61] rounded-2xl p-3.5 sm:px-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 w-full lg:w-auto lg:shrink-0 border border-white/10">
+                  <div className="min-w-0">
                     <span className="text-[10px] text-gray-300 block">
                       Est. Total: <strong className="text-emerald-300">{currentSymptom.estimatedCost}</strong>
                     </span>
-                    <span className="text-xs font-bold text-white block truncate max-w-[180px]">
+                    <span className="text-xs font-bold text-white block truncate max-w-full sm:max-w-[180px]">
                       {currentSymptom.likelyCause}
                     </span>
                   </div>
                   <button
                     onClick={handleAddEstimatorService}
-                    className="px-4 py-2.5 rounded-xl bg-[#F37021] hover:bg-[#e05e15] text-white text-xs font-extrabold whitespace-nowrap shadow-xs transition"
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#F37021] hover:bg-[#e05e15] text-white text-xs font-extrabold whitespace-nowrap shadow-xs transition"
                   >
                     + Book @ ₹{currentSymptom.visitFee}
                   </button>

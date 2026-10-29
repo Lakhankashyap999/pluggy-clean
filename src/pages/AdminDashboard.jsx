@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useApp } from "../AppContext";
+import FaultMediaView from "../components/FaultMediaView";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Wrench,
@@ -391,6 +392,7 @@ export default function AdminDashboard() {
                         <strong>Fault Note:</strong>{" "}
                         {req.issue || "Standard Inspection"}
                       </p>
+                      <FaultMediaView request={req} compact />
                     </div>
 
                     {/* Executive Verification & Toolkit Assignment */}

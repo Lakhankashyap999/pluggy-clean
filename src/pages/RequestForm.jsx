@@ -6,6 +6,7 @@ import { ChevronLeft, Shield, Info, AlarmClock, Home, MapPin, KeyRound } from "l
 import { DotLottieReact } from "@lottiefiles/dotlottie-react"
 import successAnim from "../assets/success.lottie"
 import PaymentPopup from "../components/PaymentPopup"
+import FaultMediaUpload from "../components/FaultMediaUpload"
 import { useApp } from "../AppContext"
 
 export default function RequestForm() {
@@ -271,6 +272,8 @@ export default function RequestForm() {
                 required
               />
             </div>
+
+            <FaultMediaUpload />
 
             <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
               <button

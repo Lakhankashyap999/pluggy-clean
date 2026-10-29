@@ -5,6 +5,7 @@ import BackButton from "../components/BackButton"
 import { Trash2, MapPin, ShoppingBag, Package } from "lucide-react"
 import { useNavigate, Link } from "react-router-dom"
 import PaymentPopup from "../components/PaymentPopup"
+import FaultMediaUpload from "../components/FaultMediaUpload"
 import toast from "react-hot-toast"
 
 export default function CartPage() {
@@ -177,6 +178,10 @@ export default function CartPage() {
                   </div>
                 </div>
               )}
+            </div>
+
+            <div className="mt-6">
+              <FaultMediaUpload />
             </div>
 
             {/* Actions */}

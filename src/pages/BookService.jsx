@@ -19,6 +19,7 @@ import {
   TicketPercent,
 } from "lucide-react"
 import PaymentPopup from "../components/PaymentPopup"
+import FaultMediaUpload from "../components/FaultMediaUpload"
 
 export default function BookService() {
   const navigate = useNavigate()
@@ -505,6 +506,8 @@ export default function BookService() {
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1A2A49] bg-gray-50 resize-none"
               />
             </div>
+
+            <FaultMediaUpload />
           </div>
         </motion.div>
 

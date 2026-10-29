@@ -1,6 +1,7 @@
 // src/pages/EngineerDashboard.jsx
 import { useState, useMemo } from "react";
 import { useApp } from "../AppContext";
+import FaultMediaView from "../components/FaultMediaView";
 import { useNavigate, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -353,6 +354,9 @@ export default function EngineerDashboard() {
                                 <strong>Customer Issue:</strong>{" "}
                                 {job.issue || "Standard Inspection"}
                               </p>
+                              <div className="mt-2">
+                                <FaultMediaView request={job} />
+                              </div>
                             </div>
 
                             <div className="bg-white p-4 rounded-2xl border border-gray-200 flex flex-col justify-between">

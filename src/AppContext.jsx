@@ -2,6 +2,7 @@
 import { createContext, useContext, useState, useEffect, useMemo } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import toast from "react-hot-toast"
+import { getFaultDraft, clearFaultDraft } from "./lib/faultDraft"
 import {
   loadSqlDatabase,
   saveSqlDatabase,
@@ -637,6 +638,7 @@ export function AppProvider({ children }) {
       requireCustomerLogin("Booking aur payment ke liye pehle login karein")
       return null
     }
+    const faultDraft = getFaultDraft()
     const id = request.id || Date.now()
     const transactionId = request.transactionId || `PLG${id.toString().slice(-8)}`
     const startOtp = request.startOtp || generate4DigitPin()
@@ -682,6 +684,8 @@ export function AppProvider({ children }) {
         : request.requiredKit || "Digital Multimeter, Standard Safety Kit & Genuine Spares",
       addedSpareParts: request.addedSpareParts || [],
       standbyLoaner: request.standbyLoaner || null,
+      faultPhotos: request.faultPhotos || faultDraft.photos || [],
+      faultDevice: request.faultDevice || faultDraft.device || "",
       createdAt: request.createdAt || new Date().toISOString(),
       date:
         request.date ||
@@ -692,6 +696,7 @@ export function AppProvider({ children }) {
         }),
     }
 
+    clearFaultDraft()
     const nextRequests = [normalized, ...requests.filter((r) => r.id !== normalized.id)]
     setRequests(nextRequests)
     setBookings(nextRequests)

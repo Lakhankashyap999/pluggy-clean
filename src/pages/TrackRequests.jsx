@@ -34,6 +34,7 @@ import {
   ArrowRight,
 } from "lucide-react"
 import BackButton from "../components/BackButton"
+import FaultMediaView from "../components/FaultMediaView"
 import PaymentPopup from "../components/PaymentPopup"
 import toast from "react-hot-toast"
 
@@ -202,17 +203,17 @@ export default function TrackRequests() {
   )
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] pt-[92px] md:pt-[112px] pb-20">
+    <div className="min-h-screen bg-[#F4F6F9] pt-[92px] md:pt-[112px] pb-28 md:pb-20">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4">
         {/* Top Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
           <div className="flex items-center gap-2">
             <BackButton />
             <div>
-              <h1 className="text-xl sm:text-2xl font-extrabold text-[#1A2A49]">
+              <h1 className="text-base sm:text-2xl font-extrabold text-[#1A2A49] leading-tight">
                 My Bookings, Receipts & 30-Day Warranty
               </h1>
-              <p className="text-xs text-gray-500">
+              <p className="text-[11px] sm:text-xs text-gray-500 leading-snug">
                 Dual-PIN Verification • Live Spare Part Quotes • 30-Day QR Appliance Health Cards
               </p>
             </div>
@@ -233,36 +234,36 @@ export default function TrackRequests() {
         </div>
 
         {/* Main Section Switcher Tabs (Bookings vs Payment Gateway Records vs Order History) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-5 bg-white p-1.5 rounded-2xl border border-gray-200/80 shadow-sm">
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mb-5 bg-white p-1.5 rounded-2xl border border-gray-200/80 shadow-sm">
           <button
             onClick={() => setActiveMainTab("bookings")}
-            className={`py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition ${
+            className={`py-2 px-1.5 sm:py-2.5 sm:px-4 rounded-xl text-[11px] sm:text-sm font-extrabold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-center leading-tight transition ${
               activeMainTab === "bookings"
                 ? "bg-[#1A2A49] text-white shadow-sm"
                 : "text-gray-600 hover:bg-gray-50"
             }`}
           >
-            <PackageSearch size={16} /> My Bookings ({requests?.length || 0})
+            <PackageSearch size={16} /> Bookings ({requests?.length || 0})
           </button>
           <button
             onClick={() => setActiveMainTab("payments")}
-            className={`py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition ${
+            className={`py-2 px-1.5 sm:py-2.5 sm:px-4 rounded-xl text-[11px] sm:text-sm font-extrabold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-center leading-tight transition ${
               activeMainTab === "payments"
                 ? "bg-[#F37021] text-white shadow-sm"
                 : "text-gray-600 hover:bg-gray-50"
             }`}
           >
-            <CreditCard size={16} /> My Payment Receipts ({myPaymentTransactions.length})
+            <CreditCard size={16} /> Receipts ({myPaymentTransactions.length})
           </button>
           <button
             onClick={() => setActiveMainTab("history")}
-            className={`py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition ${
+            className={`py-2 px-1.5 sm:py-2.5 sm:px-4 rounded-xl text-[11px] sm:text-sm font-extrabold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-center leading-tight transition ${
               activeMainTab === "history"
                 ? "bg-[#1A2A49] text-white shadow-sm"
                 : "text-gray-600 hover:bg-gray-50"
             }`}
           >
-            <History size={16} /> My Order Timeline ({myOrderHistoryLogs.length})
+            <History size={16} /> Timeline ({myOrderHistoryLogs.length})
           </button>
         </div>
 
@@ -390,7 +391,7 @@ export default function TrackRequests() {
         )}
 
         {/* Summary KPI Strip */}
-        <div className="grid grid-cols-3 gap-3 mb-5">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-5">
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200/80">
             <p className="text-2xl font-extrabold text-[#1A2A49]">{requests?.length || 0}</p>
             <p className="text-xs text-gray-500 font-medium">Total Bookings</p>
@@ -673,6 +674,9 @@ export default function TrackRequests() {
                             <p className="text-xs text-[#1A2A49] font-semibold mb-2">
                               {request.issue || "Standard Service Inspection & Repair"}
                             </p>
+                            <div className="mb-2">
+                              <FaultMediaView request={request} />
+                            </div>
                             <div className="flex flex-wrap gap-1.5">
                               {request.preferences?.pet && (
                                 <span className="text-[11px] px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 font-semibold">

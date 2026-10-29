@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useNavigate } from "react-router-dom"
 import { useApp } from "../AppContext"
 import PaymentPopup from "./PaymentPopup"
+import FaultMediaUpload from "./FaultMediaUpload"
 import toast from "react-hot-toast"
 
 export default function Cart({ open, onClose }) {
@@ -274,6 +275,8 @@ export default function Cart({ open, onClose }) {
                       </div>
                     )}
                   </div>
+
+                  <FaultMediaUpload />
 
                   {/* Price Breakdown */}
                   <div className="bg-gray-50 rounded-xl p-3 sm:p-4 space-y-2">
