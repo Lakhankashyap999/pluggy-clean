@@ -879,35 +879,43 @@ export default function Dashboard() {
           {/* ===================================================================
               8. WHY CHOOSE US, REVIEWS, EXTRA SECTIONS & MARQUEE
              =================================================================== */}
-          <section className="px-0 sm:px-6 lg:px-12 py-12 sm:py-16 bg-gradient-to-br from-[#1A2A49] to-[#0F172A] text-center">
-            <div className="max-w-6xl mx-auto">
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}>
-                <span className="text-[#F37021] text-sm font-medium uppercase tracking-wider">
-                  Our Advantage
+          <section className="px-4 sm:px-6 lg:px-12 py-12 sm:py-16 bg-[#1A2A49]">
+            <div className="max-w-7xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="text-center mb-8 sm:mb-10"
+              >
+                <span className="inline-flex items-center gap-1.5 text-[#F37021] text-xs font-extrabold uppercase tracking-wider bg-white/10 px-3.5 py-1 rounded-full">
+                  🛡️ The Pluggy Trust Architecture
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-bold text-white mt-2 mb-3 font-poppins">
-                  Why Choose Pluggy?
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mt-2.5 mb-2 font-poppins">
+                  Why 12,400+ Families Choose Pluggy Over Local Mechanics
                 </h2>
-                <p className="text-gray-300 text-sm sm:text-base max-w-2xl mx-auto mb-8">
-                  Experience hassle-free home services with our background-verified professionals
+                <p className="text-gray-300 text-xs sm:text-sm max-w-2xl mx-auto">
+                  Background-verified engineers, fixed in-app spare parts rate card, ₹99/day standby backup appliances, and Dual-PIN security.
                 </p>
               </motion.div>
               <WhyChooseUs />
             </div>
           </section>
 
-          <section className="px-4 sm:px-6 lg:px-12 py-10 sm:py-12 bg-gradient-to-b from-white to-[#F4F6F9]">
-            <div className="text-center mb-6 sm:mb-8">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <span className="text-2xl sm:text-3xl font-bold text-[#1A2A49]">4.8</span>
-                <span className="text-yellow-500 text-xl sm:text-2xl">★★★★★</span>
+          <section className="px-4 sm:px-6 lg:px-12 py-12 sm:py-16 bg-gradient-to-b from-white to-[#F4F6F9] border-b border-gray-200">
+            <div className="max-w-7xl mx-auto">
+              <div className="text-center mb-8 sm:mb-10">
+                <span className="inline-flex items-center gap-1.5 text-[#F37021] text-xs font-extrabold uppercase tracking-wider bg-[#FFF3EC] border border-orange-200 px-3.5 py-1 rounded-full">
+                  ⭐ 100% Happy-PIN Verified Feedback
+                </span>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#1A2A49] mt-2 font-poppins">
+                  What Real Homeowners Say About Pluggy
+                </h2>
+                <p className="text-gray-600 text-xs sm:text-sm mt-1 max-w-2xl mx-auto">
+                  Every review below comes from a real doorstep job completed with Dual-OTP verification across Delhi NCR & Mumbai.
+                </p>
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-[#1A2A49]">What Our Customers Say</h2>
-              <p className="text-gray-500 text-xs sm:text-sm mt-1">
-                12,400+ happy families across Delhi NCR & Mumbai
-              </p>
+              <CustomerReviews />
             </div>
-            <CustomerReviews />
           </section>
 
           <ExtraSections />
