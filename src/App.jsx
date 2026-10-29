@@ -104,7 +104,7 @@ export default function App() {
         </Routes>
       </main>
 
-      {!hideNavbar && location.pathname === "/" && <BottomNavbar />}
+      {!hideFooter && <BottomNavbar />}
       {!hideFooter && <Footer />}
 
       <Toaster
