@@ -1,0 +1,12 @@
+# ============================================================================
+# PLUGGY — CODE OWNERSHIP & FOUNDER PERMISSION LOCK
+# ============================================================================
+# Every file in this repository requires explicit review and approval from the
+# Founder / Repository Owner (@Lakhankashyap999) before merging into `main`.
+
+*                   @Lakhankashyap999
+/src/lib/           @Lakhankashyap999
+/src/context/       @Lakhankashyap999
+/src/pages/         @Lakhankashyap999
+/src/components/    @Lakhankashyap999
+/database/          @Lakhankashyap999
