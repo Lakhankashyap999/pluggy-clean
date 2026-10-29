@@ -48,13 +48,19 @@ export default function RequestForm() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  const saveRequest = async (transactionId) => {
+  const saveRequest = async (transactionId, paymentMeta = {}) => {
     const createdAt = new Date().toISOString()
     if (form.address) setGlobalAddress(form.address)
 
     const newReq = {
       id: Date.now(),
-      transactionId: transactionId || `PLG${String(Date.now()).slice(-8)}`,
+      transactionId: transactionId || paymentMeta?.transactionId || `PLG${String(Date.now()).slice(-8)}`,
+      paymentMethod: paymentMeta?.paymentMethod || "UPI",
+      paymentChannel: paymentMeta?.paymentChannel || "Pluggy Instant UPI",
+      paymentStatus:
+        paymentMeta?.paymentMethod === "PAY_AFTER_SERVICE"
+          ? "PAY_ON_COMPLETION"
+          : "ESCROW_HELD",
       service: cleanService.replace(/\b\w/g, (c) => c.toUpperCase()),
       userName: form.name || "Customer",
       userEmail: form.email,
@@ -285,7 +291,7 @@ export default function RequestForm() {
         open={paymentOpen}
         onClose={() => setPaymentOpen(false)}
         amount={resolvedAmount}
-        onSuccess={(txId) => saveRequest(txId)}
+        onSuccess={(txId, paymentMeta) => saveRequest(txId, paymentMeta)}
       />
     </div>
   )

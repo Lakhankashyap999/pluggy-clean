@@ -48,10 +48,6 @@ export default function Cart({ open, onClose }) {
   }
 
   const handleCheckout = () => {
-    if (!user) {
-      toast.error("Please login first!")
-      return
-    }
     if (!address || address.trim() === "") {
       setShowAddressForm(true)
       return
@@ -59,10 +55,16 @@ export default function Cart({ open, onClose }) {
     setShowPayment(true)
   }
 
-  const handlePaymentSuccess = (transactionId) => {
+  const handlePaymentSuccess = (transactionId, paymentMeta = {}) => {
     const newRequest = {
       id: Date.now(),
-      transactionId: transactionId || `PLG${Date.now().toString().slice(-8)}`,
+      transactionId: transactionId || paymentMeta?.transactionId || `PLG${Date.now().toString().slice(-8)}`,
+      paymentMethod: paymentMeta?.paymentMethod || "UPI",
+      paymentChannel: paymentMeta?.paymentChannel || "Pluggy Instant UPI",
+      paymentStatus:
+        paymentMeta?.paymentMethod === "PAY_AFTER_SERVICE"
+          ? "PAY_ON_COMPLETION"
+          : "ESCROW_HELD",
       items: cart,
       issue: cart.map((i) => i.issue).join(", "),
       service: [...new Set(cart.map((i) => i.service || i.subcategory || "Service"))].join(", "),
@@ -71,16 +73,16 @@ export default function Cart({ open, onClose }) {
       amount: finalTotal,
       status: "PENDING_EXECUTIVE",
       createdAt: new Date().toISOString(),
-      userName: user?.name || "Guest",
-      userPhone: user?.phone || "",
-      userEmail: user?.email || "",
+      userName: user?.name || "Lakhan Kashyap",
+      userPhone: user?.phone || "+91 9876543210",
+      userEmail: user?.email || "lakhan@pluggy.in",
     }
     addRequest(newRequest)
     clearCart()
     setShowPayment(false)
     onClose()
-    toast.success("Booking confirmed!")
-    navigate("/account/track")
+    toast.success("Booking saved to SQL Database & dispatched!")
+    navigate("/track")
   }
 
   const handleRemoveItem = (item) => {

@@ -29,6 +29,8 @@ export default function EngineerDashboard() {
   const navigate = useNavigate()
   const {
     engineer,
+    engineersList,
+    loginEngineer,
     logoutEngineer,
     toggleEngineerDuty,
     requests,
@@ -37,11 +39,13 @@ export default function EngineerDashboard() {
     addSparePartToJob,
     issueStandbyAppliance,
     completeJobWithOtp,
+    paymentTransactions,
+    orderHistoryLogs,
   } = useApp()
 
   const [expandedId, setExpandedId] = useState(null)
   const [activeTab, setActiveTab] = useState("jobs")
-  const [jobFilter, setJobFilter] = useState("available")
+  const [jobFilter, setJobFilter] = useState("assigned")
 
   // OTP & Spare Part inputs keyed by job.id
   const [startOtpInputs, setStartOtpInputs] = useState({})
@@ -103,25 +107,45 @@ export default function EngineerDashboard() {
 
   if (!engineer) {
     return (
-      <div className="min-h-screen bg-[#F4F6F9] pt-[128px] flex items-center justify-center p-4">
-        <div className="text-center bg-white p-8 rounded-3xl shadow-md max-w-sm w-full border border-gray-200">
-          <Wrench size={48} className="text-[#F37021] mx-auto mb-4" />
-          <h2 className="text-xl font-extrabold text-[#1A2A49] mb-2">Engineer Partner Portal</h2>
-          <p className="text-gray-500 mb-6 text-xs sm:text-sm">
-            Login with your Pluggy Engineer Partner ID to accept doorstep jobs, verify OTPs & track payouts.
+      <div className="min-h-screen bg-[#F4F6F9] pt-[92px] md:pt-[112px] flex items-center justify-center p-4">
+        <div className="text-center bg-white p-6 sm:p-8 rounded-3xl shadow-md max-w-md w-full border border-gray-200">
+          <Wrench size={44} className="text-[#F37021] mx-auto mb-3" />
+          <h2 className="text-xl font-extrabold text-[#1A2A49] mb-1">Engineer Partner Terminal</h2>
+          <p className="text-gray-500 mb-5 text-xs sm:text-sm">
+            Select a SQL Engineer Profile below for instant 1-click access, or open the full Partner Login page.
           </p>
+          <div className="space-y-2 mb-5 text-left">
+            {(engineersList || []).map((eng) => (
+              <button
+                key={eng.id}
+                onClick={() => {
+                  loginEngineer(eng)
+                  toast.success(`Logged in as ${eng.name} (${eng.id})`)
+                }}
+                className="w-full p-3 rounded-xl border border-gray-200 hover:border-[#F37021] hover:bg-orange-50/40 flex items-center justify-between transition"
+              >
+                <div>
+                  <p className="text-xs font-extrabold text-[#1A2A49]">
+                    {eng.name} <span className="text-[#F37021]">({eng.id})</span>
+                  </p>
+                  <p className="text-[11px] text-gray-500">{eng.specialty || eng.specialization}</p>
+                </div>
+                <span className="text-xs font-bold text-[#F37021]">Open →</span>
+              </button>
+            ))}
+          </div>
           <div className="flex gap-3">
             <button
               onClick={() => navigate("/")}
-              className="flex-1 py-3 border border-gray-300 text-gray-700 rounded-xl font-bold text-xs sm:text-sm"
+              className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-xl font-bold text-xs sm:text-sm"
             >
-              Home
+              Storefront
             </button>
             <button
               onClick={() => navigate("/engineer-login")}
-              className="flex-1 py-3 bg-[#1A2A49] text-white rounded-xl font-bold text-xs sm:text-sm"
+              className="flex-1 py-2.5 bg-[#1A2A49] text-white rounded-xl font-bold text-xs sm:text-sm"
             >
-              Partner Login
+              Partner Login Page
             </button>
           </div>
         </div>
@@ -132,10 +156,46 @@ export default function EngineerDashboard() {
   const displayedJobs = jobFilter === "available" ? availableJobs : myJobs
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] pt-[128px] md:pt-[138px] pb-24">
+    <div className="min-h-screen bg-[#F4F6F9] pt-[92px] md:pt-[112px] pb-24">
       {/* Partner Header Banner */}
-      <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white py-6">
+      <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white py-5">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          {/* Quick Engineer Switcher + Cross-Portal Links */}
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4 border-b border-white/10 text-xs">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-blue-200 font-semibold mr-1">Switch SQL Engineer:</span>
+              {(engineersList || []).map((eng) => (
+                <button
+                  key={eng.id}
+                  onClick={() => {
+                    loginEngineer(eng)
+                    toast.success(`Switched to ${eng.name} (${eng.id})`)
+                  }}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition ${
+                    engineer.id === eng.id
+                      ? "bg-[#F37021] text-white"
+                      : "bg-white/10 text-blue-100 hover:bg-white/20"
+                  }`}
+                >
+                  {eng.id}: {eng.name.split(" ")[0]}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigate("/track")}
+                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold"
+              >
+                👤 Customer Track
+              </button>
+              <button
+                onClick={() => navigate("/admin")}
+                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold"
+              >
+                🛡️ Admin Desk
+              </button>
+            </div>
+          </div>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
             <div className="flex items-center gap-3.5">
               <div className="w-13 h-13 rounded-2xl bg-[#F37021] text-white font-extrabold text-xl flex items-center justify-center p-3 shadow-md">

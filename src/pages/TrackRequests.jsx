@@ -28,8 +28,13 @@ import {
   RefreshCw,
   QrCode,
   AlertTriangle,
+  Database,
+  CreditCard,
+  History,
+  ArrowRight,
 } from "lucide-react"
 import BackButton from "../components/BackButton"
+import PaymentPopup from "../components/PaymentPopup"
 import toast from "react-hot-toast"
 
 export default function TrackRequests() {
@@ -41,7 +46,12 @@ export default function TrackRequests() {
     rateRequest,
     respondToSparePartQuote,
     claimWarrantyRevisit,
+    paymentTransactions,
+    orderHistoryLogs,
   } = useApp()
+
+  const [activeMainTab, setActiveMainTab] = useState("bookings") // "bookings" | "payments" | "history"
+  const [sparePaymentPart, setSparePaymentPart] = useState(null) // { requestId, part }
 
   const [filterStatus, setFilterStatus] = useState("All")
   const [searchQuery, setSearchQuery] = useState("")
@@ -196,25 +206,198 @@ export default function TrackRequests() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() =>
-                window.dispatchEvent(
-                  new CustomEvent("pluggy:open-rate-card", { detail: { category: "ac-repair" } })
-                )
-              }
-              className="px-3.5 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-[#1A2A49] hover:border-[#F37021] flex items-center gap-1.5 shadow-sm"
-            >
-              <ShieldCheck size={14} className="text-emerald-600" /> Official Rate Card
-            </button>
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => navigate("/admin")}
-              className="px-3.5 py-2 rounded-xl bg-[#1A2A49] text-white text-xs font-bold hover:bg-[#223a61] shadow-sm"
+              className="px-3.5 py-2 rounded-xl bg-[#1A2A49] text-white text-xs font-bold hover:bg-[#223a61] shadow-sm flex items-center gap-1.5"
             >
-              Control Desk
+              🛡️ Step 2: Admin Desk <ArrowRight size={13} />
+            </button>
+            <button
+              onClick={() => navigate("/engineer")}
+              className="px-3.5 py-2 rounded-xl bg-[#F37021] text-white text-xs font-bold hover:bg-[#e05e15] shadow-sm flex items-center gap-1.5"
+            >
+              👨‍🔧 Step 3: Engineer Portal <ArrowRight size={13} />
             </button>
           </div>
         </div>
+
+        {/* Interactive A-to-Z Real-Time SQL Workflow Guide Banner */}
+        <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white rounded-2xl p-4 mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[#F37021] text-white flex items-center justify-center shrink-0">
+              <Database size={18} />
+            </div>
+            <div>
+              <p className="text-xs sm:text-sm font-extrabold">
+                Live SQL Database Connected (Customer ↔ Admin ↔ Engineer)
+              </p>
+              <p className="text-[11px] text-blue-200 mt-0.5">
+                1. Raise Request → 2. Verify & Assign in <strong>Admin Desk</strong> → 3. Enter Start PIN & Happy PIN in <strong>Engineer Portal</strong>
+              </p>
+            </div>
+          </div>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[11px] font-bold shrink-0 w-fit">
+            ● {paymentTransactions?.length || 0} Payments • {orderHistoryLogs?.length || 0} SQL Logs
+          </span>
+        </div>
+
+        {/* Main Section Switcher Tabs (Bookings vs Payment Gateway Records vs Order History) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-5 bg-white p-1.5 rounded-2xl border border-gray-200/80 shadow-sm">
+          <button
+            onClick={() => setActiveMainTab("bookings")}
+            className={`py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition ${
+              activeMainTab === "bookings"
+                ? "bg-[#1A2A49] text-white shadow-sm"
+                : "text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            <PackageSearch size={16} /> Live Bookings ({requests?.length || 0})
+          </button>
+          <button
+            onClick={() => setActiveMainTab("payments")}
+            className={`py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition ${
+              activeMainTab === "payments"
+                ? "bg-[#F37021] text-white shadow-sm"
+                : "text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            <CreditCard size={16} /> Payment Gateway Records ({paymentTransactions?.length || 0})
+          </button>
+          <button
+            onClick={() => setActiveMainTab("history")}
+            className={`py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition ${
+              activeMainTab === "history"
+                ? "bg-[#1A2A49] text-white shadow-sm"
+                : "text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            <History size={16} /> Order History & SQL Logs ({orderHistoryLogs?.length || 0})
+          </button>
+        </div>
+
+        {activeMainTab === "payments" && (
+          <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-gray-200/80 mb-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
+              <div>
+                <h2 className="text-base sm:text-lg font-extrabold text-[#1A2A49]">
+                  Official Payment Gateway Ledger (SQL Table: payment_transactions)
+                </h2>
+                <p className="text-xs text-gray-500">
+                  Every service booking and approved spare part generates an immutable payment record.
+                </p>
+              </div>
+              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 w-fit">
+                100% Escrow Protected
+              </span>
+            </div>
+
+            {(paymentTransactions || []).length === 0 ? (
+              <p className="text-sm text-gray-500 py-8 text-center">No payment transactions recorded yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {(paymentTransactions || []).map((tx) => (
+                  <div
+                    key={tx.transactionId}
+                    className="p-4 rounded-2xl bg-[#F4F6F9] border border-gray-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-mono text-xs font-extrabold px-2.5 py-0.5 rounded bg-white text-[#1A2A49] border border-gray-200">
+                          {tx.transactionId}
+                        </span>
+                        <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-[#1A2A49]">
+                          {tx.paymentMethod} • {tx.paymentChannel}
+                        </span>
+                        <span
+                          className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full ${
+                            tx.status === "SETTLED" || tx.status === "SUCCESS"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-amber-100 text-amber-800"
+                          }`}
+                        >
+                          {tx.status}
+                        </span>
+                      </div>
+                      <p className="text-xs font-bold text-[#1A2A49] mt-1">
+                        {tx.notes || "Doorstep Service Booking Payment"}
+                      </p>
+                      <p className="text-[11px] text-gray-500">
+                        Customer: {tx.customerName} ({tx.customerPhone}) • Order ID: #{tx.requestId} •{" "}
+                        {tx.createdAt ? new Date(tx.createdAt).toLocaleString() : "Just now"}
+                      </p>
+                    </div>
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0">
+                      <span className="text-lg font-extrabold text-[#1A2A49]">₹{tx.amount}</span>
+                      <button
+                        onClick={() => copyBookingId(tx.transactionId)}
+                        className="text-[11px] font-bold text-[#F37021] hover:underline flex items-center gap-1"
+                      >
+                        <Copy size={12} /> Copy Receipt ID
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeMainTab === "history" && (
+          <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-gray-200/80 mb-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
+              <div>
+                <h2 className="text-base sm:text-lg font-extrabold text-[#1A2A49]">
+                  Chronological Order History & Audit Trail (SQL Table: order_history_logs)
+                </h2>
+                <p className="text-xs text-gray-500">
+                  Real-time log of every action across Customer, Admin Desk, and Field Engineer portals.
+                </p>
+              </div>
+            </div>
+
+            {(orderHistoryLogs || []).length === 0 ? (
+              <p className="text-sm text-gray-500 py-8 text-center">No order history logs yet.</p>
+            ) : (
+              <div className="space-y-2.5">
+                {(orderHistoryLogs || []).map((log) => (
+                  <div
+                    key={log.id}
+                    className="p-3.5 rounded-2xl bg-[#F4F6F9] border border-gray-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${
+                            log.actorRole === "ADMIN"
+                              ? "bg-purple-100 text-purple-800"
+                              : log.actorRole === "ENGINEER"
+                              ? "bg-orange-100 text-[#F37021]"
+                              : "bg-blue-100 text-[#1A2A49]"
+                          }`}
+                        >
+                          {log.actorRole}: {log.actorName}
+                        </span>
+                        <span className="font-mono text-xs font-bold text-gray-600">
+                          Order #{log.requestId}
+                        </span>
+                        <span className="text-xs font-extrabold text-[#1A2A49]">
+                          {log.actionTitle}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600">{log.details}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="text-[11px] font-mono text-gray-500">
+                        {log.createdAt ? new Date(log.createdAt).toLocaleString() : ""}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Summary KPI Strip */}
         <div className="grid grid-cols-3 gap-3 mb-5">
@@ -574,11 +757,11 @@ export default function TrackRequests() {
                                     <div className="flex items-center gap-2 shrink-0">
                                       <button
                                         onClick={() =>
-                                          respondToSparePartQuote(request.id, part.uid, true)
+                                          setSparePaymentPart({ requestId: request.id, part })
                                         }
                                         className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold"
                                       >
-                                        ✓ Approve (₹{part.price})
+                                        ✓ Approve & Pay ₹{part.price}
                                       </button>
                                       <button
                                         onClick={() =>
@@ -930,6 +1113,23 @@ export default function TrackRequests() {
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Spare Part Payment Gateway Modal */}
+      <PaymentPopup
+        open={Boolean(sparePaymentPart)}
+        onClose={() => setSparePaymentPart(null)}
+        amount={sparePaymentPart?.part?.price || 0}
+        title={`Pay for Spare: ${sparePaymentPart?.part?.part || "Spare Part"}`}
+        onSuccess={() => {
+          if (sparePaymentPart) {
+            respondToSparePartQuote(
+              sparePaymentPart.requestId,
+              sparePaymentPart.part.uid,
+              true
+            )
+          }
+          setSparePaymentPart(null)
+        }}
+      />
     </div>
   )
 }

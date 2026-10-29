@@ -20,6 +20,7 @@ import ServiceDetail from "./pages/ServiceDetail";
 import EngineerLogin from "./pages/EngineerLogin";
 import EngineerDashboard from "./pages/EngineerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminLogin from "./pages/AdminLogin";
 
 // Account & Tracking pages
 import TrackRequests from "./pages/TrackRequests";
@@ -59,8 +60,8 @@ export default function App() {
   if (loading) return <Preloader />;
   if (!city) return <LocationGate onSelect={(c) => setCity(c)} />;
 
-  const hideNavbarRoutes = ["/login", "/signup", "/engineer-login", "/account"];
-  const hideFooterRoutes = ["/login", "/signup", "/engineer-login", "/engineer", "/account"];
+  const hideNavbarRoutes = ["/login", "/signup", "/engineer-login", "/admin-login", "/account"];
+  const hideFooterRoutes = ["/login", "/signup", "/engineer-login", "/admin-login", "/engineer", "/account"];
 
   const hideNavbar = hideNavbarRoutes.includes(location.pathname);
   const hideFooter = hideFooterRoutes.some((path) => location.pathname.startsWith(path));
@@ -96,6 +97,7 @@ export default function App() {
           <Route path="/engineer-login" element={<EngineerLogin />} />
           <Route path="/engineer" element={<EngineerDashboard />} />
           <Route path="/engineer-dashboard" element={<EngineerDashboard />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

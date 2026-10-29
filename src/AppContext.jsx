@@ -1,6 +1,13 @@
 // src/AppContext.jsx
 import { createContext, useContext, useState, useEffect } from "react"
 import toast from "react-hot-toast"
+import {
+  loadSqlDatabase,
+  saveSqlDatabase,
+  subscribeToSqlChanges,
+  executeSqlQuery,
+  resetSqlDatabaseToSeed,
+} from "./lib/sqlDatabase"
 
 const AppContext = createContext()
 
@@ -11,52 +18,10 @@ const DEFAULT_COUPONS = {
   SAVE100: { code: "SAVE100", type: "flat", value: 100, label: "₹100 OFF" },
 }
 
-const DEFAULT_ENGINEERS = [
-  {
-    id: "ENG001",
-    name: "Rajesh Sharma",
-    phone: "9876543210",
-    specialization: "AC & Cooling, Refrigerator",
-    rating: 4.9,
-    completedCount: 342,
-    isOnline: true,
-    lat: 28.7306,
-    lng: 77.7759,
-    area: "Sector 18 / Main Market",
-    walletBalance: 4250,
-    toolKit: ["Digital Clamp Meter", "Foam-Jet Pump", "Vacuum Pump", "35mfd & 2.5mfd Capacitors"],
-  },
-  {
-    id: "ENG002",
-    name: "Amit Verma",
-    phone: "9876543211",
-    specialization: "Electrical, Wiring & MCB SOS",
-    rating: 4.8,
-    completedCount: 518,
-    isOnline: true,
-    lat: 28.7345,
-    lng: 77.7812,
-    area: "Civil Lines / Model Town",
-    walletBalance: 6120,
-    toolKit: ["Insulation Megger", "Havells MCB Kit", "FRLS Wire Roll", "Heavy Drill Machine"],
-  },
-  {
-    id: "ENG003",
-    name: "Suresh Kumar",
-    phone: "9876543212",
-    specialization: "Fan, Geyser, Motor & Appliances",
-    rating: 4.9,
-    completedCount: 289,
-    isOnline: true,
-    lat: 28.7261,
-    lng: 77.7704,
-    area: "Railway Road / Indra Nagar",
-    walletBalance: 3190,
-    toolKit: ["SKF Bearing Puller", "2000W Geyser Element", "RO TDS Meter", "Standby Ceiling Fan"],
-  },
-]
-
 export function AppProvider({ children }) {
+  // Load initial SQL relational database
+  const initialSql = loadSqlDatabase()
+
   // User State
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem("pluggy_activeUser") || localStorage.getItem("pluggy_user")
@@ -69,11 +34,28 @@ export function AppProvider({ children }) {
     return saved ? JSON.parse(saved) : null
   })
 
-  // Registered Engineers Pool (for Admin Desk & Geo-Radar)
-  const [engineersList, setEngineersList] = useState(() => {
-    const saved = localStorage.getItem("pluggy_engineers_pool")
-    return saved ? JSON.parse(saved) : DEFAULT_ENGINEERS
+  // Admin / Executive State
+  const [admin, setAdmin] = useState(() => {
+    const saved = localStorage.getItem("pluggy_admin")
+    return saved ? JSON.parse(saved) : initialSql.admins[0]
   })
+
+  // SQL Tables State (Synced Across All Portals & Tabs)
+  const [usersList, setUsersList] = useState(() => initialSql.users)
+  const [engineersList, setEngineersList] = useState(() => initialSql.engineers)
+  const [requests, setRequests] = useState(() => {
+    const savedReqs = localStorage.getItem("pluggy_requests")
+    if (savedReqs) {
+      const parsed = JSON.parse(savedReqs)
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+    }
+    return initialSql.service_requests
+  })
+  const [bookings, setBookings] = useState(() => requests)
+  const [paymentTransactions, setPaymentTransactions] = useState(
+    () => initialSql.payment_transactions
+  )
+  const [orderHistoryLogs, setOrderHistoryLogs] = useState(() => initialSql.order_history_logs)
 
   // Cart State
   const [cart, setCart] = useState(() => {
@@ -84,7 +66,9 @@ export function AppProvider({ children }) {
   // Recently Viewed Services State
   const [recent, setRecent] = useState(() => {
     const saved = localStorage.getItem("pluggy_recent")
-    return saved ? JSON.parse(saved) : ["Foam-Jet Power AC Service", "Single / Double Pole MCB Replacement"]
+    return saved
+      ? JSON.parse(saved)
+      : ["Foam-Jet Power AC Service", "Single / Double Pole MCB Replacement"]
   })
 
   // Applied Coupon State
@@ -110,7 +94,7 @@ export function AppProvider({ children }) {
         ]
   })
 
-  // Customer Preferences (Pet, Parking, Ladder, Preferred Time)
+  // Customer Preferences
   const [userPreferences, setUserPreferences] = useState(() => {
     const saved = localStorage.getItem("pluggy_preferences")
     return saved
@@ -123,29 +107,15 @@ export function AppProvider({ children }) {
         }
   })
 
-  // Requests State
-  const [requests, setRequests] = useState(() => {
-    const saved = localStorage.getItem("pluggy_requests")
-    return saved ? JSON.parse(saved) : []
-  })
-
-  // Bookings State
-  const [bookings, setBookings] = useState(() => {
-    const saved = localStorage.getItem("pluggy_bookings")
-    return saved ? JSON.parse(saved) : []
-  })
-
-  // City State
+  // City & Address
   const [city, setCity] = useState(() => {
     return localStorage.getItem("pluggy_city") || "Hapur / Delhi NCR"
   })
 
-  // Address State
   const [address, setAddress] = useState(() => {
     return localStorage.getItem("pluggy_address") || ""
   })
 
-  // Saved Addresses
   const [savedAddresses, setSavedAddresses] = useState(() => {
     const saved = localStorage.getItem("pluggy_saved_addresses")
     return saved ? JSON.parse(saved) : []
@@ -161,37 +131,43 @@ export function AppProvider({ children }) {
             id: 1,
             type: "service",
             title: "Welcome to Pluggy 2.0!",
-            message: "15-Min Emergency SOS, Official Spare Parts Rate Card & 30-Day Warranty are now live.",
+            message:
+              "15-Min Emergency SOS, Official Spare Parts Rate Card & 30-Day Warranty are now live.",
             time: "Just now",
-            read: false,
-            createdAt: new Date().toISOString(),
-          },
-          {
-            id: 2,
-            type: "offer",
-            title: "Use Code SUMMER25",
-            message: "Flat 25% OFF on Split & Window AC Foam-Jet Servicing.",
-            time: "1 hour ago",
             read: false,
             createdAt: new Date().toISOString(),
           },
         ]
   })
 
-  // Theme State
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem("pluggy_theme") || "light"
-  })
+  const [theme, setTheme] = useState("light")
 
-  // Apply Dark Mode class
-  useEffect(() => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark")
-    } else {
-      document.documentElement.classList.remove("dark")
+  // Persist SQL Relational Tables whenever core entities change
+  const syncTablesToSql = (nextOverrides = {}) => {
+    const currentDb = loadSqlDatabase()
+    const mergedDb = {
+      ...currentDb,
+      users: nextOverrides.users ?? usersList,
+      engineers: nextOverrides.engineers ?? engineersList,
+      service_requests: nextOverrides.service_requests ?? requests,
+      payment_transactions: nextOverrides.payment_transactions ?? paymentTransactions,
+      order_history_logs: nextOverrides.order_history_logs ?? orderHistoryLogs,
     }
-    localStorage.setItem("pluggy_theme", theme)
-  }, [theme])
+    saveSqlDatabase(mergedDb)
+  }
+
+  // Subscribe to real-time SQL updates from other browser tabs (Customer <-> Admin <-> Engineer)
+  useEffect(() => {
+    const unsubscribe = subscribeToSqlChanges((freshDb) => {
+      setUsersList(freshDb.users || [])
+      setEngineersList(freshDb.engineers || [])
+      setRequests(freshDb.service_requests || [])
+      setBookings(freshDb.service_requests || [])
+      setPaymentTransactions(freshDb.payment_transactions || [])
+      setOrderHistoryLogs(freshDb.order_history_logs || [])
+    })
+    return unsubscribe
+  }, [])
 
   // Sync LocalStorage
   useEffect(() => {
@@ -211,6 +187,14 @@ export function AppProvider({ children }) {
       localStorage.removeItem("pluggy_engineer")
     }
   }, [engineer])
+
+  useEffect(() => {
+    if (admin) {
+      localStorage.setItem("pluggy_admin", JSON.stringify(admin))
+    } else {
+      localStorage.removeItem("pluggy_admin")
+    }
+  }, [admin])
 
   useEffect(() => {
     localStorage.setItem("pluggy_engineers_pool", JSON.stringify(engineersList))
@@ -246,11 +230,8 @@ export function AppProvider({ children }) {
 
   useEffect(() => {
     localStorage.setItem("pluggy_requests", JSON.stringify(requests))
+    localStorage.setItem("pluggy_bookings", JSON.stringify(requests))
   }, [requests])
-
-  useEffect(() => {
-    localStorage.setItem("pluggy_bookings", JSON.stringify(bookings))
-  }, [bookings])
 
   useEffect(() => {
     localStorage.setItem("pluggy_city", city)
@@ -268,17 +249,105 @@ export function AppProvider({ children }) {
     localStorage.setItem("pluggy_notifications", JSON.stringify(notifications))
   }, [notifications])
 
-  // User Functions
-  const loginUser = (userData) => setUser(userData)
+  // Helper: Append Order History Audit Log into SQL
+  const appendOrderLog = (
+    bookingId,
+    transactionId,
+    actorRole,
+    actorName,
+    action,
+    details,
+    customLogsList = null
+  ) => {
+    const logId = `LOG-${Date.now()}-${Math.floor(Math.random() * 900 + 100)}`
+    const newLog = {
+      id: logId,
+      logId,
+      bookingId,
+      requestId: bookingId,
+      transactionId: transactionId || `PLG${String(bookingId).slice(-8)}`,
+      actorRole,
+      actorName,
+      action,
+      actionTitle: action,
+      details,
+      createdAt: new Date().toISOString(),
+    }
+    const nextLogs = [newLog, ...(customLogsList || orderHistoryLogs)]
+    setOrderHistoryLogs(nextLogs)
+    return nextLogs
+  }
+
+  // Helper: Record Payment Gateway Transaction into SQL
+  const recordPaymentTransaction = (paymentData) => {
+    const resolvedTxnId = paymentData.txnId || paymentData.transactionId || `PLG${Date.now().toString().slice(-8)}`
+    const resolvedBookingId = paymentData.bookingId || paymentData.requestId || Date.now()
+    const resolvedName = paymentData.userName || paymentData.customerName || user?.name || "Customer"
+    const resolvedPhone = paymentData.userPhone || paymentData.customerPhone || user?.phone || "+91 9876543210"
+    const resolvedService = paymentData.serviceName || paymentData.notes || "Home Service"
+    const newPayment = {
+      txnId: resolvedTxnId,
+      transactionId: resolvedTxnId,
+      bookingId: resolvedBookingId,
+      requestId: resolvedBookingId,
+      userName: resolvedName,
+      customerName: resolvedName,
+      userPhone: resolvedPhone,
+      customerPhone: resolvedPhone,
+      serviceName: resolvedService,
+      notes: resolvedService,
+      amount: Number(paymentData.amount || 0),
+      paymentMethod: paymentData.paymentMethod || "UPI",
+      paymentChannel: paymentData.paymentChannel || "Google Pay / UPI Escrow",
+      paymentType: paymentData.paymentType || "SERVICE_BOOKING",
+      status: paymentData.status || "SUCCESS",
+      escrowState: paymentData.escrowState || "HELD_IN_ESCROW",
+      createdAt: new Date().toISOString(),
+    }
+    const nextPayments = [newPayment, ...paymentTransactions]
+    setPaymentTransactions(nextPayments)
+    syncTablesToSql({ payment_transactions: nextPayments })
+    return newPayment
+  }
+
+  // User Auth Functions (Backed by SQL `users` table)
+  const loginUser = (userData) => {
+    const cleanPhone = (userData.phone || "").replace(/\D/g, "").slice(-10)
+    const existing = usersList.find(
+      (u) =>
+        (cleanPhone && (u.phone || "").replace(/\D/g, "").slice(-10) === cleanPhone) ||
+        (userData.email && u.email?.toLowerCase() === userData.email.toLowerCase())
+    )
+    if (existing) {
+      const merged = { ...existing, ...userData }
+      setUser(merged)
+      return merged
+    }
+    const createdUser = {
+      id: userData.id || `USR00${usersList.length + 1}`,
+      name: userData.name || "Customer",
+      phone: cleanPhone || userData.phone || "9876543210",
+      email: userData.email || `${cleanPhone || "user"}@pluggy.in`,
+      password: userData.password || "password123",
+      walletBalance: 250,
+      city: city || "Delhi NCR",
+      joinedAt: new Date().toISOString(),
+    }
+    const nextUsers = [createdUser, ...usersList]
+    setUsersList(nextUsers)
+    setUser(createdUser)
+    syncTablesToSql({ users: nextUsers })
+    return createdUser
+  }
 
   const updateUser = (updatedFields) => {
     setUser((prev) => {
       const next = { ...(prev || {}), ...updatedFields }
-      const users = JSON.parse(localStorage.getItem("pluggy_users") || "[]")
-      const updatedUsers = users.map((u) =>
+      const nextUsers = usersList.map((u) =>
         u.id === next.id || u.email === prev?.email ? { ...u, ...next } : u
       )
-      localStorage.setItem("pluggy_users", JSON.stringify(updatedUsers))
+      setUsersList(nextUsers)
+      syncTablesToSql({ users: nextUsers })
       return next
     })
   }
@@ -288,10 +357,23 @@ export function AppProvider({ children }) {
     setCart([])
   }
 
-  // Engineer Functions
+  // Engineer Auth Functions (Backed by SQL `engineers` table)
   const loginEngineer = (engineerData) => {
-    const found = engineersList.find((e) => e.id === engineerData.id)
-    setEngineer(found || { ...engineerData, isOnline: true, rating: 4.9, walletBalance: 1500 })
+    const cleanPhone = (engineerData.phone || "").replace(/\D/g, "").slice(-10)
+    const found = engineersList.find(
+      (e) =>
+        e.id?.toUpperCase() === engineerData.id?.toUpperCase() ||
+        (cleanPhone && (e.phone || "").replace(/\D/g, "").slice(-10) === cleanPhone)
+    )
+    const activeEng = found || {
+      ...engineerData,
+      id: engineerData.id || "ENG001",
+      isOnline: true,
+      rating: 4.9,
+      walletBalance: 1500,
+    }
+    setEngineer(activeEng)
+    return activeEng
   }
 
   const logoutEngineer = () => setEngineer(null)
@@ -301,29 +383,60 @@ export function AppProvider({ children }) {
     const nextOnline = !engineer.isOnline
     const updated = { ...engineer, isOnline: nextOnline }
     setEngineer(updated)
-    setEngineersList((prev) => prev.map((e) => (e.id === engineer.id ? updated : e)))
+    const nextEngineers = engineersList.map((e) => (e.id === engineer.id ? updated : e))
+    setEngineersList(nextEngineers)
+    syncTablesToSql({ engineers: nextEngineers })
   }
 
   const registerNewEngineer = (engData) => {
-    const newId = `ENG00${engineersList.length + 1}`
+    const newId = engData.id?.trim().toUpperCase() || `ENG00${engineersList.length + 1}`
     const newEng = {
       id: newId,
       name: engData.name,
-      phone: engData.phone,
+      phone: engData.phone || "9876543219",
+      email: engData.email || `${newId.toLowerCase()}@pluggy.in`,
+      password: engData.password || "eng123",
       specialization: engData.specialization || "Electrical & Appliances",
       rating: 4.8,
       completedCount: 1,
       isOnline: true,
-      lat: 28.731,
-      lng: 77.776,
       area: engData.area || city,
       walletBalance: 500,
       toolKit: engData.toolKit || ["Standard Electrical Kit", "Digital Multimeter"],
     }
-    setEngineersList((prev) => [...prev, newEng])
+    const nextEngineers = [...engineersList, newEng]
+    setEngineersList(nextEngineers)
     setEngineer(newEng)
+    syncTablesToSql({ engineers: nextEngineers })
+    toast.success(`Engineer ${newEng.name} (${newEng.id}) registered in SQL Database!`)
     return newEng
   }
+
+  // Admin Auth Functions
+  const loginAdmin = (adminData = {}) => {
+    const nextAdmin = {
+      id: adminData.id || "ADM001",
+      name: adminData.name || "Vikramaditya Rao (Chief Dispatch Officer)",
+      email: adminData.email || "admin@pluggy.in",
+      role: "SUPER_ADMIN",
+    }
+    setAdmin(nextAdmin)
+    return { ok: true, admin: nextAdmin }
+  }
+
+  const resetDemoSqlDatabase = () => {
+    const seeded = resetSqlDatabaseToSeed()
+    setUsersList(seeded.users || [])
+    setEngineersList(seeded.engineers || [])
+    setRequests(seeded.service_requests || [])
+    setBookings(seeded.service_requests || [])
+    setPaymentTransactions(seeded.payment_transactions || [])
+    setOrderHistoryLogs(seeded.order_history_logs || [])
+    localStorage.setItem("pluggy_requests", JSON.stringify(seeded.service_requests || []))
+    toast.success("SQL Database reset to initial seed state!")
+  }
+
+  const logoutAdmin = () => setAdmin(null)
 
   // Cart Functions
   const addToCart = (item) => {
@@ -361,7 +474,6 @@ export function AppProvider({ children }) {
 
   const clearCart = () => setCart([])
 
-  // Recent Services Helper
   const addRecent = (serviceName) => {
     if (!serviceName) return
     setRecent((prev) => {
@@ -370,7 +482,6 @@ export function AppProvider({ children }) {
     })
   }
 
-  // Coupon Helper
   const applyCouponCode = (code) => {
     if (!code) return { success: false, message: "Enter a coupon code" }
     const normalized = code.trim().toUpperCase()
@@ -384,7 +495,6 @@ export function AppProvider({ children }) {
 
   const removeCoupon = () => setAppliedCoupon(null)
 
-  // Wallet Helpers
   const addWalletMoney = (amount, source = "Wallet Top-up") => {
     const num = Number(amount)
     if (!num || num <= 0) return
@@ -407,41 +517,50 @@ export function AppProvider({ children }) {
     return true
   }
 
-  // Generate 4-digit OTPs
   const generate4DigitPin = () => String(Math.floor(1000 + Math.random() * 9000))
 
-  // Request & Booking Functions (Full 7-Workflow Support)
+  // ===========================================================================
+  // WORKFLOW 1: CUSTOMER RAISES REQUEST (SAVED IN SQL + PAYMENT GATEWAY LEDGER)
+  // ===========================================================================
   const addRequest = (request) => {
     const id = request.id || Date.now()
     const transactionId = request.transactionId || `PLG${id.toString().slice(-8)}`
     const startOtp = request.startOtp || generate4DigitPin()
     const happyOtp = request.happyOtp || generate4DigitPin()
-    const bookingMode = request.bookingMode || (request.priority === "High" ? "SOS_15MIN" : "STANDARD")
+    const bookingMode =
+      request.bookingMode || (request.priority === "High" ? "SOS_15MIN" : "STANDARD")
 
-    // If SOS 15-Min Emergency, auto-verify and assign nearest online engineer for instant response!
     const isSOS = bookingMode === "SOS_15MIN" || request.priority === "High"
-    const onlineEng = engineersList.find((e) => e.isOnline) || DEFAULT_ENGINEERS[0]
+    const onlineEng = engineersList.find((e) => e.isOnline) || engineersList[0]
 
     const normalized = {
       ...request,
       id,
       transactionId,
+      userId: user?.id || "USR001",
       bookingMode,
       priority: isSOS ? "High" : request.priority || "Medium",
       status: isSOS && request.autoAssignSOS ? "ENGINEER_ASSIGNED" : "PENDING_EXECUTIVE",
-      assignedEngineerId: isSOS && request.autoAssignSOS ? onlineEng.id : request.assignedEngineerId || null,
-      assignedEngineer: isSOS && request.autoAssignSOS ? onlineEng.name : request.assignedEngineer || null,
-      assignedEngineerPhone: isSOS && request.autoAssignSOS ? onlineEng.phone : "9876543210",
+      assignedEngineerId:
+        isSOS && request.autoAssignSOS ? onlineEng?.id : request.assignedEngineerId || null,
+      assignedEngineer:
+        isSOS && request.autoAssignSOS ? onlineEng?.name : request.assignedEngineer || null,
+      assignedEngineerPhone:
+        isSOS && request.autoAssignSOS ? onlineEng?.phone : "9876543210",
       startOtp,
       happyOtp,
-      address: request.address || request.userAddress || address || "Saved Location",
-      userAddress: request.userAddress || request.address || address || "Saved Location",
+      address: request.address || request.userAddress || address || "Indirapuram, Delhi NCR",
+      userAddress:
+        request.userAddress || request.address || address || "Indirapuram, Delhi NCR",
       userName: request.userName || request.name || user?.name || "Customer",
-      userPhone: request.userPhone || request.phone || user?.phone || "",
+      userPhone: request.userPhone || request.phone || user?.phone || "9876543210",
       userEmail: request.userEmail || user?.email || "",
-      baseAmount: Number(request.baseAmount ?? request.amount ?? request.finalAmount ?? 0),
+      baseAmount: Number(request.baseAmount ?? request.amount ?? request.finalAmount ?? 249),
       partsAmount: Number(request.partsAmount ?? 0),
-      amount: Number(request.amount ?? request.finalAmount ?? 0),
+      amount: Number(request.amount ?? request.finalAmount ?? 249),
+      paymentStatus: request.paymentStatus || "PAID_ESCROW",
+      paymentMethod: request.paymentMethod || "UPI / Online Escrow",
+      paymentChannel: request.paymentChannel || "Pluggy Secure Gateway",
       preferences: request.preferences || request.customerPreferences || userPreferences,
       customerPreferences: request.customerPreferences || request.preferences || userPreferences,
       requiredKit: Array.isArray(request.requiredKit)
@@ -459,28 +578,88 @@ export function AppProvider({ children }) {
         }),
     }
 
-    setRequests((prev) => [normalized, ...prev.filter((r) => r.id !== normalized.id)])
-    setBookings((prev) => [normalized, ...prev.filter((b) => b.id !== normalized.id)])
+    const nextRequests = [normalized, ...requests.filter((r) => r.id !== normalized.id)]
+    setRequests(nextRequests)
+    setBookings(nextRequests)
+
+    // Record Payment Transaction in SQL
+    const newPayRow = {
+      txnId: transactionId,
+      transactionId,
+      bookingId: id,
+      requestId: id,
+      userName: normalized.userName,
+      customerName: normalized.userName,
+      userPhone: normalized.userPhone,
+      customerPhone: normalized.userPhone,
+      serviceName: normalized.service || "Home Service",
+      notes: `${normalized.service || "Home Service"} (Doorstep Booking)`,
+      amount: normalized.amount,
+      paymentMethod: normalized.paymentMethod,
+      paymentChannel: normalized.paymentChannel,
+      paymentType: "SERVICE_BOOKING",
+      status: normalized.paymentMethod === "PAY_AFTER_SERVICE" ? "PAY_ON_COMPLETION" : "SUCCESS",
+      escrowState: "HELD_UNTIL_HAPPY_PIN",
+      createdAt: normalized.createdAt,
+    }
+    const nextPayments = [
+      newPayRow,
+      ...paymentTransactions.filter((p) => p.txnId !== transactionId),
+    ]
+    setPaymentTransactions(nextPayments)
+
+    // Record Audit Log in SQL
+    const nextLogs = appendOrderLog(
+      id,
+      transactionId,
+      "USER",
+      normalized.userName,
+      "BOOKING_RAISED",
+      `Raised ${normalized.service} (₹${normalized.amount}) via ${normalized.paymentMethod}. Start PIN: ${startOtp}`
+    )
+
+    syncTablesToSql({
+      service_requests: nextRequests,
+      payment_transactions: nextPayments,
+      order_history_logs: nextLogs,
+    })
 
     addNotification({
       type: "service",
-      title: isSOS ? "🚨 15-Min SOS Responder Activated!" : "Booking Confirmed!",
-      message: `${normalized.service || "Service"} (${normalized.transactionId}) is booked. Start PIN: ${startOtp}`,
+      title: isSOS ? "🚨 15-Min SOS Responder Activated!" : "Booking Saved in SQL Database!",
+      message: `${normalized.service || "Service"} (${normalized.transactionId}) is live across Admin & Engineer Portals. Start PIN: ${startOtp}`,
     })
 
     return normalized
   }
 
-  const updateRequestStatus = (id, status, engineerData = {}) => {
-    setRequests((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status, ...engineerData, updatedAt: new Date().toISOString() } : r))
+  const updateRequestStatus = (id, status, extraData = {}, logInfo = null) => {
+    const nextRequests = requests.map((r) =>
+      r.id === id ? { ...r, status, ...extraData, updatedAt: new Date().toISOString() } : r
     )
-    setBookings((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, status, ...engineerData, updatedAt: new Date().toISOString() } : b))
-    )
+    setRequests(nextRequests)
+    setBookings(nextRequests)
+
+    let nextLogs = orderHistoryLogs
+    if (logInfo) {
+      const target = nextRequests.find((r) => r.id === id)
+      nextLogs = appendOrderLog(
+        id,
+        target?.transactionId,
+        logInfo.actorRole,
+        logInfo.actorName,
+        logInfo.action,
+        logInfo.details
+      )
+    }
+
+    syncTablesToSql({
+      service_requests: nextRequests,
+      order_history_logs: nextLogs,
+    })
   }
 
-  // Workflow 2: Executive Desk Verifies Booking
+  // WORKFLOW 2: EXECUTIVE VERIFIES BOOKING & LOCKS TOOLKIT
   const verifyByExecutive = (requestId, noteOrKit = "", kitOrNote = "") => {
     const resolvedKit = Array.isArray(noteOrKit)
       ? noteOrKit.join(", ")
@@ -488,7 +667,7 @@ export function AppProvider({ children }) {
     const resolvedNote =
       typeof noteOrKit === "string" && kitOrNote
         ? noteOrKit
-        : "Verified by Pluggy Executive Desk"
+        : "Verified by Pluggy Executive Control Desk"
 
     const update = {
       status: "EXECUTIVE_VERIFIED",
@@ -496,34 +675,46 @@ export function AppProvider({ children }) {
       executiveNote: resolvedNote,
       verifiedAt: new Date().toISOString(),
     }
-    updateRequestStatus(requestId, "EXECUTIVE_VERIFIED", update)
-    toast.success("Booking verified & mandatory toolkit locked!")
+    updateRequestStatus(requestId, "EXECUTIVE_VERIFIED", update, {
+      actorRole: "ADMIN",
+      actorName: admin?.name || "Executive Desk",
+      action: "EXECUTIVE_VERIFIED",
+      details: `Locked mandatory toolkit (${resolvedKit}). Note: ${resolvedNote}`,
+    })
+    toast.success("Booking verified & mandatory toolkit locked in SQL!")
     addNotification({
       type: "update",
       title: "Booking Verified by Executive",
-      message: `Request #${requestId.toString().slice(-6)} has been verified. Assigning nearest expert now.`,
+      message: `Request #${requestId.toString().slice(-6)} verified & toolkit locked.`,
     })
   }
 
-  // Workflow 2/3: Assign Engineer
+  // WORKFLOW 3: ASSIGN ENGINEER (FROM ADMIN DESK OR ENGINEER PICKUP)
   const assignEngineer = (requestId, engineerId, engineerName) => {
-    const engObj = engineersList.find((e) => e.id === engineerId)
+    const engObj = engineersList.find((e) => e.id === engineerId) || engineersList[0]
+    const resolvedId = engineerId || engObj?.id || "ENG001"
+    const resolvedName = engineerName || engObj?.name || "Rajesh Sharma"
     const update = {
-      assignedEngineerId: engineerId,
-      assignedEngineer: engineerName || engObj?.name || "Verified Expert",
+      assignedEngineerId: resolvedId,
+      assignedEngineer: resolvedName,
       assignedEngineerPhone: engObj?.phone || "9876543210",
       assignedAt: new Date().toISOString(),
     }
-    updateRequestStatus(requestId, "ENGINEER_ASSIGNED", update)
-    toast.success(`Engineer ${update.assignedEngineer} assigned & dispatched!`)
+    updateRequestStatus(requestId, "ENGINEER_ASSIGNED", update, {
+      actorRole: "ADMIN",
+      actorName: resolvedName,
+      action: "ENGINEER_ASSIGNED",
+      details: `Dispatched Engineer ${resolvedName} (${resolvedId}) to customer location.`,
+    })
+    toast.success(`Engineer ${resolvedName} (${resolvedId}) assigned & synced!`)
     addNotification({
       type: "service",
       title: "👨‍🔧 Expert Assigned!",
-      message: `${update.assignedEngineer} is on the way to your doorstep.`,
+      message: `${resolvedName} (${resolvedId}) is on the way. Share Start PIN on arrival.`,
     })
   }
 
-  // Workflow 3: Engineer Starts Job with 4-Digit Start OTP
+  // WORKFLOW 4: ENGINEER STARTS JOB WITH 4-DIGIT START PIN
   const startJobWithOtp = (requestId, enteredOtp) => {
     const target = requests.find((r) => r.id === requestId)
     if (!target) {
@@ -531,20 +722,30 @@ export function AppProvider({ children }) {
       return false
     }
     if (enteredOtp && target.startOtp && enteredOtp.trim() !== target.startOtp) {
-      toast.error(`Incorrect Start PIN! Ask customer for 4-digit Start PIN (${target.startOtp})`)
+      toast.error(`Incorrect Start PIN! Customer's Start PIN is ${target.startOtp}`)
       return false
     }
-    updateRequestStatus(requestId, "IN_PROGRESS", { startedAt: new Date().toISOString() })
+    updateRequestStatus(
+      requestId,
+      "IN_PROGRESS",
+      { startedAt: new Date().toISOString() },
+      {
+        actorRole: "ENGINEER",
+        actorName: target.assignedEngineer || engineer?.name || "Engineer",
+        action: "JOB_STARTED_WITH_PIN",
+        details: `Verified 4-digit Start PIN (${target.startOtp}) at doorstep. Repair in progress.`,
+      }
+    )
     toast.success("Start PIN verified! Job is now IN PROGRESS.")
     addNotification({
       type: "update",
-      title: "🔧 Service Started (PIN Verified)",
-      message: `Your ${target.service} is now in progress.`,
+      title: "🔧 Service Started (Start PIN Verified)",
+      message: `Your ${target.service} has started.`,
     })
     return true
   }
 
-  // Workflow 4: Engineer Adds Spare Part from Official Rate Card (Requires Customer Approval)
+  // WORKFLOW 5: ENGINEER ADDS SPARE PART QUOTE FROM OFFICIAL RATE CARD
   const addSparePartToJob = (requestId, part) => {
     const uid = `${part.id || part.code}-${Date.now()}`
     const partName = part.name || part.part
@@ -560,50 +761,116 @@ export function AppProvider({ children }) {
       approvalStatus: "PENDING_APPROVAL",
       addedAt: new Date().toISOString(),
     }
-    setRequests((prev) =>
-      prev.map((r) => {
-        if (r.id !== requestId) return r
-        return {
-          ...r,
-          addedSpareParts: [...(r.addedSpareParts || []), newPartEntry],
-        }
-      })
+    const nextRequests = requests.map((r) => {
+      if (r.id !== requestId) return r
+      return {
+        ...r,
+        addedSpareParts: [...(r.addedSpareParts || []), newPartEntry],
+      }
+    })
+    setRequests(nextRequests)
+    setBookings(nextRequests)
+
+    const target = nextRequests.find((r) => r.id === requestId)
+    const nextLogs = appendOrderLog(
+      requestId,
+      target?.transactionId,
+      "ENGINEER",
+      target?.assignedEngineer || engineer?.name || "Engineer",
+      "SPARE_PART_QUOTED",
+      `Requested customer approval for ${partName} (₹${part.price}) from Official Rate Card.`
     )
+
+    syncTablesToSql({
+      service_requests: nextRequests,
+      order_history_logs: nextLogs,
+    })
+
     toast.success(`Official quote for ${partName} (₹${part.price}) sent to customer!`)
     addNotification({
       type: "service",
-      title: "📋 Spare Part Approval Requested",
-      message: `Engineer requested to add ${partName} (₹${part.price}). Please Approve/Reject in Track Requests.`,
+      title: "📋 Spare Part Quote Received",
+      message: `Engineer quoted ${partName} (₹${part.price}). Approve in Track Requests.`,
     })
   }
 
-  // Workflow 4: Customer Approves or Rejects Spare Part Quote
+  // WORKFLOW 5B: CUSTOMER APPROVES OR REJECTS SPARE PART QUOTE
   const respondToSparePartQuote = (requestId, entryId, isApproved) => {
     const nextStatus = isApproved ? "APPROVED" : "REJECTED"
-    setRequests((prev) =>
-      prev.map((r) => {
-        if (r.id !== requestId) return r
-        const updatedParts = (r.addedSpareParts || []).map((p) =>
-          p.entryId === entryId || p.uid === entryId
-            ? { ...p, status: nextStatus, approvalStatus: nextStatus }
-            : p
-        )
-        const approvedPartsSum = updatedParts
-          .filter((p) => p.approvalStatus === "APPROVED" || p.status === "APPROVED")
-          .reduce((sum, p) => sum + Number(p.price || 0), 0)
-        const base = Number(r.baseAmount ?? r.amount ?? 0)
-        return {
-          ...r,
-          addedSpareParts: updatedParts,
-          partsAmount: approvedPartsSum,
-          amount: base + approvedPartsSum,
+    let quotedPartName = "Spare Part"
+    let quotedPartPrice = 0
+
+    const nextRequests = requests.map((r) => {
+      if (r.id !== requestId) return r
+      const updatedParts = (r.addedSpareParts || []).map((p) => {
+        if (p.entryId === entryId || p.uid === entryId) {
+          quotedPartName = p.name || p.part
+          quotedPartPrice = Number(p.price || 0)
+          return { ...p, status: nextStatus, approvalStatus: nextStatus }
         }
+        return p
       })
+      const approvedPartsSum = updatedParts
+        .filter((p) => p.approvalStatus === "APPROVED" || p.status === "APPROVED")
+        .reduce((sum, p) => sum + Number(p.price || 0), 0)
+      const base = Number(r.baseAmount ?? r.amount ?? 0)
+      return {
+        ...r,
+        addedSpareParts: updatedParts,
+        partsAmount: approvedPartsSum,
+        amount: base + approvedPartsSum,
+      }
+    })
+
+    setRequests(nextRequests)
+    setBookings(nextRequests)
+
+    const target = nextRequests.find((r) => r.id === requestId)
+    let nextPayments = paymentTransactions
+    if (isApproved && quotedPartPrice > 0) {
+      const spareTxnId = `PLGSP${Date.now().toString().slice(-6)}`
+      const sparePayRow = {
+        txnId: spareTxnId,
+        transactionId: spareTxnId,
+        bookingId: requestId,
+        requestId,
+        userName: target?.userName || user?.name || "Customer",
+        customerName: target?.userName || user?.name || "Customer",
+        userPhone: target?.userPhone || user?.phone || "+91 9876543210",
+        customerPhone: target?.userPhone || user?.phone || "+91 9876543210",
+        serviceName: `Spare Part: ${quotedPartName}`,
+        notes: `Official Rate Card Spare Part: ${quotedPartName}`,
+        amount: quotedPartPrice,
+        paymentMethod: "UPI",
+        paymentChannel: "Pluggy Escrow Spare Checkout",
+        paymentType: "SPARE_PART",
+        status: "SUCCESS",
+        escrowState: "HELD_UNTIL_HAPPY_PIN",
+        createdAt: new Date().toISOString(),
+      }
+      nextPayments = [sparePayRow, ...paymentTransactions]
+      setPaymentTransactions(nextPayments)
+    }
+
+    const nextLogs = appendOrderLog(
+      requestId,
+      target?.transactionId,
+      "USER",
+      target?.userName || user?.name || "Customer",
+      isApproved ? "SPARE_QUOTE_APPROVED" : "SPARE_QUOTE_REJECTED",
+      `${isApproved ? "Approved & paid" : "Rejected"} ${quotedPartName} (₹${quotedPartPrice}). Updated Bill: ₹${target?.amount}`
     )
-    toast.success(isApproved ? "Spare part quote approved!" : "Spare part quote rejected.")
+
+    syncTablesToSql({
+      service_requests: nextRequests,
+      payment_transactions: nextPayments,
+      order_history_logs: nextLogs,
+    })
+
+    toast.success(isApproved ? "Spare part quote approved in SQL!" : "Spare part quote rejected.")
   }
 
-  // Workflow 4: Issue Standby Backup Appliance (Fan / Cooler / Stabilizer) when Motor/PCB goes to Workshop
+  // WORKFLOW 6: ENGINEER ISSUES STANDBY BACKUP APPLIANCE
   const issueStandbyAppliance = (
     requestId,
     loanerItem = "Pluggy Standby High-Speed Fan",
@@ -618,26 +885,37 @@ export function AppProvider({ children }) {
       receiptNo: `STBY-${Date.now().toString().slice(-5)}`,
       issuedAt: new Date().toISOString(),
     }
-    setRequests((prev) =>
-      prev.map((r) => {
-        if (r.id !== requestId) return r
-        const nextAmount = Number(r.amount || 0) + Number(dailyRent)
-        return {
-          ...r,
-          standbyLoaner: loaner,
-          amount: nextAmount,
-        }
-      })
-    )
-    toast.success(`${loanerItem} issued @ ₹${dailyRent}/day!`)
-    addNotification({
-      type: "update",
-      title: "🔄 Standby Appliance Issued",
-      message: `${loanerItem} (Receipt: ${loaner.receiptNo}) provided while your part is being repaired at the workshop.`,
+    const nextRequests = requests.map((r) => {
+      if (r.id !== requestId) return r
+      const nextAmount = Number(r.amount || 0) + Number(dailyRent)
+      return {
+        ...r,
+        standbyLoaner: loaner,
+        amount: nextAmount,
+      }
     })
+    setRequests(nextRequests)
+    setBookings(nextRequests)
+
+    const target = nextRequests.find((r) => r.id === requestId)
+    const nextLogs = appendOrderLog(
+      requestId,
+      target?.transactionId,
+      "ENGINEER",
+      target?.assignedEngineer || engineer?.name || "Engineer",
+      "STANDBY_LOANER_ISSUED",
+      `Issued ${loanerItem} @ ₹${dailyRent}/day (Receipt: ${loaner.receiptNo}).`
+    )
+
+    syncTablesToSql({
+      service_requests: nextRequests,
+      order_history_logs: nextLogs,
+    })
+
+    toast.success(`${loanerItem} issued @ ₹${dailyRent}/day!`)
   }
 
-  // Workflow 5: Complete Job with 4-Digit Happy OTP + Activate 30-Day Warranty + QR Health Sticker
+  // WORKFLOW 7: COMPLETE JOB WITH HAPPY PIN + ESCROW SETTLEMENT + 30-DAY WARRANTY
   const completeJobWithOtp = (requestId, enteredOtp) => {
     const target = requests.find((r) => r.id === requestId)
     if (!target) {
@@ -645,7 +923,7 @@ export function AppProvider({ children }) {
       return false
     }
     if (enteredOtp && target.happyOtp && enteredOtp.trim() !== target.happyOtp) {
-      toast.error(`Incorrect Happy PIN! Ask customer for 4-digit Happy PIN (${target.happyOtp})`)
+      toast.error(`Incorrect Happy PIN! Customer's Happy PIN is ${target.happyOtp}`)
       return false
     }
 
@@ -658,6 +936,7 @@ export function AppProvider({ children }) {
 
     const completionData = {
       status: "COMPLETED",
+      paymentStatus: "SETTLED",
       completedAt: new Date().toISOString(),
       warrantyExpiresAt: expiry.toISOString(),
       warrantyValidTill: expiry.toISOString(),
@@ -665,22 +944,25 @@ export function AppProvider({ children }) {
       engineerPayout: payout,
     }
 
-    updateRequestStatus(requestId, "COMPLETED", completionData)
+    const nextRequests = requests.map((r) =>
+      r.id === requestId ? { ...r, ...completionData, updatedAt: new Date().toISOString() } : r
+    )
+    setRequests(nextRequests)
+    setBookings(nextRequests)
 
-    // Credit 80% service fee + 100% spare parts to engineer
+    // Update Engineer Wallet in SQL
+    let nextEngineers = engineersList
     if (target.assignedEngineerId) {
-      setEngineersList((prev) =>
-        prev.map((e) =>
-          e.id === target.assignedEngineerId
-            ? {
-                ...e,
-                walletBalance: (e.walletBalance || 0) + payout,
-                completedCount: (e.completedCount || 0) + 1,
-                jobsCompleted: (e.jobsCompleted || e.completedCount || 0) + 1,
-              }
-            : e
-        )
+      nextEngineers = engineersList.map((e) =>
+        e.id === target.assignedEngineerId
+          ? {
+              ...e,
+              walletBalance: (e.walletBalance || 0) + payout,
+              completedCount: (e.completedCount || 0) + 1,
+            }
+          : e
       )
+      setEngineersList(nextEngineers)
       if (engineer && engineer.id === target.assignedEngineerId) {
         setEngineer((prev) => ({
           ...prev,
@@ -689,6 +971,30 @@ export function AppProvider({ children }) {
         }))
       }
     }
+
+    // Release Escrow in Payment Transactions
+    const nextPayments = paymentTransactions.map((p) =>
+      p.bookingId === requestId || p.txnId === target.transactionId
+        ? { ...p, status: "SUCCESS", escrowState: `RELEASED_TO_${target.assignedEngineerId || "ENG"}` }
+        : p
+    )
+    setPaymentTransactions(nextPayments)
+
+    const nextLogs = appendOrderLog(
+      requestId,
+      target.transactionId,
+      "ENGINEER",
+      target.assignedEngineer || engineer?.name || "Engineer",
+      "JOB_COMPLETED_HAPPY_PIN",
+      `Verified Happy PIN (${target.happyOtp}). Escrow released ₹${payout} to engineer & 30-Day QR Warranty (${qrCodeId}) activated.`
+    )
+
+    syncTablesToSql({
+      service_requests: nextRequests,
+      engineers: nextEngineers,
+      payment_transactions: nextPayments,
+      order_history_logs: nextLogs,
+    })
 
     toast.success(`Happy PIN verified! Job completed & ₹${payout} credited to Partner Wallet!`)
     addNotification({
@@ -700,7 +1006,7 @@ export function AppProvider({ children }) {
     return true
   }
 
-  // Workflow 6: Claim Free 30-Day Warranty Re-Visit
+  // WORKFLOW 8: CLAIM FREE 30-DAY WARRANTY RE-VISIT
   const claimWarrantyRevisit = (idOrReq) => {
     const originalRequest =
       typeof idOrReq === "object" && idOrReq !== null
@@ -728,10 +1034,16 @@ export function AppProvider({ children }) {
   const cancelRequest = (id, reason) => {
     const cancellationData = {
       status: "CANCELLED",
+      paymentStatus: "REFUNDED",
       cancelledAt: new Date().toISOString(),
       cancellationReason: reason,
     }
-    updateRequestStatus(id, "CANCELLED", cancellationData)
+    updateRequestStatus(id, "CANCELLED", cancellationData, {
+      actorRole: "USER",
+      actorName: user?.name || "Customer",
+      action: "BOOKING_CANCELLED",
+      details: `Booking cancelled. Reason: ${reason}`,
+    })
   }
 
   const rateRequest = (id, rating, review = "") => {
@@ -740,13 +1052,26 @@ export function AppProvider({ children }) {
       review,
       ratedAt: new Date().toISOString(),
     }
-    setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, ...ratingData } : r)))
-    setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, ...ratingData } : b)))
+    const nextRequests = requests.map((r) => (r.id === id ? { ...r, ...ratingData } : r))
+    setRequests(nextRequests)
+    setBookings(nextRequests)
+    const target = nextRequests.find((r) => r.id === id)
+    const nextLogs = appendOrderLog(
+      id,
+      target?.transactionId,
+      "USER",
+      target?.userName || user?.name || "Customer",
+      "CUSTOMER_RATED_JOB",
+      `Rated ${rating}★: "${review || "Great doorstep service!"}"`
+    )
+    syncTablesToSql({
+      service_requests: nextRequests,
+      order_history_logs: nextLogs,
+    })
   }
 
   const addBooking = (booking) => addRequest(booking)
 
-  // Saved Addresses Functions
   const addSavedAddress = (newAddress) => {
     setSavedAddresses((prev) => [...prev, { id: Date.now(), ...newAddress }])
   }
@@ -759,10 +1084,15 @@ export function AppProvider({ children }) {
     setSavedAddresses((prev) => prev.map((a) => (a.id === id ? { ...a, ...updated } : a)))
   }
 
-  // Notification Functions
   const addNotification = (notif) => {
     setNotifications((prev) => [
-      { id: Date.now(), read: false, time: "Just now", createdAt: new Date().toISOString(), ...notif },
+      {
+        id: Date.now(),
+        read: false,
+        time: "Just now",
+        createdAt: new Date().toISOString(),
+        ...notif,
+      },
       ...prev,
     ])
   }
@@ -777,23 +1107,27 @@ export function AppProvider({ children }) {
 
   const clearNotifications = () => setNotifications([])
 
-  // Theme Toggle
   const toggleTheme = () => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"))
+    setTheme("light")
   }
 
   const value = {
     user,
     setUser,
     loginUser,
+    registerUser: loginUser,
     updateUser,
     logoutUser,
+    usersList,
     engineer,
     loginEngineer,
     logoutEngineer,
     toggleEngineerDuty,
     registerNewEngineer,
     engineersList,
+    admin,
+    loginAdmin,
+    logoutAdmin,
     cart,
     setCart,
     addToCart,
@@ -826,6 +1160,12 @@ export function AppProvider({ children }) {
     rateRequest,
     bookings,
     addBooking,
+    paymentTransactions,
+    recordPaymentTransaction,
+    orderHistoryLogs,
+    executeSqlQuery,
+    executeSql: executeSqlQuery,
+    resetDemoSqlDatabase,
     city,
     setCity,
     address,
@@ -853,3 +1193,4 @@ export function useApp() {
   }
   return context
 }
+export const useAppContext = useApp

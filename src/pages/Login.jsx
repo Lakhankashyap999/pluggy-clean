@@ -1,462 +1,541 @@
 // src/pages/Login.jsx
-import { useState, useRef } from "react"
-import { useNavigate, Link } from "react-router-dom"
-import { useApp } from "../AppContext"
-import { motion } from "framer-motion"
-import { Phone, ArrowRight, Shield, Star, ChevronLeft } from "lucide-react"
-import toast from "react-hot-toast"
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useApp } from "../AppContext";
+import { motion } from "framer-motion";
+import {
+  Phone,
+  ArrowRight,
+  ShieldCheck,
+  Star,
+  Lock,
+  Mail,
+  UserCheck,
+  Wrench,
+  Database,
+  CheckCircle2,
+  Sparkles,
+  ChevronLeft,
+} from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function Login() {
-  const navigate = useNavigate()
-  const { loginUser, setUser } = useApp()
-  
-  const [step, setStep] = useState("phone") // phone, otp, profile
-  const [phone, setPhone] = useState("")
-  const [otp, setOtp] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [generatedOtp, setGeneratedOtp] = useState("")
-  const [profile, setProfile] = useState({ name: "", email: "" })
+  const navigate = useNavigate();
+  const { loginUser, registerUser, usersList, requests } = useApp();
 
-  // Check if user exists
-  const checkUserExists = (phoneNumber) => {
-    const users = JSON.parse(localStorage.getItem("pluggy_users") || "[]")
-    return users.find(u => u.phone === phoneNumber)
-  }
+  const [loginMode, setLoginMode] = useState("phone"); // "phone" | "email"
+  const [step, setStep] = useState("input"); // "input" | "otp" | "profile"
+  const [phone, setPhone] = useState("9876543210");
+  const [otp, setOtp] = useState("");
+  const [generatedOtp, setGeneratedOtp] = useState("");
+  const [email, setEmail] = useState("lakhan@pluggy.in");
+  const [password, setPassword] = useState("password123");
+  const [loading, setLoading] = useState(false);
+  const [profile, setProfile] = useState({ name: "", email: "" });
 
-  // Save new user
-  const saveUser = (userData) => {
-    const users = JSON.parse(localStorage.getItem("pluggy_users") || "[]")
-    const newUser = { ...userData, id: Date.now(), joinedAt: new Date().toISOString() }
-    users.push(newUser)
-    localStorage.setItem("pluggy_users", JSON.stringify(users))
-    return newUser
-  }
+  const normalizeDigits = (val = "") => String(val).replace(/\D/g, "").slice(-10);
 
-  const sendOtp = () => {
-    if (!phone || phone.length < 10) {
-      toast.error("Enter valid phone number")
-      return
+  const sendOtp = (e) => {
+    if (e) e.preventDefault();
+    const cleanPhone = normalizeDigits(phone);
+    if (!cleanPhone || cleanPhone.length < 10) {
+      toast.error("Please enter a valid 10-digit mobile number");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     setTimeout(() => {
-      const code = Math.floor(100000 + Math.random() * 900000).toString()
-      setGeneratedOtp(code)
-      setStep("otp")
-      setLoading(false)
-      toast.success(`OTP sent! Demo: ${code}`)
-    }, 1000)
-  }
+      const code = "123456";
+      setGeneratedOtp(code);
+      setOtp(code);
+      setStep("otp");
+      setLoading(false);
+      toast.success(`OTP Sent! Auto-filled Demo OTP: ${code}`);
+    }, 500);
+  };
 
-  const verifyOtp = () => {
-    if (!otp || otp.length < 6) {
-      toast.error("Enter valid OTP")
-      return
+  const verifyOtp = (e) => {
+    if (e) e.preventDefault();
+    if (!otp || otp.length < 4) {
+      toast.error("Enter valid OTP");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     setTimeout(() => {
       if (otp === generatedOtp || otp === "123456") {
-        const fullPhone = `+91${phone}`
-        let existingUser = checkUserExists(fullPhone)
-        
+        const cleanPhone = normalizeDigits(phone);
+        const existingUser = (usersList || []).find(
+          (u) => normalizeDigits(u.phone) === cleanPhone
+        );
+
         if (existingUser) {
-          loginUser(existingUser)
-          toast.success(`Welcome back, ${existingUser.name}!`)
-          navigate("/")
+          loginUser(existingUser);
+          toast.success(`Welcome back, ${existingUser.name}!`);
+          navigate("/");
         } else {
-          setStep("profile")
+          setStep("profile");
         }
       } else {
-        toast.error("Invalid OTP")
+        toast.error("Invalid OTP. Use 123456 for demo.");
       }
-      setLoading(false)
-    }, 500)
-  }
+      setLoading(false);
+    }, 400);
+  };
 
-  const completeProfile = () => {
-    if (!profile.name) {
-      toast.error("Please enter your name")
-      return
+  const handleEmailPasswordLogin = (e) => {
+    e.preventDefault();
+    if (!email || !password) {
+      toast.error("Please enter email and password");
+      return;
     }
-    
-    const fullPhone = `+91${phone}`
-    const newUser = saveUser({
-      phone: fullPhone,
-      name: profile.name,
-      email: profile.email
-    })
-    
-    loginUser(newUser)
-    toast.success(`Welcome to Pluggy, ${profile.name}! 🎉`)
-    navigate("/")
-  }
 
-  // ✅ SOCIAL LOGIN HANDLERS - REAL REDIRECTS
-  const handleGoogleLogin = () => {
-    // Google OAuth URL
-    const googleAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth?" +
-      "client_id=YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com&" +
-      "redirect_uri=" + encodeURIComponent(window.location.origin + "/auth/google/callback") + "&" +
-      "response_type=code&" +
-      "scope=email%20profile&" +
-      "state=google_login"
-    
-    // For demo: simulate login
-    toast.loading("Redirecting to Google...")
-    setTimeout(() => {
-      // Demo: create mock user
-      const mockUser = {
-        name: "Google User",
-        email: "user@gmail.com",
-        phone: "",
-        provider: "google"
-      }
-      saveUser(mockUser)
-      loginUser(mockUser)
-      toast.success("Logged in with Google!")
-      navigate("/")
-    }, 1500)
-    // Real: window.location.href = googleAuthUrl
-  }
+    const existingUser = (usersList || []).find(
+      (u) => String(u.email || "").toLowerCase() === email.trim().toLowerCase()
+    );
 
-  const handleFacebookLogin = () => {
-    // Facebook OAuth URL
-    const fbAuthUrl = "https://www.facebook.com/v18.0/dialog/oauth?" +
-      "client_id=YOUR_FB_APP_ID&" +
-      "redirect_uri=" + encodeURIComponent(window.location.origin + "/auth/facebook/callback") + "&" +
-      "scope=email,public_profile&" +
-      "state=facebook_login"
-    
-    toast.loading("Redirecting to Facebook...")
-    setTimeout(() => {
-      const mockUser = {
-        name: "Facebook User",
-        email: "user@facebook.com",
-        phone: "",
-        provider: "facebook"
-      }
-      saveUser(mockUser)
-      loginUser(mockUser)
-      toast.success("Logged in with Facebook!")
-      navigate("/")
-    }, 1500)
-    // Real: window.location.href = fbAuthUrl
-  }
+    if (existingUser) {
+      loginUser(existingUser);
+      toast.success(`Welcome back, ${existingUser.name}!`);
+      navigate("/");
+    } else {
+      const created = registerUser({
+        name: email.split("@")[0].replace(/[^a-zA-Z ]/g, " ") || "Pluggy Customer",
+        email: email.trim(),
+        phone: "+919876543210",
+        password,
+      });
+      toast.success(`Logged in as ${created.name}!`);
+      navigate("/");
+    }
+  };
 
-  const handleInstagramLogin = () => {
-    // Instagram Basic Display API
-    const instaAuthUrl = "https://api.instagram.com/oauth/authorize?" +
-      "client_id=YOUR_INSTA_APP_ID&" +
-      "redirect_uri=" + encodeURIComponent(window.location.origin + "/auth/instagram/callback") + "&" +
-      "scope=user_profile,user_media&" +
-      "response_type=code"
-    
-    toast.loading("Redirecting to Instagram...")
-    setTimeout(() => {
-      const mockUser = {
-        name: "Instagram User",
-        email: "user@instagram.com",
-        phone: "",
-        provider: "instagram"
-      }
-      saveUser(mockUser)
-      loginUser(mockUser)
-      toast.success("Logged in with Instagram!")
-      navigate("/")
-    }, 1500)
-    // Real: window.location.href = instaAuthUrl
-  }
+  const completeProfile = (e) => {
+    e.preventDefault();
+    if (!profile.name.trim()) {
+      toast.error("Please enter your full name");
+      return;
+    }
 
-  const handleEmailLogin = () => {
-    // Redirect to email/password login page
-    toast.success("Email login coming soon!")
-    // navigate("/email-login")
-  }
+    const cleanPhone = normalizeDigits(phone);
+    const created = registerUser({
+      name: profile.name.trim(),
+      email: profile.email.trim() || `${cleanPhone}@pluggy.in`,
+      phone: `+91${cleanPhone}`,
+    });
+
+    toast.success(`Welcome to Pluggy, ${created.name}!`);
+    navigate("/");
+  };
+
+  const handleQuickDemoCustomer = (demoUser) => {
+    loginUser(demoUser);
+    toast.success(`Logged in as ${demoUser.name} (Customer Portal)`);
+    navigate("/");
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F4F6F9] via-white to-[#EDF0F3] flex flex-col font-inter">
-      
-      {/* Header */}
-      <div className="sticky top-0 bg-white/80 backdrop-blur-xl border-b border-gray-100 px-4 py-3">
-        <div className="max-w-md mx-auto flex items-center justify-between">
-          {step !== "phone" ? (
-            <button onClick={() => setStep("phone")} className="p-2 -ml-2">
-              <ChevronLeft size={22} className="text-[#1A2A49]" />
-            </button>
-          ) : (
-            <div className="w-8" />
-          )}
-          <h2 className="text-lg font-bold text-[#1A2A49] font-poppins">
-            {step === "phone" && "Login to Pluggy"}
-            {step === "otp" && "Verify OTP"}
-            {step === "profile" && "Complete Profile"}
-          </h2>
-          <div className="w-8" />
-        </div>
-      </div>
+    <div className="min-h-screen bg-[#F4F6F9] flex flex-col lg:flex-row font-inter">
+      {/* ================= LEFT SIDE: PLUGGY ICON & BRAND SHOWCASE ================= */}
+      <div className="lg:w-5/12 xl:w-1/2 bg-gradient-to-br from-[#1A2A49] via-[#1E3258] to-[#121E36] text-white p-6 sm:p-10 lg:p-14 flex flex-col justify-between relative overflow-hidden">
+        {/* Subtle decorative circles */}
+        <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-[#F37021]/15 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full bg-blue-400/10 blur-3xl pointer-events-none" />
 
-      <div className="flex-1 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md"
-        >
-          
-          {/* Logo & Trust Section */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#1A2A49] to-[#F37021] rounded-xl flex items-center justify-center shadow-md">
-                <span className="text-white text-xl font-bold">🔧</span>
-              </div>
-              <h1 className="text-3xl font-bold font-poppins">
-                <span className="text-[#1A2A49]">Plug</span>
-                <span className="text-[#F37021]">gy</span>
-              </h1>
+        {/* Top navigation + Portal Role Switcher */}
+        <div className="relative z-10 flex flex-wrap items-center justify-between gap-3">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-blue-100 hover:text-white bg-white/10 hover:bg-white/15 px-3.5 py-2 rounded-xl border border-white/10 transition"
+          >
+            <ChevronLeft size={16} /> Back to Home
+          </Link>
+
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold">
+            <Database size={13} /> SQL Live Sync Active
+          </div>
+        </div>
+
+        {/* Center Pluggy Icon & Customer Value Proposition */}
+        <div className="relative z-10 my-8 lg:my-auto max-w-lg">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F37021]/20 border border-[#F37021]/40 text-[#FF8C42] text-xs font-bold uppercase tracking-wider mb-6">
+            <Sparkles size={13} /> Customer Service Portal
+          </div>
+
+          {/* Prominent Pluggy Icon + Brand Lockup */}
+          <div className="flex items-center gap-4 mb-6 bg-white/5 backdrop-blur-md p-4 sm:p-5 rounded-3xl border border-white/10 shadow-xl">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white flex items-center justify-center p-2.5 shadow-lg shrink-0">
+              <img
+                src="/image/logos.png"
+                alt="Pluggy Logo"
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
             </div>
-            
-            <p className="text-gray-500 text-sm">Quality Home Repairs</p>
-            
-            <div className="flex items-center justify-center gap-3 mt-3">
-              <span className="flex items-center gap-1 text-sm">
-                <Star size={14} className="text-yellow-500 fill-yellow-500" />
-                <span className="font-semibold text-[#1A2A49]">4.8</span>
-              </span>
-              <span className="w-1 h-1 bg-gray-300 rounded-full" />
-              <span className="text-sm text-gray-600">
-                <span className="font-semibold text-[#1A2A49]">10k+</span> Homes
-              </span>
-              <span className="w-1 h-1 bg-gray-300 rounded-full" />
-              <span className="flex items-center gap-1 text-sm">
-                <Shield size={14} className="text-green-600" />
-                <span className="text-gray-600">Secure</span>
-              </span>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+                  Plug
+                </span>
+                <span className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#F37021]">
+                  gy
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-blue-100/90 font-medium mt-0.5">
+                60-Minute Verified Home Electrical & Appliance Care
+              </p>
+              <div className="flex items-center gap-2 mt-2 text-xs text-amber-300 font-semibold">
+                <Star size={13} className="fill-amber-400 text-amber-400" />
+                <span>4.9/5 Rating</span>
+                <span className="text-white/30">•</span>
+                <span className="text-blue-200">{requests?.length || 2}+ Active SQL Orders</span>
+              </div>
             </div>
           </div>
 
-          {/* Phone Entry Step */}
-          {step === "phone" && (
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold leading-tight tracking-tight mb-3">
+            Book, Track & Approve Repairs with{" "}
+            <span className="text-[#F37021]">Dual-PIN Security.</span>
+          </h1>
+          <p className="text-sm sm:text-base text-blue-100/80 leading-relaxed mb-6">
+            Every request you raise here immediately flows to our 24/7 Executive Desk and Assigned Engineer Portal in real time.
+          </p>
+
+          {/* 3 Feature Pills */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5">
+              <ShieldCheck size={20} className="text-[#F37021] mb-1.5" />
+              <p className="text-xs font-bold text-white">Dual-PIN Protection</p>
+              <p className="text-[11px] text-blue-200/80 mt-0.5">
+                Start PIN & Happy PIN control
+              </p>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5">
+              <CheckCircle2 size={20} className="text-emerald-400 mb-1.5" />
+              <p className="text-xs font-bold text-white">100% Escrow Safe</p>
+              <p className="text-[11px] text-blue-200/80 mt-0.5">
+                Money released after repair
+              </p>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5">
+              <Wrench size={20} className="text-amber-300 mb-1.5" />
+              <p className="text-xs font-bold text-white">MRP Spare Parts</p>
+              <p className="text-[11px] text-blue-200/80 mt-0.5">
+                0% commission on parts
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Role Switcher Bar */}
+        <div className="relative z-10 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <span className="text-blue-200/80 font-medium">Switch Portal Role:</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              to="/login"
+              className="px-3 py-1.5 rounded-xl bg-[#F37021] text-white font-bold shadow-sm"
             >
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
-                <div className="mb-5">
-                  <label className="text-sm font-medium text-gray-600 mb-2 block">
-                    Enter your phone number
-                  </label>
-                  <div className="relative">
-                    <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <span className="absolute left-12 top-1/2 -translate-y-1/2 text-gray-600 font-medium text-base">+91</span>
-                    <input
-                      type="tel"
-                      placeholder="9876543210"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="w-full pl-24 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#F37021] text-base"
-                      maxLength={10}
-                    />
-                  </div>
-                </div>
+              👤 Customer Login
+            </Link>
+            <Link
+              to="/engineer-login"
+              className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition"
+            >
+              👨‍🔧 Engineer Login
+            </Link>
+            <Link
+              to="/admin-login"
+              className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition"
+            >
+              🛡️ Admin Login
+            </Link>
+          </div>
+        </div>
+      </div>
 
+      {/* ================= RIGHT SIDE: CUSTOMER LOGIN FORM ================= */}
+      <div className="lg:w-7/12 xl:w-1/2 flex items-center justify-center p-5 sm:p-8 lg:p-12">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-200/80 p-6 sm:p-8"
+        >
+          {/* Role Tabs at Top of Form */}
+          <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-2xl mb-6 text-xs font-bold">
+            <Link
+              to="/login"
+              className="py-2.5 text-center rounded-xl bg-[#1A2A49] text-white shadow-sm"
+            >
+              👤 Customer
+            </Link>
+            <Link
+              to="/engineer-login"
+              className="py-2.5 text-center rounded-xl text-slate-600 hover:text-[#1A2A49] hover:bg-white/60 transition"
+            >
+              👨‍🔧 Engineer
+            </Link>
+            <Link
+              to="/admin-login"
+              className="py-2.5 text-center rounded-xl text-slate-600 hover:text-[#1A2A49] hover:bg-white/60 transition"
+            >
+              🛡️ Admin
+            </Link>
+          </div>
+
+          <div className="mb-6">
+            <span className="inline-block text-[11px] font-bold uppercase tracking-wider text-[#F37021] bg-orange-50 px-2.5 py-1 rounded-md mb-1.5">
+              Step into Pluggy
+            </span>
+            <h2 className="text-2xl font-extrabold text-[#1A2A49]">
+              {step === "input" && "Customer Sign In"}
+              {step === "otp" && "Verify Mobile OTP"}
+              {step === "profile" && "Complete Your Profile"}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              {step === "input" &&
+                "Sign in to book services, view live OTPs, and track SQL order history."}
+              {step === "otp" && `Enter the 6-digit OTP sent to +91 ${normalizeDigits(phone)}`}
+              {step === "profile" && "Almost done! Tell us your name for service invoices."}
+            </p>
+          </div>
+
+          {/* Login Mode Toggle (Phone OTP vs Email/Password) */}
+          {step === "input" && (
+            <>
+              <div className="flex border-b border-slate-200 mb-5 text-xs sm:text-sm font-bold">
                 <button
-                  onClick={sendOtp}
-                  disabled={loading}
-                  className="w-full py-4 bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white rounded-xl font-semibold text-base flex items-center justify-center gap-2 active:scale-[0.98] transition shadow-lg"
+                  type="button"
+                  onClick={() => setLoginMode("phone")}
+                  className={`flex-1 pb-2.5 border-b-2 transition ${
+                    loginMode === "phone"
+                      ? "border-[#F37021] text-[#1A2A49]"
+                      : "border-transparent text-slate-400 hover:text-slate-600"
+                  }`}
                 >
-                  {loading ? "Sending..." : "Send OTP"} <ArrowRight size={18} />
+                  📱 Mobile + OTP
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setLoginMode("email")}
+                  className={`flex-1 pb-2.5 border-b-2 transition ${
+                    loginMode === "email"
+                      ? "border-[#F37021] text-[#1A2A49]"
+                      : "border-transparent text-slate-400 hover:text-slate-600"
+                  }`}
+                >
+                  ✉️ Email & Password
+                </button>
+              </div>
 
-                {/* ✅ SOCIAL LOGIN - WITH REAL REDIRECTS */}
-                <div className="mt-6">
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-200"></div>
-                    </div>
-                    <div className="relative flex justify-center text-xs">
-                      <span className="bg-white px-3 text-gray-500">OR continue with</span>
+              {loginMode === "phone" ? (
+                <form onSubmit={sendOtp} className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 block">
+                      Mobile Number
+                    </label>
+                    <div className="relative flex items-center">
+                      <Phone size={17} className="absolute left-3.5 text-slate-400" />
+                      <span className="absolute left-10 text-sm font-bold text-slate-600 border-r border-slate-200 pr-2.5">
+                        +91
+                      </span>
+                      <input
+                        type="tel"
+                        placeholder="9876543210"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full pl-20 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#1A2A49] focus:outline-none focus:ring-2 focus:ring-[#F37021] focus:bg-white transition"
+                        maxLength={10}
+                      />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-4 gap-3 mt-4">
-                    {/* Google */}
-                    <button
-                      onClick={handleGoogleLogin}
-                      className="flex flex-col items-center gap-1 p-3 bg-white border border-gray-200 rounded-xl hover:bg-red-50 hover:border-red-200 active:scale-95 transition group"
-                    >
-                      <img 
-                        src="https://www.google.com/favicon.ico" 
-                        alt="Google" 
-                        className="w-6 h-6"
-                        onError={(e) => e.target.src = "https://cdn-icons-png.flaticon.com/512/2991/2991148.png"}
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3.5 bg-[#1A2A49] hover:bg-[#223a61] text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition active:scale-[0.99]"
+                  >
+                    {loading ? "Sending OTP..." : "Get Instant OTP"}{" "}
+                    <ArrowRight size={16} />
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleEmailPasswordLogin} className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 block">
+                      Email Address
+                    </label>
+                    <div className="relative flex items-center">
+                      <Mail size={17} className="absolute left-3.5 text-slate-400" />
+                      <input
+                        type="email"
+                        placeholder="lakhan@pluggy.in"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#1A2A49] focus:outline-none focus:ring-2 focus:ring-[#F37021] focus:bg-white transition"
                       />
-                      <span className="text-xs font-medium text-gray-600 group-hover:text-red-500">Google</span>
-                    </button>
-
-                    {/* Facebook */}
-                    <button
-                      onClick={handleFacebookLogin}
-                      className="flex flex-col items-center gap-1 p-3 bg-white border border-gray-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 active:scale-95 transition group"
-                    >
-                      <img 
-                        src="https://www.facebook.com/favicon.ico" 
-                        alt="Facebook" 
-                        className="w-6 h-6"
-                        onError={(e) => e.target.src = "https://cdn-icons-png.flaticon.com/512/124/124010.png"}
-                      />
-                      <span className="text-xs font-medium text-gray-600 group-hover:text-blue-600">Facebook</span>
-                    </button>
-
-                    {/* Instagram */}
-                    <button
-                      onClick={handleInstagramLogin}
-                      className="flex flex-col items-center gap-1 p-3 bg-white border border-gray-200 rounded-xl hover:bg-pink-50 hover:border-pink-200 active:scale-95 transition group"
-                    >
-                      <img 
-                        src="https://www.instagram.com/favicon.ico" 
-                        alt="Instagram" 
-                        className="w-6 h-6"
-                        onError={(e) => e.target.src = "https://cdn-icons-png.flaticon.com/512/2111/2111463.png"}
-                      />
-                      <span className="text-xs font-medium text-gray-600 group-hover:text-pink-600">Instagram</span>
-                    </button>
-
-                    {/* Email */}
-                    <button
-                      onClick={handleEmailLogin}
-                      className="flex flex-col items-center gap-1 p-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 active:scale-95 transition group"
-                    >
-                      <div className="w-6 h-6 bg-gradient-to-br from-[#1A2A49] to-[#F37021] rounded-md flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">@</span>
-                      </div>
-                      <span className="text-xs font-medium text-gray-600">Email</span>
-                    </button>
+                    </div>
                   </div>
-                </div>
 
-                <p className="text-center text-xs text-gray-400 mt-6">
-                  By continuing, you agree to our{" "}
-                  <Link to="/terms" className="text-[#F37021]">Terms</Link> &{" "}
-                  <Link to="/privacy" className="text-[#F37021]">Privacy</Link>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 block">
+                      Password
+                    </label>
+                    <div className="relative flex items-center">
+                      <Lock size={17} className="absolute left-3.5 text-slate-400" />
+                      <input
+                        type="password"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#1A2A49] focus:outline-none focus:ring-2 focus:ring-[#F37021] focus:bg-white transition"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3.5 bg-[#1A2A49] hover:bg-[#223a61] text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition active:scale-[0.99]"
+                  >
+                    Sign In with Email <ArrowRight size={16} />
+                  </button>
+                </form>
+              )}
+
+              {/* 1-Click Instant SQL Demo Customer Login */}
+              <div className="mt-6 pt-5 border-t border-slate-100">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 flex items-center justify-between">
+                  <span>⚡ 1-Click SQL Customer Accounts</span>
+                  <span className="text-emerald-600">Instant Demo</span>
                 </p>
-              </div>
-
-              {/* Engineer CTA */}
-              <div className="mt-4 bg-gradient-to-r from-[#1A2A49]/5 to-[#F37021]/5 rounded-xl p-4 border border-[#F37021]/20">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#1A2A49] rounded-full flex items-center justify-center">
-                      <span className="text-white text-lg">👨‍🔧</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-[#1A2A49]">Are you an Engineer?</p>
-                      <p className="text-xs text-gray-500">Join our expert network</p>
-                    </div>
-                  </div>
-                  <Link to="/engineer-login" className="text-[#F37021] font-medium text-sm flex items-center gap-1">
-                    Login <ArrowRight size={14} />
-                  </Link>
+                <div className="space-y-2">
+                  {(usersList || []).slice(0, 2).map((u) => (
+                    <button
+                      key={u.id}
+                      type="button"
+                      onClick={() => handleQuickDemoCustomer(u)}
+                      className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-[#F37021] hover:bg-orange-50/40 transition text-left group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-[#1A2A49] text-white flex items-center justify-center font-bold text-xs">
+                          {u.name?.slice(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-[#1A2A49] group-hover:text-[#F37021]">
+                            {u.name}
+                          </p>
+                          <p className="text-[11px] text-slate-500">
+                            {u.phone} • {u.email}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-xs font-bold text-[#F37021] flex items-center gap-1">
+                        Login <ArrowRight size={13} />
+                      </span>
+                    </button>
+                  ))}
                 </div>
               </div>
-            </motion.div>
+
+              <p className="text-center text-xs text-slate-500 mt-5">
+                New to Pluggy?{" "}
+                <Link
+                  to="/signup"
+                  className="text-[#F37021] font-bold hover:underline"
+                >
+                  Create Customer Account
+                </Link>
+              </p>
+            </>
           )}
 
           {/* OTP Verification Step */}
           {step === "otp" && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6"
-            >
-              <div className="text-center mb-5">
-                <p className="text-gray-600 text-sm">Enter the 6-digit code sent to</p>
-                <p className="text-xl font-bold text-[#1A2A49] mt-1">+91 {phone}</p>
+            <form onSubmit={verifyOtp} className="space-y-4">
+              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-medium flex items-center justify-between">
+                <span>Demo OTP Auto-Filled: <strong>{generatedOtp || "123456"}</strong></span>
+                <button
+                  type="button"
+                  onClick={() => setOtp(generatedOtp || "123456")}
+                  className="text-emerald-700 underline font-bold"
+                >
+                  Use 123456
+                </button>
               </div>
 
-              <div className="mb-5">
+              <div>
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 block">
+                  6-Digit OTP
+                </label>
                 <input
                   type="text"
-                  placeholder="000000"
+                  placeholder="123456"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
-                  className="w-full py-4 bg-gray-50 border border-gray-200 rounded-xl text-center text-2xl tracking-widest font-bold text-[#1A2A49] focus:outline-none focus:ring-2 focus:ring-[#F37021]"
+                  className="w-full py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-center text-2xl tracking-[0.35em] font-extrabold text-[#1A2A49] focus:outline-none focus:ring-2 focus:ring-[#F37021]"
                   maxLength={6}
                 />
               </div>
 
               <button
-                onClick={verifyOtp}
+                type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-gradient-to-r from-[#F37021] to-[#FF8C42] text-white rounded-xl font-semibold text-base active:scale-[0.98] transition shadow-lg"
+                className="w-full py-3.5 bg-[#F37021] hover:bg-[#e06318] text-white rounded-xl font-bold text-sm shadow-md transition"
               >
-                {loading ? "Verifying..." : "Verify & Continue"}
+                {loading ? "Verifying..." : "Verify & Login"}
               </button>
 
-              <p className="text-center text-sm text-gray-500 mt-4">
-                Didn't receive?{" "}
-                <button onClick={sendOtp} className="text-[#F37021] font-medium">
-                  Resend
-                </button>
-              </p>
-            </motion.div>
+              <button
+                type="button"
+                onClick={() => setStep("input")}
+                className="w-full py-2 text-xs font-bold text-slate-500 hover:text-[#1A2A49]"
+              >
+                ← Change Mobile Number
+              </button>
+            </form>
           )}
 
           {/* Profile Completion Step */}
           {step === "profile" && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6"
-            >
-              <div className="text-center mb-5">
-                <div className="w-16 h-16 bg-gradient-to-br from-[#1A2A49] to-[#F37021] rounded-full flex items-center justify-center mx-auto mb-3">
-                  <span className="text-white text-2xl">👋</span>
-                </div>
-                <h3 className="text-xl font-bold text-[#1A2A49]">Welcome to Pluggy!</h3>
-                <p className="text-gray-500 text-sm mt-1">Tell us a bit about yourself</p>
-              </div>
-
-              <div className="space-y-4 mb-5">
+            <form onSubmit={completeProfile} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 block">
+                  Full Name *
+                </label>
                 <input
                   type="text"
-                  placeholder="Full Name"
+                  placeholder="Enter your full name"
                   value={profile.name}
                   onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                  className="w-full px-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#F37021]"
+                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#1A2A49] focus:outline-none focus:ring-2 focus:ring-[#F37021]"
+                  required
                 />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 block">
+                  Email Address (Optional)
+                </label>
                 <input
                   type="email"
-                  placeholder="Email (Optional)"
+                  placeholder="name@example.com"
                   value={profile.email}
                   onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                  className="w-full px-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#F37021]"
+                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#1A2A49] focus:outline-none focus:ring-2 focus:ring-[#F37021]"
                 />
               </div>
 
               <button
-                onClick={completeProfile}
-                className="w-full py-4 bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white rounded-xl font-semibold text-base active:scale-[0.98] transition shadow-lg mb-3"
+                type="submit"
+                className="w-full py-3.5 bg-[#1A2A49] hover:bg-[#223a61] text-white rounded-xl font-bold text-sm shadow-md transition"
               >
-                Complete Signup
+                Save to SQL & Continue
               </button>
-
-              <button
-                onClick={() => {
-                  const fullPhone = `+91${phone}`
-                  const newUser = saveUser({ phone: fullPhone, name: "Guest User" })
-                  loginUser(newUser)
-                  navigate("/")
-                }}
-                className="w-full text-gray-500 text-sm font-medium hover:underline"
-              >
-                Skip for now →
-              </button>
-            </motion.div>
+            </form>
           )}
         </motion.div>
       </div>
     </div>
-  )
+  );
 }
