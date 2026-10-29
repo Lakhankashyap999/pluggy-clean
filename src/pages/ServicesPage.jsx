@@ -27,7 +27,7 @@ export default function ServicesPage() {
   })
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] pt-[128px] md:pt-[140px] pb-16">
+    <div className="min-h-screen bg-[#F4F6F9] pt-[92px] md:pt-[112px] pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <BackButton />
 

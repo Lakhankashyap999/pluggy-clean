@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react"
 import Slider from "../components/Slider"
 import {
-  Sparkles,
   Copy,
   Check,
   Star,
@@ -12,15 +11,12 @@ import {
   PartyPopper,
   ShieldCheck,
   Wrench,
-  Clock,
   Plus,
   ChevronRight,
   FileText,
   RefreshCw,
   QrCode,
   Zap,
-  CheckCircle2,
-  PhoneCall,
 } from "lucide-react"
 import WhyChooseUs from "../components/WhyChooseUs"
 import OurServices from "../components/OurServices"
@@ -41,27 +37,16 @@ import {
 } from "../data/servicesCatalog"
 import toast from "react-hot-toast"
 
-const liveActivities = [
-  "Rajesh from Indirapuram just booked Split AC Power Jet Service (₹499)",
-  "Priya from Sector 62 booked 15-Min Emergency MCB Trip SOS",
-  "Sharma Family booked Shaadi Standby Electrician (8 Hours Event Guard)",
-  "Amit from Vaishali approved ₹350 Havells Capacitor via Official Rate Card",
-  "Sneha from Raj Nagar booked ₹79 Chota-Kaam Switch & Regulator Fix",
-  "Vikram from Noida Extension used ₹29 Video Diagnosis Call & saved ₹249 visit fee",
-]
-
 export default function Dashboard() {
   const navigate = useNavigate()
   const { user, cart, addToCart, applyCouponCode } = useApp()
 
   const [filterOpen, setFilterOpen] = useState(false)
   const [appliedFilters, setAppliedFilters] = useState(null)
-  const [showOfferBar, setShowOfferBar] = useState(true)
   const [copied, setCopied] = useState(false)
-  const [currentActivity, setCurrentActivity] = useState(0)
   const [welcomePopup, setWelcomePopup] = useState(false)
 
-  // Smart Fault & Cost Estimator State
+  // Compact 1-Row Smart Fault & Cost Estimator State
   const [selectedApplianceIdx, setSelectedApplianceIdx] = useState(0)
   const [selectedSymptomIdx, setSelectedSymptomIdx] = useState(0)
 
@@ -74,19 +59,12 @@ export default function Dashboard() {
     .slice(0, 8)
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentActivity((prev) => (prev + 1) % liveActivities.length)
-    }, 3200)
-    return () => clearInterval(interval)
-  }, [])
-
-  useEffect(() => {
     const hasSeenWelcome = localStorage.getItem("pluggy_welcome_seen")
     if (!hasSeenWelcome) {
       const timer = setTimeout(() => {
         setWelcomePopup(true)
         localStorage.setItem("pluggy_welcome_seen", "true")
-      }, 6000)
+      }, 8000)
       return () => clearTimeout(timer)
     }
   }, [])
@@ -97,16 +75,6 @@ export default function Dashboard() {
     setCopied(true)
     toast.success("Coupon PLUGGY20 copied & applied!")
     setTimeout(() => setCopied(false), 2000)
-  }
-
-  const handleProtectedAction = (path) => {
-    navigate(path)
-  }
-
-  const handleClaimSummerOffer = () => {
-    applyCouponCode("SUMMER25")
-    toast.success("Coupon SUMMER25 (25% OFF) applied!")
-    navigate("/services")
   }
 
   const openConsultModal = (tab) => {
@@ -134,7 +102,7 @@ export default function Dashboard() {
   const handleAddMicroService = (micro) => {
     addToCart({
       id: micro.id,
-      name: `${micro.name} (Gali-Pass Micro Fix)`,
+      name: `${micro.name} (Chota-Kaam Express)`,
       price: micro.price,
       category: micro.categorySlug,
       categoryName: "Chota-Kaam Express",
@@ -145,48 +113,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] pt-[124px] md:pt-[136px]">
-      {/* Top Offer Ribbon */}
-      <AnimatePresence>
-        {showOfferBar && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="bg-gradient-to-r from-[#F37021] via-[#e66417] to-[#FF8C42] text-white overflow-hidden"
-          >
-            <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex items-center justify-between gap-2 text-xs sm:text-sm">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <Sparkles size={13} className="animate-pulse shrink-0" />
-                <span className="font-extrabold truncate">
-                  ⚡ Flat 25% OFF on AC & Wiring
-                </span>
-                <span className="bg-white/25 px-1.5 py-0.5 rounded text-[10px] sm:text-[11px] font-mono font-extrabold shrink-0">
-                  SUMMER25
-                </span>
-                <span className="hidden lg:inline text-white/90 text-xs">
-                  • 100% Fixed Spare Part Rate Card • 30-Day Warranty
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  onClick={handleClaimSummerOffer}
-                  className="bg-white text-[#F37021] px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-extrabold hover:bg-gray-100 transition shadow-xs"
-                >
-                  Claim
-                </button>
-                <button
-                  onClick={() => setShowOfferBar(false)}
-                  className="p-1 hover:bg-white/20 rounded text-xs"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+    <div className="min-h-screen bg-[#F4F6F9] pt-[88px] md:pt-[104px]">
       <FilterDrawer
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
@@ -212,305 +139,107 @@ export default function Dashboard() {
       ) : (
         <>
           {/* ===================================================================
-              1. 4-PILLAR PLUGGY EXCLUSIVE ACTION STRIP (Emergency / Function / Video / Voice)
+              1. CLEAN HERO SECTION: 8-CATEGORY DOCK (LEFT) + VISUAL BANNER (RIGHT)
              =================================================================== */}
-          <section className="bg-white border-b border-gray-200 shadow-xs">
-            <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-                {/* 15-Min SOS */}
-                <motion.button
-                  whileHover={{ y: -2 }}
-                  onClick={() => openConsultModal("sos")}
-                  className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl bg-red-50 hover:bg-red-100/80 border border-red-200 text-left transition group"
-                >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                    <AlertTriangle size={17} className="animate-pulse" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="text-[11px] sm:text-sm font-extrabold text-red-700 block truncate">
-                      15-Min SOS
-                    </span>
-                    <p className="text-[10px] sm:text-[11px] text-red-600/90 truncate">
-                      MCB Trip, Sparking
-                    </p>
-                  </div>
-                </motion.button>
-
-                {/* Shaadi / Function Standby */}
-                <motion.button
-                  whileHover={{ y: -2 }}
-                  onClick={() => openConsultModal("event")}
-                  className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl bg-amber-50 hover:bg-amber-100/80 border border-amber-200 text-left transition group"
-                >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#F37021] text-white flex items-center justify-center shrink-0 shadow-xs">
-                    <PartyPopper size={17} />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="text-[11px] sm:text-sm font-extrabold text-[#1A2A49] block truncate">
-                      Shaadi Guard
-                    </span>
-                    <p className="text-[10px] sm:text-[11px] text-gray-600 truncate">
-                      Event Standby Tech
-                    </p>
-                  </div>
-                </motion.button>
-
-                {/* ₹29 Video Diagnosis */}
-                <motion.button
-                  whileHover={{ y: -2 }}
-                  onClick={() => openConsultModal("video")}
-                  className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl bg-blue-50 hover:bg-blue-100/80 border border-blue-200 text-left transition group"
-                >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#1A2A49] text-white flex items-center justify-center shrink-0 shadow-xs">
-                    <Video size={17} />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="text-[11px] sm:text-sm font-extrabold text-[#1A2A49] block truncate">
-                      ₹29 Video Call
-                    </span>
-                    <p className="text-[10px] sm:text-[11px] text-gray-600 truncate">
-                      Live Fault Check
-                    </p>
-                  </div>
-                </motion.button>
-
-                {/* Bolo & Book Karo (Voice/Photo) */}
-                <motion.button
-                  whileHover={{ y: -2 }}
-                  onClick={() => openConsultModal("voice")}
-                  className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 text-left transition group"
-                >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                    <Mic size={17} />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="text-[11px] sm:text-sm font-extrabold text-[#1A2A49] block truncate">
-                      Bolo & Book 🎙️
-                    </span>
-                    <p className="text-[10px] sm:text-[11px] text-gray-600 truncate">
-                      Voice + Photo Book
-                    </p>
-                  </div>
-                </motion.button>
-              </div>
-            </div>
-          </section>
-
-          {/* ===================================================================
-              2. DESKTOP HERO SPLIT: SLIDER + 8-CATEGORY QUICK DOCK (LEFT) & SMART FAULT ESTIMATOR (RIGHT)
-             =================================================================== */}
-          <section className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
-              {/* LEFT 7 COLUMNS: What Are You Looking For + Promo Slider */}
-              <div className="lg:col-span-7 flex flex-col justify-between gap-4 sm:gap-5">
-                {/* Hero Headline + Category Quick Box */}
-                <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-xs border border-gray-200/80">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                    <div>
-                      {user && (
-                        <p className="text-[#F37021] font-bold text-xs uppercase tracking-wider mb-0.5">
-                          👋 Namaste, {user.name?.split(" ")[0] || "Member"}!
-                        </p>
-                      )}
-                      <h1 className="text-lg sm:text-2xl lg:text-3xl font-extrabold text-[#1A2A49] leading-tight">
-                        Ghar Ki Har Electrical & Appliance Dikkat Ka{" "}
-                        <span className="text-[#F37021]">Instant Solution</span>
-                      </h1>
-                    </div>
-                    <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full shrink-0 self-start">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                      <span className="text-[11px] font-bold text-emerald-800">
-                        18 Techs Nearby
-                      </span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs sm:text-sm text-gray-500 mb-3.5">
-                    Select any category below for fixed spare part rates & instant doorstep booking:
-                  </p>
-
-                  {/* 8-Category Icon Dock Grid */}
-                  <div className="grid grid-cols-4 gap-2 sm:gap-3">
-                    {CATEGORIES_CATALOG.map((cat) => (
-                      <motion.button
-                        key={cat.slug}
-                        whileHover={{ y: -3, scale: 1.02 }}
-                        whileTap={{ scale: 0.96 }}
-                        onClick={() => navigate(`/services/${cat.slug}`)}
-                        className="flex flex-col items-center text-center p-2 sm:p-3 rounded-xl bg-[#F4F6F9] hover:bg-[#1A2A49] text-[#1A2A49] hover:text-white border border-gray-200/70 transition-all group"
-                      >
-                        <span className="text-2xl sm:text-3xl mb-1 group-hover:scale-110 transition-transform">
-                          {cat.emoji}
-                        </span>
-                        <span className="text-[11px] sm:text-xs font-extrabold leading-tight line-clamp-1">
-                          {cat.shortName}
-                        </span>
-                        <span className="hidden sm:block text-[10px] text-gray-500 group-hover:text-amber-300 mt-0.5">
-                          {cat.subcategories.length} Sub-Types
-                        </span>
-                      </motion.button>
-                    ))}
-                  </div>
-
-                  {/* Trust Badges Footer inside Left Card */}
-                  <div className="mt-4 pt-3.5 border-t border-gray-100 grid grid-cols-3 gap-1.5 sm:gap-2 text-center">
-                    <div className="bg-[#F4F6F9] rounded-xl py-2 px-1.5">
-                      <p className="text-[11px] sm:text-sm font-extrabold text-[#1A2A49]">⭐ 4.8/5</p>
-                      <p className="text-[9px] sm:text-[10px] text-gray-500">12.4k+ Reviews</p>
-                    </div>
-                    <div className="bg-[#F4F6F9] rounded-xl py-2 px-1.5">
-                      <p className="text-[11px] sm:text-sm font-extrabold text-[#F37021]">Fixed MRP</p>
-                      <p className="text-[9px] sm:text-[10px] text-gray-500">App Rate Card</p>
-                    </div>
-                    <div className="bg-[#F4F6F9] rounded-xl py-2 px-1.5">
-                      <p className="text-[11px] sm:text-sm font-extrabold text-emerald-700">30-Day</p>
-                      <p className="text-[9px] sm:text-[10px] text-gray-500">QR Warranty</p>
-                    </div>
-                  </div>
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-5 pb-6 sm:py-9">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+              {/* LEFT 7 COLUMNS: Clean Headline + 8 Category Icons + 4 Action Pills */}
+              <div className="lg:col-span-7 bg-white rounded-3xl p-5 sm:p-8 shadow-xs border border-gray-200/80">
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                    18 Verified Engineers Nearby
+                  </span>
+                  <button
+                    onClick={() => openRateCardModal("ac-repair")}
+                    className="text-xs font-bold text-[#F37021] hover:underline flex items-center gap-1"
+                  >
+                    <FileText size={13} /> Fixed Rate Card
+                  </button>
                 </div>
 
-                {/* Promotional Banner Slider */}
-                <div className="rounded-2xl overflow-hidden shadow-xs border border-gray-200/80 bg-white">
+                <h1 className="text-xl sm:text-3xl font-extrabold text-[#1A2A49] leading-tight mb-2">
+                  Home Electrical & Appliance Services,{" "}
+                  <span className="text-[#F37021]">Done Right.</span>
+                </h1>
+                <p className="text-xs sm:text-sm text-gray-500 mb-5">
+                  What do you need help with today? Select a category for instant doorstep booking:
+                </p>
+
+                {/* Clean 8-Category Icon Grid (Zero Clutter) */}
+                <div className="grid grid-cols-4 gap-2.5 sm:gap-3.5">
+                  {CATEGORIES_CATALOG.map((cat) => (
+                    <motion.button
+                      key={cat.slug}
+                      whileHover={{ y: -3 }}
+                      whileTap={{ scale: 0.96 }}
+                      onClick={() => navigate(`/services/${cat.slug}`)}
+                      className="flex flex-col items-center justify-center text-center py-3 px-2 rounded-2xl bg-[#F4F6F9] hover:bg-[#1A2A49] text-[#1A2A49] hover:text-white border border-gray-200/60 transition-all group"
+                    >
+                      <span className="text-2xl sm:text-3xl mb-1.5 group-hover:scale-110 transition-transform">
+                        {cat.emoji}
+                      </span>
+                      <span className="text-[11px] sm:text-xs font-bold leading-tight line-clamp-1">
+                        {cat.shortName}
+                      </span>
+                    </motion.button>
+                  ))}
+                </div>
+
+                {/* 4 Compact Quick-Action Pills Below Categories */}
+                <div className="mt-5 pt-4 border-t border-gray-100 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <button
+                    onClick={() => openConsultModal("sos")}
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold border border-red-200 transition"
+                  >
+                    <AlertTriangle size={14} className="shrink-0" />
+                    <span className="truncate">15-Min SOS</span>
+                  </button>
+
+                  <button
+                    onClick={() => openConsultModal("video")}
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#1A2A49] text-xs font-bold border border-blue-200 transition"
+                  >
+                    <Video size={14} className="shrink-0 text-[#F37021]" />
+                    <span className="truncate">₹29 Video Call</span>
+                  </button>
+
+                  <button
+                    onClick={() => openConsultModal("event")}
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-[#1A2A49] text-xs font-bold border border-amber-200 transition"
+                  >
+                    <PartyPopper size={14} className="shrink-0 text-[#F37021]" />
+                    <span className="truncate">Shaadi Guard</span>
+                  </button>
+
+                  <button
+                    onClick={() => openConsultModal("voice")}
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200 transition"
+                  >
+                    <Mic size={14} className="shrink-0" />
+                    <span className="truncate">Voice Book</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* RIGHT 5 COLUMNS: Clean Visual Promo Slider + 3 Trust Badges */}
+              <div className="lg:col-span-5 flex flex-col gap-4">
+                <div className="rounded-3xl overflow-hidden shadow-xs border border-gray-200/80 bg-white">
                   <Slider />
                 </div>
-              </div>
 
-              {/* RIGHT 5 COLUMNS: SMART FAULT & PRICE ESTIMATOR WIDGET */}
-              <div className="lg:col-span-5">
-                <div className="bg-white rounded-2xl shadow-md border-2 border-[#1A2A49]/10 overflow-hidden h-full flex flex-col justify-between">
-                  <div>
-                    {/* Estimator Header */}
-                    <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] text-white p-4 sm:p-5">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="px-2.5 py-0.5 rounded-full bg-[#F37021] text-white text-[10px] font-extrabold uppercase tracking-wider">
-                          Smart AI Estimator
-                        </span>
-                        <button
-                          onClick={() => openRateCardModal(currentAppliance.categorySlug)}
-                          className="text-xs text-amber-300 hover:underline flex items-center gap-1 font-bold"
-                        >
-                          <FileText size={13} /> Official Rate Card
-                        </button>
-                      </div>
-                      <h2 className="text-base sm:text-xl font-extrabold mt-1">
-                        🔍 Check Kya Kharab Hai & Kitna Kharcha Aayega
-                      </h2>
-                      <p className="text-white/80 text-xs mt-0.5">
-                        Select your appliance & symptom to see exact cause and upfront cost before booking
-                      </p>
-                    </div>
-
-                    <div className="p-4 sm:p-5 space-y-4">
-                      {/* Step 1: Select Appliance */}
-                      <div>
-                        <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-500 mb-2">
-                          1. Select Appliance / System
-                        </label>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                          {SYMPTOM_ESTIMATOR_DATA.map((item, idx) => (
-                            <button
-                              key={item.appliance}
-                              onClick={() => {
-                                setSelectedApplianceIdx(idx)
-                                setSelectedSymptomIdx(0)
-                              }}
-                              className={`p-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition ${
-                                selectedApplianceIdx === idx
-                                  ? "bg-[#1A2A49] text-white border-[#1A2A49] shadow-xs"
-                                  : "bg-[#F4F6F9] text-[#1A2A49] border-gray-200 hover:border-[#F37021]"
-                              }`}
-                            >
-                              <span className="text-base shrink-0">{item.icon}</span>
-                              <span className="truncate">{item.appliance}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Step 2: Select Symptom */}
-                      <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
-                          2. Kya Dikkat Aa Rahi Hai? (Select Symptom)
-                        </label>
-                        <div className="space-y-1.5">
-                          {currentAppliance.symptoms.map((sym, sIdx) => (
-                            <button
-                              key={sym.symptom}
-                              onClick={() => setSelectedSymptomIdx(sIdx)}
-                              className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium border transition flex items-center justify-between ${
-                                selectedSymptomIdx === sIdx
-                                  ? "bg-orange-50 border-[#F37021] text-[#1A2A49] font-bold shadow-sm"
-                                  : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                              }`}
-                            >
-                              <span>{sym.symptom}</span>
-                              <span
-                                className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                                  selectedSymptomIdx === sIdx
-                                    ? "border-[#F37021] bg-[#F37021] text-white"
-                                    : "border-gray-300"
-                                }`}
-                              >
-                                {selectedSymptomIdx === sIdx && "✓"}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Step 3: Live Diagnosis Result Box */}
-                      <motion.div
-                        key={`${selectedApplianceIdx}-${selectedSymptomIdx}`}
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="bg-[#F4F6F9] rounded-2xl p-4 border border-gray-200 space-y-2.5"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#F37021]">
-                              Likely Diagnosis
-                            </span>
-                            <p className="text-xs sm:text-sm font-bold text-[#1A2A49] mt-0.5">
-                              {currentSymptom.likelyCause}
-                            </p>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">
-                              Est. Total Range
-                            </span>
-                            <span className="text-sm sm:text-base font-extrabold text-emerald-700">
-                              {currentSymptom.estimatedCost}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-200/80 text-xs">
-                          <span className="text-gray-600 flex items-center gap-1">
-                            <Wrench size={13} className="text-[#1A2A49]" />
-                            <strong>Kit Assigned:</strong> {currentSymptom.requiredKit}
-                          </span>
-                          <span className="bg-white px-2.5 py-0.5 rounded-full font-bold text-[#1A2A49] border border-gray-200">
-                            Inspection/Base: ₹{currentSymptom.visitFee}
-                          </span>
-                        </div>
-                      </motion.div>
-                    </div>
+                <div className="grid grid-cols-3 gap-2.5 text-center">
+                  <div className="bg-white rounded-2xl py-3 px-2 border border-gray-200/80">
+                    <p className="text-xs sm:text-sm font-extrabold text-[#1A2A49]">⭐ 4.8 / 5</p>
+                    <p className="text-[10px] text-gray-500 mt-0.5">12.4k+ Bookings</p>
                   </div>
-
-                  {/* Estimator Footer Actions */}
-                  <div className="p-5 pt-0 flex flex-col sm:flex-row gap-2.5">
-                    <button
-                      onClick={handleAddEstimatorService}
-                      className="flex-1 py-3 px-4 bg-[#F37021] hover:bg-[#e05e15] text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 text-xs sm:text-sm"
-                    >
-                      <Plus size={16} /> Book {currentSymptom.serviceName} (₹{currentSymptom.visitFee})
-                    </button>
-                    <button
-                      onClick={() => openConsultModal("video")}
-                      className="py-3 px-3.5 bg-[#1A2A49] hover:bg-[#223a61] text-white font-semibold rounded-xl transition text-xs flex items-center justify-center gap-1.5 shrink-0"
-                    >
-                      <Video size={14} /> ₹29 Video Check
-                    </button>
+                  <div className="bg-white rounded-2xl py-3 px-2 border border-gray-200/80">
+                    <p className="text-xs sm:text-sm font-extrabold text-[#F37021]">Fixed MRP</p>
+                    <p className="text-[10px] text-gray-500 mt-0.5">Official Rate Card</p>
+                  </div>
+                  <div className="bg-white rounded-2xl py-3 px-2 border border-gray-200/80">
+                    <p className="text-xs sm:text-sm font-extrabold text-emerald-700">30-Day</p>
+                    <p className="text-[10px] text-gray-500 mt-0.5">Free Warranty</p>
                   </div>
                 </div>
               </div>
@@ -518,105 +247,139 @@ export default function Dashboard() {
           </section>
 
           {/* ===================================================================
-              3. LIVE ACTIVITY TICKER & ANTI-FRAUD RATE CARD BAR
+              2. SLEEK 1-ROW SMART FAULT & COST ESTIMATOR BAR (NO CLUTTER)
              =================================================================== */}
-          <section className="border-y border-gray-200 py-2.5 bg-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
-              <motion.div
-                key={currentActivity}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-2 text-xs sm:text-sm text-gray-700 font-medium"
-              >
-                <span className="relative flex h-2.5 w-2.5 shrink-0">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                </span>
-                <span>{liveActivities[currentActivity]}</span>
-              </motion.div>
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-8 sm:pb-12">
+            <div className="bg-[#1A2A49] text-white rounded-3xl p-5 sm:p-6 shadow-md">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                {/* Title */}
+                <div className="lg:w-1/4">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#F37021] bg-white/10 px-2.5 py-0.5 rounded-full">
+                    Instant Cost Check
+                  </span>
+                  <h2 className="text-base sm:text-lg font-extrabold mt-1">
+                    🔍 Check Fault & Repair Cost
+                  </h2>
+                  <p className="text-[11px] text-gray-300">
+                    Select appliance & issue for upfront pricing
+                  </p>
+                </div>
 
-              <button
-                onClick={() => openRateCardModal("ac-repair")}
-                className="text-xs font-bold text-[#1A2A49] hover:text-[#F37021] flex items-center gap-1.5 bg-[#F4F6F9] px-3 py-1 rounded-full border border-gray-200 shrink-0"
-              >
-                <ShieldCheck size={14} className="text-emerald-600" />
-                Check Official Spare Parts Rate Card (Zero Overcharging) →
-              </button>
+                {/* 2 Clean Dropdowns */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:flex-1">
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-300 mb-1">
+                      1. Select Appliance
+                    </label>
+                    <select
+                      value={selectedApplianceIdx}
+                      onChange={(e) => {
+                        setSelectedApplianceIdx(Number(e.target.value))
+                        setSelectedSymptomIdx(0)
+                      }}
+                      className="w-full h-11 rounded-xl bg-white text-[#1A2A49] px-3 text-xs sm:text-sm font-bold focus:outline-none"
+                    >
+                      {SYMPTOM_ESTIMATOR_DATA.map((item, idx) => (
+                        <option key={item.appliance} value={idx}>
+                          {item.icon} {item.appliance}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-300 mb-1">
+                      2. Select Issue / Symptom
+                    </label>
+                    <select
+                      value={selectedSymptomIdx}
+                      onChange={(e) => setSelectedSymptomIdx(Number(e.target.value))}
+                      className="w-full h-11 rounded-xl bg-white text-[#1A2A49] px-3 text-xs sm:text-sm font-bold focus:outline-none"
+                    >
+                      {currentAppliance.symptoms.map((sym, sIdx) => (
+                        <option key={sym.symptom} value={sIdx}>
+                          {sym.symptom}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Result + Book Button */}
+                <div className="bg-[#223a61] rounded-2xl p-3.5 sm:px-5 flex items-center justify-between gap-4 lg:w-auto shrink-0 border border-white/10">
+                  <div>
+                    <span className="text-[10px] text-gray-300 block">
+                      Est. Total: <strong className="text-emerald-300">{currentSymptom.estimatedCost}</strong>
+                    </span>
+                    <span className="text-xs font-bold text-white block truncate max-w-[180px]">
+                      {currentSymptom.likelyCause}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleAddEstimatorService}
+                    className="px-4 py-2.5 rounded-xl bg-[#F37021] hover:bg-[#e05e15] text-white text-xs font-extrabold whitespace-nowrap shadow-xs transition"
+                  >
+                    + Book @ ₹{currentSymptom.visitFee}
+                  </button>
+                </div>
+              </div>
             </div>
           </section>
 
           {/* ===================================================================
-              4. MOST BOOKED SERVICES SHELF (DIRECT + ADD TO CART)
+              3. MOST BOOKED SERVICES (HORIZONTAL SWIPE ON MOBILE, 4-COL DESKTOP)
              =================================================================== */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-2">
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-10 sm:pb-14">
+            <div className="flex items-end justify-between mb-5 gap-2">
               <div>
                 <span className="text-[#F37021] font-bold text-xs uppercase tracking-wider">
-                  High-Demand Repairs & Maintenance
+                  Top Rated
                 </span>
-                <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#1A2A49] mt-0.5">
+                <h2 className="text-lg sm:text-2xl font-extrabold text-[#1A2A49]">
                   Most Booked Doorstep Services
                 </h2>
               </div>
               <button
                 onClick={() => navigate("/services")}
-                className="text-sm font-bold text-[#F37021] hover:underline flex items-center gap-1 self-start sm:self-auto"
+                className="text-xs sm:text-sm font-bold text-[#F37021] hover:underline flex items-center gap-1 shrink-0"
               >
-                View All 60+ Services <ChevronRight size={16} />
+                See All <ChevronRight size={15} />
               </button>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            {/* Horizontal Swipe Carousel on Mobile, 4-Col Grid on Desktop */}
+            <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-2">
               {popularServices.map((srv) => {
                 const inCart = cart.some((item) => item.id === srv.id)
                 return (
-                  <motion.div
+                  <div
                     key={srv.id}
-                    whileHover={{ y: -4 }}
                     onClick={() => navigate(`/services/${srv.categorySlug}?sub=${srv.subCategoryId}`)}
-                    className="bg-white rounded-2xl p-3 sm:p-4 shadow-xs hover:shadow-lg border border-gray-200/80 flex flex-col justify-between cursor-pointer transition-all"
+                    className="min-w-[235px] sm:min-w-[260px] md:min-w-0 snap-start bg-white rounded-2xl p-4 shadow-xs hover:shadow-md border border-gray-200/80 flex flex-col justify-between cursor-pointer transition-all"
                   >
                     <div>
-                      <div className="flex items-center justify-between gap-1 mb-2">
-                        <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-[#F4F6F9] text-[#1A2A49] flex items-center gap-1 truncate max-w-[115px] sm:max-w-none">
-                          <span>{srv.categoryEmoji}</span>
-                          <span className="truncate">{srv.subCategoryName}</span>
+                      <div className="flex items-center justify-between gap-2 mb-2.5">
+                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#F4F6F9] text-[#1A2A49] truncate">
+                          {srv.categoryEmoji} {srv.subCategoryName}
                         </span>
-                        <span className="flex items-center gap-0.5 text-[10px] sm:text-xs font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full shrink-0">
-                          <Star size={10} className="fill-amber-500 text-amber-500" /> {srv.rating}
+                        <span className="flex items-center gap-0.5 text-xs font-bold text-amber-600 shrink-0">
+                          <Star size={11} className="fill-amber-400 text-amber-400" /> {srv.rating}
                         </span>
                       </div>
 
-                      <h3 className="font-extrabold text-[#1A2A49] text-xs sm:text-base leading-snug mb-1 line-clamp-2">
+                      <h3 className="font-extrabold text-[#1A2A49] text-sm sm:text-base leading-snug mb-1 line-clamp-1">
                         {srv.name}
                       </h3>
-                      <p className="text-[11px] sm:text-xs text-gray-500 line-clamp-2 mb-2.5">
-                        {srv.desc}
-                      </p>
-
-                      {/* Included Bullets */}
-                      <div className="hidden sm:block space-y-1 mb-3">
-                        {srv.included?.slice(0, 2).map((inc, idx) => (
-                          <div key={idx} className="flex items-center gap-1.5 text-[11px] text-gray-600">
-                            <CheckCircle2 size={12} className="text-emerald-600 shrink-0" />
-                            <span className="truncate">{inc}</span>
-                          </div>
-                        ))}
-                      </div>
+                      <p className="text-xs text-gray-500 line-clamp-2 mb-4">{srv.desc}</p>
                     </div>
 
-                    <div className="pt-2.5 sm:pt-3 border-t border-gray-100 flex items-center justify-between gap-1.5">
+                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
                       <div>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-sm sm:text-lg font-extrabold text-[#1A2A49]">
-                            ₹{srv.price}
-                          </span>
-                          <span className="text-[10px] sm:text-xs text-gray-400 line-through">
-                            ₹{srv.originalPrice}
-                          </span>
-                        </div>
-                        <span className="text-[9px] sm:text-[10px] text-emerald-700 font-semibold block truncate">
-                          🛡️ {srv.warranty}
+                        <span className="text-base font-extrabold text-[#1A2A49]">
+                          ₹{srv.price}
+                        </span>
+                        <span className="text-xs text-gray-400 line-through ml-1.5">
+                          ₹{srv.originalPrice}
                         </span>
                       </div>
 
@@ -634,7 +397,7 @@ export default function Dashboard() {
                           })
                           toast.success(`${srv.name} added to cart!`)
                         }}
-                        className={`px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-extrabold flex items-center gap-1 transition shrink-0 ${
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition ${
                           inCart
                             ? "bg-emerald-600 text-white"
                             : "bg-[#1A2A49] text-white hover:bg-[#F37021]"
@@ -651,274 +414,183 @@ export default function Dashboard() {
                         )}
                       </button>
                     </div>
-                  </motion.div>
+                  </div>
                 )
               })}
             </div>
           </section>
 
           {/* ===================================================================
-              5. ALL 8 CATEGORIES & SUB-CATEGORIES STOREFRONT GRID
+              4. TABBED DEPARTMENT & SUB-CATEGORY EXPLORER (CLEAN VIEW)
              =================================================================== */}
-          <section id="our-services" className="px-4 sm:px-6 py-8 sm:py-10 bg-white border-y border-gray-200">
+          <section id="our-services" className="px-4 sm:px-6 py-10 sm:py-14 bg-white border-y border-gray-200">
             <div className="max-w-7xl mx-auto">
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-5 gap-2">
+              <div className="flex items-end justify-between mb-5 gap-2">
                 <div>
                   <span className="text-[#F37021] font-bold text-xs uppercase tracking-wider">
-                    Complete Department Directory
+                    Browse By Department
                   </span>
-                  <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#1A2A49] mt-0.5">
+                  <h2 className="text-lg sm:text-2xl font-extrabold text-[#1A2A49]">
                     Explore Categories & Sub-Categories
                   </h2>
-                  <p className="text-gray-500 text-xs sm:text-sm mt-0.5">
-                    Click any category or sub-category pill to view detailed checklists, rate cards & bundle discounts
-                  </p>
                 </div>
                 <button
                   onClick={() => navigate("/services")}
-                  className="text-[#F37021] font-bold hover:underline flex items-center gap-1 text-sm"
+                  className="text-xs sm:text-sm font-bold text-[#F37021] hover:underline shrink-0"
                 >
-                  Open Full Directory →
+                  All 64+ Services →
                 </button>
               </div>
 
-              <OurServices onClickService={(slug) => navigate(`/services/${slug}`)} />
+              <OurServices />
             </div>
           </section>
 
           {/* ===================================================================
-              6. ⚡ ₹79 "CHOTA-KAAM" GALI-PASS EXPRESS MICRO-FIX STRIP
+              5. COMPACT ₹79 CHOTA-KAAM STRIP + STANDBY HIGHLIGHTS
              =================================================================== */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-            <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] rounded-3xl p-5 sm:p-8 text-white shadow-lg relative overflow-hidden">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-8">
+            {/* ₹79 Chota-Kaam Horizontal Swipe Strip */}
+            <div className="bg-gradient-to-r from-[#1A2A49] to-[#223a61] rounded-3xl p-5 sm:p-7 text-white shadow-md">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F37021] text-white text-xs font-extrabold uppercase tracking-wider mb-2">
-                    <Zap size={13} /> Chota-Kaam Gali-Pass Express
-                  </div>
-                  <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold">
-                    Chote Kaam Ke Liye ₹300 Visit Fee Kyun Dena? Book @ Flat ₹79!
-                  </h2>
-                  <p className="text-white/80 text-xs sm:text-sm mt-1 max-w-2xl">
-                    Single switch खराब हो, fan regulator बदलना हो, या bulb holder लगाना हो — पास में घूम रहे Pluggy Gali-Pass Engineer से 20 मिनट में करवाएं।
-                  </p>
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider bg-[#F37021] text-white px-2.5 py-0.5 rounded-full">
+                    ⚡ Chota-Kaam Express
+                  </span>
+                  <h3 className="text-base sm:text-xl font-extrabold mt-1">
+                    Quick Switch, Socket & Regulator Fixes @ Flat ₹79
+                  </h3>
                 </div>
                 <button
                   onClick={() => window.dispatchEvent(new CustomEvent("pluggy:open-cart"))}
-                  className="px-5 py-2.5 bg-white text-[#1A2A49] font-extrabold rounded-xl text-xs sm:text-sm hover:bg-amber-50 transition shrink-0 self-start lg:self-center shadow-sm"
+                  className="text-xs font-bold text-amber-300 hover:underline self-start sm:self-auto"
                 >
                   View Cart ({cart.length}) →
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div className="flex md:grid md:grid-cols-3 lg:grid-cols-6 gap-3 overflow-x-auto no-scrollbar snap-x pb-1">
                 {MICRO_FIX_SERVICES.map((micro) => {
                   const inCart = cart.some((item) => item.id === micro.id)
                   return (
-                    <motion.div
+                    <div
                       key={micro.id}
-                      whileHover={{ y: -3 }}
-                      className="bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-3.5 flex flex-col justify-between hover:bg-white/15 transition"
+                      className="min-w-[165px] md:min-w-0 snap-start bg-white/10 border border-white/15 rounded-2xl p-3.5 flex flex-col justify-between"
                     >
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-2xl">{micro.icon}</span>
-                          <span className="text-[11px] bg-white/15 px-2 py-0.5 rounded-full text-amber-300 font-bold">
-                            {micro.time}
-                          </span>
-                        </div>
-                        <h3 className="font-bold text-xs sm:text-sm text-white leading-snug mb-2">
-                          {micro.name}
-                        </h3>
+                      <div className="flex items-center gap-2 mb-2.5">
+                        <span className="text-xl">{micro.icon}</span>
+                        <h4 className="font-bold text-xs text-white line-clamp-2">{micro.name}</h4>
                       </div>
-
                       <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                        <span className="text-base font-extrabold text-[#FF8C42]">₹{micro.price}</span>
+                        <span className="text-sm font-extrabold text-[#FF8C42]">₹{micro.price}</span>
                         <button
                           onClick={() => handleAddMicroService(micro)}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
-                            inCart
-                              ? "bg-emerald-500 text-white"
-                              : "bg-[#F37021] hover:bg-[#e05e15] text-white"
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition ${
+                            inCart ? "bg-emerald-500 text-white" : "bg-[#F37021] text-white"
                           }`}
                         >
                           {inCart ? "Added ✓" : "+ Add"}
                         </button>
                       </div>
-                    </motion.div>
+                    </div>
                   )
                 })}
               </div>
             </div>
-          </section>
 
-          {/* ===================================================================
-              7. 🎪 SHAADI / FUNCTION STANDBY ELECTRICIAN & 🔄 STANDBY BACKUP APPLIANCE GUARANTEE
-             =================================================================== */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-10">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Event Standby Packages (7 Cols) */}
-              <div className="lg:col-span-7 bg-white rounded-3xl p-5 sm:p-7 border border-gray-200 shadow-sm">
-                <div className="flex items-center justify-between gap-2 mb-4">
-                  <div>
+            {/* Clean 2-Card Split: Shaadi Standby + ₹99/Day Loaner Guarantee */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {/* Card 1: Shaadi / Function Standby */}
+              <div className="bg-white rounded-3xl p-5 sm:p-6 border border-gray-200 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-3">
                     <span className="text-xs font-extrabold uppercase tracking-wider text-[#F37021]">
-                      🎪 Shaadi • Birthday • Jagran • House Party
+                      🎪 Event Power Guard
                     </span>
-                    <h3 className="text-lg sm:text-2xl font-extrabold text-[#1A2A49] mt-0.5">
-                      Function Mein Light Ya Phase Jane Ka Darr Khatam!
-                    </h3>
-                  </div>
-                  <button
-                    onClick={() => openConsultModal("event")}
-                    className="px-3.5 py-2 bg-[#1A2A49] text-white rounded-xl text-xs font-bold hover:bg-[#223a61] shrink-0"
-                  >
-                    Book Standby
-                  </button>
-                </div>
-                <p className="text-xs sm:text-sm text-gray-600 mb-4">
-                  Book a dedicated uniformed Pluggy Master Electrician who stays at your venue with a heavy-duty toolkit, phase changer & backup cables so your event never stops:
-                </p>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {EVENT_STANDBY_PACKAGES.map((pkg) => (
-                    <div
-                      key={pkg.id}
+                    <button
                       onClick={() => openConsultModal("event")}
-                      className="rounded-2xl p-4 bg-[#F4F6F9] hover:bg-orange-50/60 border border-gray-200 hover:border-[#F37021] cursor-pointer transition flex flex-col justify-between"
+                      className="px-3 py-1.5 bg-[#1A2A49] text-white rounded-xl text-xs font-bold"
                     >
-                      <div>
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-[#1A2A49] text-white">
-                          {pkg.badge}
-                        </span>
-                        <h4 className="font-bold text-sm text-[#1A2A49] mt-2">{pkg.name}</h4>
-                        <p className="text-[11px] text-gray-500 mt-0.5">{pkg.duration}</p>
-                        <p className="text-xs text-gray-600 mt-2 line-clamp-2">{pkg.idealFor}</p>
+                      Book Standby →
+                    </button>
+                  </div>
+                  <h3 className="text-base sm:text-xl font-extrabold text-[#1A2A49] mb-3">
+                    Dedicated Electrician for Shaadi & Home Functions
+                  </h3>
+
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {EVENT_STANDBY_PACKAGES.map((pkg) => (
+                      <div
+                        key={pkg.id}
+                        onClick={() => openConsultModal("event")}
+                        className="p-3 rounded-2xl bg-[#F4F6F9] hover:border-[#F37021] border border-gray-200 cursor-pointer text-center"
+                      >
+                        <p className="text-[11px] font-bold text-[#1A2A49] truncate">{pkg.name}</p>
+                        <p className="text-sm font-extrabold text-[#F37021] mt-1">₹{pkg.price}</p>
+                        <p className="text-[10px] text-gray-500">{pkg.duration}</p>
                       </div>
-                      <div className="mt-4 pt-2.5 border-t border-gray-200 flex items-center justify-between">
-                        <div>
-                          <span className="text-base font-extrabold text-[#F37021]">₹{pkg.price}</span>
-                          <span className="text-[11px] text-gray-400 line-through ml-1">
-                            ₹{pkg.originalPrice}
-                          </span>
-                        </div>
-                        <span className="text-xs font-bold text-[#1A2A49]">Select →</span>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* Standby Backup Loaner + Dual-OTP Security Card (5 Cols) */}
-              <div className="lg:col-span-5 bg-white rounded-3xl p-5 sm:p-7 border border-gray-200 shadow-sm flex flex-col justify-between">
+              {/* Card 2: Standby Backup Appliance + Dual-PIN */}
+              <div className="bg-white rounded-3xl p-5 sm:p-6 border border-gray-200 shadow-xs flex flex-col justify-between">
                 <div>
                   <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-700">
-                    🔄 Pluggy Trust & Continuity Shield
+                    🛡️ Pluggy Exclusive Protection
                   </span>
-                  <h3 className="text-lg sm:text-2xl font-extrabold text-[#1A2A49] mt-0.5 mb-4">
-                    Why Families Prefer Pluggy Over Local Unverified Mechanics
+                  <h3 className="text-base sm:text-xl font-extrabold text-[#1A2A49] mt-1 mb-3">
+                    Zero Downtime & 100% Safe Repairs
                   </h3>
 
-                  <div className="space-y-3.5">
-                    <div className="flex items-start gap-3 p-3 rounded-2xl bg-[#F4F6F9]">
-                      <div className="w-9 h-9 rounded-xl bg-[#1A2A49] text-white flex items-center justify-center shrink-0">
-                        <RefreshCw size={18} />
-                      </div>
-                      <div>
-                        <h4 className="text-xs sm:text-sm font-bold text-[#1A2A49]">
-                          Standby Backup Fan / Cooler / Heater @ ₹99/day
-                        </h4>
-                        <p className="text-xs text-gray-600 mt-0.5">
-                          Agar aapka Fan motor winding ya AC PCB 24-hour workshop repair ke liye jata hai, toh Engineer aapko turant Standby Backup unit dekar jayega!
-                        </p>
-                      </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <div className="p-3 rounded-2xl bg-[#F4F6F9]">
+                      <RefreshCw size={16} className="text-[#1A2A49] mb-1.5" />
+                      <p className="text-xs font-bold text-[#1A2A49]">₹99/Day Loaner Fan</p>
+                      <p className="text-[11px] text-gray-500 mt-0.5">
+                        Backup unit during 24h motor repairs
+                      </p>
                     </div>
-
-                    <div className="flex items-start gap-3 p-3 rounded-2xl bg-[#F4F6F9]">
-                      <div className="w-9 h-9 rounded-xl bg-[#F37021] text-white flex items-center justify-center shrink-0">
-                        <ShieldCheck size={18} />
-                      </div>
-                      <div>
-                        <h4 className="text-xs sm:text-sm font-bold text-[#1A2A49]">
-                          Dual-PIN Security (Start PIN + Happy PIN)
-                        </h4>
-                        <p className="text-xs text-gray-600 mt-0.5">
-                          Kaam shuru hone par <strong>Start PIN</strong> aur kaam se 100% khush hone ke baad hi <strong>Happy PIN</strong> share karein.
-                        </p>
-                      </div>
+                    <div className="p-3 rounded-2xl bg-[#F4F6F9]">
+                      <ShieldCheck size={16} className="text-[#F37021] mb-1.5" />
+                      <p className="text-xs font-bold text-[#1A2A49]">Dual-PIN Escrow</p>
+                      <p className="text-[11px] text-gray-500 mt-0.5">
+                        Share Happy PIN only when satisfied
+                      </p>
                     </div>
-
-                    <div className="flex items-start gap-3 p-3 rounded-2xl bg-[#F4F6F9]">
-                      <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
-                        <QrCode size={18} />
-                      </div>
-                      <div>
-                        <h4 className="text-xs sm:text-sm font-bold text-[#1A2A49]">
-                          30-Day QR Appliance Health Sticker
-                        </h4>
-                        <p className="text-xs text-gray-600 mt-0.5">
-                          Har repair ke baad 30 din ki digital warranty aur ₹0 Free Re-Visit claim in 1 click from Track Requests.
-                        </p>
-                      </div>
+                    <div className="p-3 rounded-2xl bg-[#F4F6F9]">
+                      <QrCode size={16} className="text-emerald-600 mb-1.5" />
+                      <p className="text-xs font-bold text-[#1A2A49]">30-Day QR Warranty</p>
+                      <p className="text-[11px] text-gray-500 mt-0.5">
+                        1-Click ₹0 free re-visit claim
+                      </p>
                     </div>
                   </div>
-                </div>
-
-                <div className="mt-5 pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
-                  <button
-                    onClick={() => navigate("/track")}
-                    className="text-xs font-bold text-[#1A2A49] hover:text-[#F37021]"
-                  >
-                    Track Live Request & Warranty →
-                  </button>
-                  <a
-                    href="tel:+919876543210"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#F37021] bg-orange-50 px-3 py-1.5 rounded-lg"
-                  >
-                    <PhoneCall size={13} /> 24/7 Helpline
-                  </a>
                 </div>
               </div>
             </div>
           </section>
 
           {/* ===================================================================
-              8. WHY CHOOSE US, REVIEWS, EXTRA SECTIONS & MARQUEE
+              6. WHY CHOOSE US, REVIEWS, HOW IT WORKS & MARQUEE
              =================================================================== */}
           <section className="px-4 sm:px-6 lg:px-12 py-12 sm:py-16 bg-[#1A2A49]">
             <div className="max-w-7xl mx-auto">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="text-center mb-8 sm:mb-10"
-              >
-                <span className="inline-flex items-center gap-1.5 text-[#F37021] text-xs font-extrabold uppercase tracking-wider bg-white/10 px-3.5 py-1 rounded-full">
-                  🛡️ The Pluggy Trust Architecture
+              <div className="text-center mb-8">
+                <span className="text-[#F37021] text-xs font-extrabold uppercase tracking-wider">
+                  The Pluggy Advantage
                 </span>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mt-2.5 mb-2 font-poppins">
-                  Why 12,400+ Families Choose Pluggy Over Local Mechanics
+                <h2 className="text-xl sm:text-3xl font-extrabold text-white mt-1 font-poppins">
+                  Why 12,400+ Families Trust Pluggy
                 </h2>
-                <p className="text-gray-300 text-xs sm:text-sm max-w-2xl mx-auto">
-                  Background-verified engineers, fixed in-app spare parts rate card, ₹99/day standby backup appliances, and Dual-PIN security.
-                </p>
-              </motion.div>
+              </div>
               <WhyChooseUs />
             </div>
           </section>
 
-          <section className="px-4 sm:px-6 lg:px-12 py-12 sm:py-16 bg-gradient-to-b from-white to-[#F4F6F9] border-b border-gray-200">
+          <section className="px-4 sm:px-6 lg:px-12 py-12 sm:py-16 bg-white border-b border-gray-200">
             <div className="max-w-7xl mx-auto">
-              <div className="text-center mb-8 sm:mb-10">
-                <span className="inline-flex items-center gap-1.5 text-[#F37021] text-xs font-extrabold uppercase tracking-wider bg-[#FFF3EC] border border-orange-200 px-3.5 py-1 rounded-full">
-                  ⭐ 100% Happy-PIN Verified Feedback
-                </span>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#1A2A49] mt-2 font-poppins">
-                  What Real Homeowners Say About Pluggy
-                </h2>
-                <p className="text-gray-600 text-xs sm:text-sm mt-1 max-w-2xl mx-auto">
-                  Every review below comes from a real doorstep job completed with Dual-OTP verification across Delhi NCR & Mumbai.
-                </p>
-              </div>
               <CustomerReviews />
             </div>
           </section>
@@ -952,15 +624,17 @@ export default function Dashboard() {
                 ✕
               </button>
               <div className="text-center">
-                <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-xl sm:text-2xl font-bold text-[#1A2A49] mb-2">Welcome to Pluggy!</h3>
-                <p className="text-gray-600 mb-4 text-sm">Get 20% OFF on your first doorstep service</p>
-                <div className="bg-gray-100 rounded-lg p-4 mb-4">
-                  <p className="text-xs text-gray-500 mb-1">Your Coupon Code</p>
+                <div className="text-5xl mb-3">🎉</div>
+                <h3 className="text-xl font-bold text-[#1A2A49] mb-1">Welcome to Pluggy!</h3>
+                <p className="text-gray-600 mb-4 text-xs sm:text-sm">
+                  Get Flat 20% OFF on your first doorstep service
+                </p>
+                <div className="bg-gray-100 rounded-xl p-3.5 mb-4">
+                  <p className="text-[11px] text-gray-500 mb-1">Your Coupon Code</p>
                   <div className="flex items-center justify-center gap-2">
-                    <span className="text-xl sm:text-2xl font-mono font-bold text-[#1A2A49]">PLUGGY20</span>
-                    <button onClick={handleCopyCode} className="p-2 hover:bg-gray-200 rounded-lg">
-                      {copied ? <Check size={18} className="text-green-600" /> : <Copy size={18} />}
+                    <span className="text-xl font-mono font-bold text-[#1A2A49]">PLUGGY20</span>
+                    <button onClick={handleCopyCode} className="p-1.5 hover:bg-gray-200 rounded-lg">
+                      {copied ? <Check size={16} className="text-green-600" /> : <Copy size={16} />}
                     </button>
                   </div>
                 </div>
@@ -968,13 +642,12 @@ export default function Dashboard() {
                   onClick={() => {
                     setWelcomePopup(false)
                     applyCouponCode("PLUGGY20")
-                    handleProtectedAction("/services")
+                    navigate("/services")
                   }}
-                  className="w-full py-3 bg-[#F37021] text-white rounded-full font-bold hover:bg-[#E05E15] transition"
+                  className="w-full py-3 bg-[#F37021] text-white rounded-xl font-bold text-sm hover:bg-[#E05E15] transition"
                 >
-                  Explore Services & Book
+                  Explore Services
                 </button>
-                <p className="text-xs text-gray-400 mt-3">Valid on all 8 categories. Terms apply.</p>
               </div>
             </motion.div>
           </motion.div>
