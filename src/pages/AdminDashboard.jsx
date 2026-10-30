@@ -84,6 +84,7 @@ export default function AdminDashboard() {
     resolveEngineerAlert,
     pingEngineerLiveLocation,
     raiseEngineerSecurityAlert,
+    forceCloudSync,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState("dispatch"); // dispatch | fleet | surveillance | payments | history | sql
@@ -279,7 +280,20 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex items-center gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:flex items-center gap-2">
+              <button
+                onClick={async () => {
+                  await forceCloudSync?.(true);
+                  toast.success("Synced live bookings from Cloud SQL Server!", {
+                    id: "cloud-sync-btn",
+                  });
+                }}
+                className="px-3 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-100 text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95"
+                title="Sync Cross-Device Live Bookings"
+              >
+                <RotateCcw size={14} className="shrink-0 text-emerald-300" />
+                <span className="truncate">Sync Live</span>
+              </button>
               <button
                 onClick={() => setActiveTab("surveillance")}
                 className="px-3 py-2.5 rounded-xl bg-red-500/25 hover:bg-red-500/35 border border-red-400/40 text-red-100 text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95"

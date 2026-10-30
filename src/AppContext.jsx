@@ -16,6 +16,7 @@ import {
   subscribeToSqlChanges,
   executeSqlQuery,
   resetSqlDatabaseToSeed,
+  syncWithCloudServer,
 } from "./lib/sqlDatabase"
 
 const AppContext = createContext()
@@ -52,31 +53,26 @@ export function AppProvider({ children }) {
     return saved ? JSON.parse(saved) : null
   })
 
-  // SQL Tables State (Synced Across All Portals & Tabs)
+  // SQL Tables State (Synced Across All Portals, Tabs & Devices via /api/sync)
   const [usersList, setUsersList] = useState(() => initialSql.users)
   const [engineersList, setEngineersList] = useState(() => initialSql.engineers)
-  const [requests, setRequests] = useState(() => {
-    const savedReqs = localStorage.getItem("pluggy_requests")
-    if (savedReqs) {
-      const parsed = JSON.parse(savedReqs)
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed
-    }
-    return initialSql.service_requests
-  })
-  const [bookings, setBookings] = useState(() => requests)
+  const [requests, setRequests] = useState(() => initialSql.service_requests)
+  const [bookings, setBookings] = useState(() => initialSql.service_requests)
   const [paymentTransactions, setPaymentTransactions] = useState(
     () => initialSql.payment_transactions
   )
   const [orderHistoryLogs, setOrderHistoryLogs] = useState(() => initialSql.order_history_logs)
 
   // Real-time Engineer Surveillance, GPS Telemetry & Anti-Bypass Security Alerts
-  const [engineerTelemetryLogs, setEngineerTelemetryLogs] = useState(() => loadTelemetryLogs())
-  const [engineerSecurityAlerts, setEngineerSecurityAlerts] = useState(() => loadSecurityAlerts())
+  const [engineerTelemetryLogs, setEngineerTelemetryLogs] = useState(
+    () => initialSql.telemetry_logs?.length ? initialSql.telemetry_logs : loadTelemetryLogs()
+  )
+  const [engineerSecurityAlerts, setEngineerSecurityAlerts] = useState(
+    () => initialSql.security_alerts?.length ? initialSql.security_alerts : loadSecurityAlerts()
+  )
 
-  // Cart State (only kept for a logged-in customer)
+  // Cart State (persisted even before login so adding items never fails)
   const [cart, setCart] = useState(() => {
-    const hasUser = localStorage.getItem("pluggy_activeUser") || localStorage.getItem("pluggy_user")
-    if (!hasUser) return []
     const saved = localStorage.getItem("pluggy_cart")
     return saved ? JSON.parse(saved) : []
   })
@@ -160,21 +156,34 @@ export function AppProvider({ children }) {
 
   const [theme, setTheme] = useState("light")
 
+  const [myBookedIds, setMyBookedIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem("pluggy_my_booking_ids")
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
   // Persist SQL Relational Tables whenever core entities change
   const syncTablesToSql = (nextOverrides = {}) => {
     const currentDb = loadSqlDatabase()
     const mergedDb = {
       ...currentDb,
+      deletedEngineerIds:
+        nextOverrides.deletedEngineerIds ?? currentDb.deletedEngineerIds ?? [],
       users: nextOverrides.users ?? usersList,
       engineers: nextOverrides.engineers ?? engineersList,
       service_requests: nextOverrides.service_requests ?? requests,
       payment_transactions: nextOverrides.payment_transactions ?? paymentTransactions,
       order_history_logs: nextOverrides.order_history_logs ?? orderHistoryLogs,
+      telemetry_logs: nextOverrides.telemetry_logs ?? engineerTelemetryLogs,
+      security_alerts: nextOverrides.security_alerts ?? engineerSecurityAlerts,
     }
     saveSqlDatabase(mergedDb)
   }
 
-  // Subscribe to real-time SQL updates from other browser tabs (Customer <-> Admin <-> Engineer)
+  // Subscribe to real-time SQL updates from other browser tabs & cloud devices (Customer <-> Admin <-> Engineer)
   useEffect(() => {
     const unsubscribe = subscribeToSqlChanges((freshDb) => {
       setUsersList(freshDb.users || [])
@@ -183,6 +192,14 @@ export function AppProvider({ children }) {
       setBookings(freshDb.service_requests || [])
       setPaymentTransactions(freshDb.payment_transactions || [])
       setOrderHistoryLogs(freshDb.order_history_logs || [])
+      if (Array.isArray(freshDb.telemetry_logs) && freshDb.telemetry_logs.length > 0) {
+        setEngineerTelemetryLogs(freshDb.telemetry_logs)
+        saveTelemetryLogs(freshDb.telemetry_logs)
+      }
+      if (Array.isArray(freshDb.security_alerts) && freshDb.security_alerts.length > 0) {
+        setEngineerSecurityAlerts(freshDb.security_alerts)
+        saveSecurityAlerts(freshDb.security_alerts)
+      }
 
       // Keep the logged-in engineer session in sync with admin edits
       setEngineer((prev) => {
@@ -196,7 +213,7 @@ export function AppProvider({ children }) {
   }, [])
 
   // ---------------------------------------------------------------------------
-  // CUSTOMER LOGIN GUARD — cart, booking & payment need a logged-in customer
+  // CUSTOMER LOGIN GUARD — auto-creates a guest customer if needed
   // ---------------------------------------------------------------------------
   const requireCustomerLogin = (message = "Pehle login karein — tabhi cart aur booking hogi") => {
     if (user) return true
@@ -207,18 +224,24 @@ export function AppProvider({ children }) {
 
   const normalizePhone = (val = "") => String(val).replace(/\D/g, "").slice(-10)
 
-  // Requests that belong to the logged-in customer only
+  // Requests that belong to the logged-in customer OR were booked on this device
   const myRequests = useMemo(() => {
-    if (!user) return []
+    const localSet = new Set((myBookedIds || []).map((id) => String(id)))
+    if (!user) {
+      return (requests || []).filter((r) => localSet.has(String(r.id)))
+    }
     const myPhone = normalizePhone(user.phone)
     const myEmail = String(user.email || "").toLowerCase()
+    const myName = String(user.name || "").trim().toLowerCase()
     return (requests || []).filter(
       (r) =>
+        localSet.has(String(r.id)) ||
         (user.id && r.userId === user.id) ||
         (myPhone && normalizePhone(r.userPhone) === myPhone) ||
-        (myEmail && String(r.userEmail || "").toLowerCase() === myEmail)
+        (myEmail && String(r.userEmail || "").toLowerCase() === myEmail) ||
+        (myName && myName !== "customer" && String(r.userName || "").trim().toLowerCase() === myName)
     )
-  }, [requests, user])
+  }, [requests, user, myBookedIds])
 
   // Jobs that belong to the logged-in engineer only
   const myEngineerJobs = useMemo(() => {
@@ -286,8 +309,11 @@ export function AppProvider({ children }) {
   }, [userPreferences])
 
   useEffect(() => {
-    localStorage.setItem("pluggy_requests", JSON.stringify(requests))
-    localStorage.setItem("pluggy_bookings", JSON.stringify(requests))
+    try {
+      localStorage.setItem("pluggy_requests", JSON.stringify(requests))
+    } catch {
+      /* quota protected by sqlDatabase */
+    }
   }, [requests])
 
   useEffect(() => {
@@ -445,6 +471,7 @@ export function AppProvider({ children }) {
     setEngineerSecurityAlerts((prev) => {
       const next = [newAlert, ...prev]
       saveSecurityAlerts(next)
+      syncTablesToSql({ security_alerts: next })
       return next
     })
     return newAlert
@@ -475,8 +502,10 @@ export function AppProvider({ children }) {
       requestId,
       timestamp: gps.timestamp,
     }
+    let nextTelemetryList = []
     setEngineerTelemetryLogs((prev) => {
       const next = [entry, ...prev]
+      nextTelemetryList = next
       saveTelemetryLogs(next)
       return next
     })
@@ -496,7 +525,10 @@ export function AppProvider({ children }) {
             }
           : e
       )
-      syncTablesToSql({ engineers: nextEngineers })
+      syncTablesToSql({
+        engineers: nextEngineers,
+        ...(nextTelemetryList.length > 0 ? { telemetry_logs: nextTelemetryList } : {}),
+      })
       return nextEngineers
     })
 
@@ -716,9 +748,13 @@ export function AppProvider({ children }) {
       toast.error(`Pehle ${activeJobs.length} active job(s) kisi aur engineer ko re-assign karein`)
       return false
     }
+    const currentDb = loadSqlDatabase()
+    const nextDeletedIds = Array.from(
+      new Set([...(currentDb.deletedEngineerIds || []), String(engineerId)])
+    )
     const nextEngineers = engineersList.filter((e) => e.id !== engineerId)
     setEngineersList(nextEngineers)
-    syncTablesToSql({ engineers: nextEngineers })
+    syncTablesToSql({ engineers: nextEngineers, deletedEngineerIds: nextDeletedIds })
     if (engineer?.id === engineerId) setEngineer(null)
     toast.success(`Engineer ${engineerId} remove ho gaya`)
     return true
@@ -747,15 +783,18 @@ export function AppProvider({ children }) {
     setBookings(seeded.service_requests || [])
     setPaymentTransactions(seeded.payment_transactions || [])
     setOrderHistoryLogs(seeded.order_history_logs || [])
+    setEngineerTelemetryLogs(seeded.telemetry_logs || [])
+    setEngineerSecurityAlerts(seeded.security_alerts || [])
+    saveTelemetryLogs(seeded.telemetry_logs || [])
+    saveSecurityAlerts(seeded.security_alerts || [])
     localStorage.setItem("pluggy_requests", JSON.stringify(seeded.service_requests || []))
     toast.success("SQL Database reset to initial seed state!")
   }
 
   const logoutAdmin = () => setAdmin(null)
 
-  // Cart Functions (customer must be logged in)
+  // Cart Functions (works seamlessly with or without prior login)
   const addToCart = (item) => {
-    if (!requireCustomerLogin("Cart mein add karne ke liye pehle login karein")) return false
     const normalizedName = item.name || item.issue || "Doorstep Service"
     const normalizedId = item.id || normalizedName
     setCart((prev) => {
@@ -837,13 +876,37 @@ export function AppProvider({ children }) {
   const generate4DigitPin = () => String(Math.floor(1000 + Math.random() * 9000))
 
   // ===========================================================================
-  // WORKFLOW 1: CUSTOMER RAISES REQUEST (SAVED IN SQL + PAYMENT GATEWAY LEDGER)
+  // WORKFLOW 1: CUSTOMER RAISES REQUEST (SAVED IN SQL + CLOUD SYNC + LEDGER)
+  // Guaranteed to succeed from ANY booking flow (even if customer was not logged in!)
   // ===========================================================================
   const addRequest = (request) => {
-    if (!user) {
-      requireCustomerLogin("Booking aur payment ke liye pehle login karein")
-      return null
+    const resolvedName =
+      (request.userName || request.name || user?.name || "").trim() || "Guest Customer"
+    const resolvedPhone =
+      normalizePhone(request.userPhone || request.phone || user?.phone || "") || "9876543210"
+    const resolvedEmail =
+      (request.userEmail || request.email || user?.email || "").trim() ||
+      `${resolvedPhone}@pluggy.in`
+
+    // Ensure an active customer session exists so /track shows the booking immediately
+    let activeCustomer = user
+    if (!activeCustomer) {
+      activeCustomer = loginUser({
+        id: `USR-${Date.now().toString().slice(-5)}`,
+        name: resolvedName,
+        phone: resolvedPhone,
+        email: resolvedEmail,
+      })
+    } else if (!activeCustomer.id || (!activeCustomer.phone && resolvedPhone)) {
+      const patchedUser = {
+        ...activeCustomer,
+        id: activeCustomer.id || `USR-${Date.now().toString().slice(-5)}`,
+        phone: activeCustomer.phone || resolvedPhone,
+      }
+      setUser(patchedUser)
+      activeCustomer = patchedUser
     }
+
     const faultDraft = getFaultDraft()
     const id = request.id || Date.now()
     const transactionId = request.transactionId || `PLG${id.toString().slice(-8)}`
@@ -859,7 +922,7 @@ export function AppProvider({ children }) {
       ...request,
       id,
       transactionId,
-      userId: user?.id || "USR001",
+      userId: request.userId || activeCustomer?.id || "USR001",
       bookingMode,
       priority: isSOS ? "High" : request.priority || "Medium",
       status: isSOS && request.autoAssignSOS ? "ENGINEER_ASSIGNED" : "PENDING_EXECUTIVE",
@@ -874,9 +937,9 @@ export function AppProvider({ children }) {
       address: request.address || request.userAddress || address || "Indirapuram, Delhi NCR",
       userAddress:
         request.userAddress || request.address || address || "Indirapuram, Delhi NCR",
-      userName: request.userName || request.name || user?.name || "Customer",
-      userPhone: request.userPhone || request.phone || user?.phone || "9876543210",
-      userEmail: request.userEmail || user?.email || "",
+      userName: resolvedName,
+      userPhone: resolvedPhone,
+      userEmail: resolvedEmail,
       baseAmount: Number(request.baseAmount ?? request.amount ?? request.finalAmount ?? 249),
       partsAmount: Number(request.partsAmount ?? 0),
       amount: Number(request.amount ?? request.finalAmount ?? 249),
@@ -893,6 +956,7 @@ export function AppProvider({ children }) {
       faultPhotos: request.faultPhotos || faultDraft.photos || [],
       faultDevice: request.faultDevice || faultDraft.device || "",
       createdAt: request.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       date:
         request.date ||
         new Date().toLocaleDateString("en-IN", {
@@ -903,6 +967,18 @@ export function AppProvider({ children }) {
     }
 
     clearFaultDraft()
+
+    // Track this booking ID on this device so /track always displays it
+    setMyBookedIds((prev) => {
+      const nextIds = Array.from(new Set([String(id), ...(prev || []).map(String)]))
+      try {
+        localStorage.setItem("pluggy_my_booking_ids", JSON.stringify(nextIds))
+      } catch {
+        // ignore
+      }
+      return nextIds
+    })
+
     const nextRequests = [normalized, ...requests.filter((r) => r.id !== normalized.id)]
     setRequests(nextRequests)
     setBookings(nextRequests)
@@ -1594,6 +1670,7 @@ export function AppProvider({ children }) {
         a.id === alertId ? { ...a, status: "RESOLVED", resolvedAt: new Date().toISOString() } : a
       )
       saveSecurityAlerts(next)
+      syncTablesToSql({ security_alerts: next })
       return next
     })
     toast.success("Security alert marked resolved")
@@ -1736,9 +1813,11 @@ export function AppProvider({ children }) {
     completeJobWithOtp,
     unlockEngineerJobPin,
     resolveEngineerAlert,
+    raiseEngineerSecurityAlert,
     pingEngineerLiveLocation,
     engineerTelemetryLogs,
     engineerSecurityAlerts,
+    forceCloudSync: syncWithCloudServer,
     claimWarrantyRevisit,
     cancelRequest,
     rateRequest,

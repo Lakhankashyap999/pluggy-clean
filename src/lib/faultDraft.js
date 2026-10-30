@@ -28,8 +28,8 @@ export function clearFaultDraft() {
   }
 }
 
-// Resize + compress an image File to a small JPEG data URL (keeps storage light).
-export function compressImage(file, maxSide = 720, quality = 0.6) {
+// Resize + compress an image File to a small JPEG data URL (keeps storage & cloud sync light).
+export function compressImage(file, maxSide = 480, quality = 0.5) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onerror = reject

@@ -184,12 +184,6 @@ export default function BookService() {
 
   // Submit Booking - Opens Payment Popup
   const handleSubmit = () => {
-    if (!user) {
-      toast.error("Please login first!")
-      navigate("/login")
-      return
-    }
-
     if (!selectedService) {
       toast.error("Please select a service!")
       return
@@ -209,19 +203,25 @@ export default function BookService() {
   }
 
   // Payment Success Handler
-  const handlePaymentSuccess = (transactionId) => {
+  const handlePaymentSuccess = (transactionId, paymentMeta = {}) => {
     const serviceData = services.find((s) => s.id === selectedService)
 
     const bookingObj = {
       id: Date.now(),
-      transactionId: transactionId,
-      userId: user.id || user.email,
-      userName: formData.name,
-      userPhone: formData.phone,
+      transactionId: transactionId || paymentMeta?.transactionId || `PLG${Date.now().toString().slice(-8)}`,
+      paymentMethod: paymentMeta?.paymentMethod || "UPI",
+      paymentChannel: paymentMeta?.paymentChannel || "Pluggy Instant UPI",
+      paymentStatus:
+        paymentMeta?.paymentMethod === "PAY_AFTER_SERVICE"
+          ? "PAY_ON_COMPLETION"
+          : "ESCROW_HELD",
+      userId: user?.id || user?.email || `USR${Date.now().toString().slice(-5)}`,
+      userName: formData.name || user?.name || "Pluggy Customer",
+      userPhone: formData.phone || user?.phone || "+91 9876543210",
       userAddress: formData.address,
       address: formData.address,
-      service: serviceData.name,
-      issue: formData.issue || "General Service",
+      service: serviceData?.name || "Electrical & Appliance Service",
+      issue: formData.issue || serviceData?.name || "General Doorstep Service",
       timeSlot: selectedTimeSlot,
       date: new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
       status: "PENDING_EXECUTIVE",
@@ -236,7 +236,7 @@ export default function BookService() {
     toast.success("Booking Confirmed! Executive will call you shortly.")
     setIsFormDirty(false)
     setShowPayment(false)
-    navigate("/account/track")
+    navigate("/track")
   }
 
   const isFormValid = selectedService && selectedTimeSlot && formData.address.trim()

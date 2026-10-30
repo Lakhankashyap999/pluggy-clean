@@ -27,11 +27,6 @@ export default function VideoConsultModal({ open, onClose, initialTab = "sos" })
   if (!open) return null
 
   const ensureAuthAndAddress = () => {
-    if (!user) {
-      onClose()
-      requireCustomerLogin("Booking ke liye pehle login karein")
-      return false
-    }
     const finalAddr = (localAddress || "").trim() || (address || "").trim()
     if (!finalAddr) {
       toast.error("Please enter your house/flat address")

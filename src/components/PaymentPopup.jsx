@@ -1,5 +1,5 @@
 // src/components/PaymentPopup.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -126,6 +126,7 @@ export default function PaymentPopup({
   const [processingStep, setProcessingStep] = useState(0);
   const [transactionId, setTransactionId] = useState("");
   const [copied, setCopied] = useState(false);
+  const committedRef = useRef(false);
 
   const [cardForm, setCardForm] = useState({
     number: "4242 4242 4242 8890",
@@ -145,6 +146,7 @@ export default function PaymentPopup({
 
   useEffect(() => {
     if (!open) {
+      committedRef.current = false;
       setTimeout(() => {
         setStep("method");
         setSelectedMethod("UPI");
@@ -184,6 +186,30 @@ export default function PaymentPopup({
     }
   }, [step]);
 
+  // Auto-commit booking once payment reaches "success" so closing early never drops the booking
+  useEffect(() => {
+    if (step === "success" && transactionId && !committedRef.current) {
+      const timer = setTimeout(() => {
+        if (!committedRef.current) {
+          committedRef.current = true;
+          const meta = {
+            transactionId,
+            paymentMethod: selectedMethod || "UPI",
+            paymentChannel: selectedChannel || "Google Pay",
+            amount: Number(amount || 0),
+            paidAt: new Date().toISOString(),
+          };
+          setStep("method");
+          onClose();
+          if (onSuccess) {
+            onSuccess(transactionId, meta);
+          }
+        }
+      }, 1400);
+      return () => clearTimeout(timer);
+    }
+  }, [step, transactionId, selectedMethod, selectedChannel, amount, onClose, onSuccess]);
+
   if (!open) return null;
 
   const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
@@ -191,6 +217,7 @@ export default function PaymentPopup({
   const progressPercent = (timeLeft / 600) * 100;
 
   const triggerPaymentFlow = (methodName, channelName) => {
+    committedRef.current = false;
     setSelectedMethod(methodName);
     setSelectedChannel(channelName);
     setProcessingStep(0);
@@ -198,6 +225,8 @@ export default function PaymentPopup({
   };
 
   const handleSuccess = () => {
+    if (committedRef.current) return;
+    committedRef.current = true;
     const meta = {
       transactionId,
       paymentMethod: selectedMethod || "UPI",

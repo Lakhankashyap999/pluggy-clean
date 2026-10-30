@@ -50,11 +50,6 @@ export default function Cart({ open, onClose }) {
   }
 
   const handleCheckout = () => {
-    if (!user) {
-      onClose()
-      requireCustomerLogin("Checkout aur payment ke liye pehle login karein")
-      return
-    }
     if (!address || address.trim() === "") {
       setShowAddressForm(true)
       return

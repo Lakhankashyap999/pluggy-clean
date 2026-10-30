@@ -1,10 +1,21 @@
 // src/lib/sqlDatabase.js
-// Relational SQL Database Engine with Persistent Tables & Real-Time Cross-Portal Sync
+// Relational SQL Database Engine with Persistent Tables, Quota-Safe Storage & Real-Time Cross-Device Cloud Sync
 
 const DB_STORAGE_KEY = "pluggy_sql_relational_db_v2"
 const SYNC_CHANNEL_NAME = "pluggy_sql_realtime_channel"
 
-const INITIAL_SQL_TABLES = {
+const STATUS_RANK = {
+  PENDING_EXECUTIVE: 1,
+  EXECUTIVE_VERIFIED: 2,
+  ENGINEER_ASSIGNED: 3,
+  IN_PROGRESS: 4,
+  COMPLETED: 5,
+  CANCELLED: 6,
+}
+
+export const INITIAL_SQL_TABLES = {
+  resetAt: 0,
+  deletedEngineerIds: [],
   users: [
     {
       id: "USR001",
@@ -189,46 +200,327 @@ const INITIAL_SQL_TABLES = {
       createdAt: new Date(Date.now() - 3600 * 1000 * 1.5).toISOString(),
     },
   ],
+  telemetry_logs: [],
+  security_alerts: [],
 }
 
 let syncChannel = null
 if (typeof window !== "undefined" && "BroadcastChannel" in window) {
   try {
     syncChannel = new BroadcastChannel(SYNC_CHANNEL_NAME)
-  } catch (e) {
+  } catch {
     syncChannel = null
   }
+}
+
+function getRowKey(row) {
+  if (!row || typeof row !== "object") return null
+  return String(row.id ?? row.txnId ?? row.transactionId ?? row.logId ?? "").trim()
+}
+
+function getRowTime(row) {
+  if (!row || typeof row !== "object") return 0
+  const candidates = [
+    row.updatedAt,
+    row.completedAt,
+    row.resolvedAt,
+    row.workProofUploadedAt,
+    row.startedAt,
+    row.arrivedAt,
+    row.travelStartedAt,
+    row.assignedAt,
+    row.verifiedAt,
+    row.lastSeenAt,
+    row.lastLogoutAt,
+    row.lastLoginAt,
+    row.shiftStartedAt,
+    row.ratedAt,
+    row.cancelledAt,
+    row.createdAt,
+    row.timestamp,
+    row.joinedAt,
+  ]
+  let maxMs = 0
+  for (const c of candidates) {
+    if (!c) continue
+    const ms = new Date(c).getTime()
+    if (Number.isFinite(ms) && ms > maxMs) maxMs = ms
+  }
+  return maxMs
+}
+
+function pickNewerRow(a, b, tableName) {
+  if (!a) return b
+  if (!b) return a
+
+  if (tableName === "service_requests") {
+    const rankA = STATUS_RANK[a.status] || 0
+    const rankB = STATUS_RANK[b.status] || 0
+    if (rankB > rankA) return { ...a, ...b }
+    if (rankA > rankB) return { ...b, ...a }
+  }
+
+  const timeA = getRowTime(a)
+  const timeB = getRowTime(b)
+  if (timeB >= timeA) {
+    return { ...a, ...b }
+  }
+  return { ...b, ...a }
+}
+
+export function mergeTableRows(baseRows = [], incomingRows = [], tableName = "", deletedIds = []) {
+  const deletedSet = new Set((deletedIds || []).map((id) => String(id)))
+  const map = new Map()
+
+  for (const row of Array.isArray(baseRows) ? baseRows : []) {
+    const key = getRowKey(row)
+    if (!key || deletedSet.has(key)) continue
+    map.set(key, row)
+  }
+
+  for (const row of Array.isArray(incomingRows) ? incomingRows : []) {
+    const key = getRowKey(row)
+    if (!key || deletedSet.has(key)) continue
+    if (!map.has(key)) {
+      map.set(key, row)
+    } else {
+      map.set(key, pickNewerRow(map.get(key), row, tableName))
+    }
+  }
+
+  const merged = Array.from(map.values())
+  if (
+    [
+      "service_requests",
+      "payment_transactions",
+      "order_history_logs",
+      "telemetry_logs",
+      "security_alerts",
+    ].includes(tableName)
+  ) {
+    merged.sort((x, y) => {
+      const diff = getRowTime(y) - getRowTime(x)
+      if (diff !== 0) return diff
+      return (Number(y.id) || 0) - (Number(x.id) || 0)
+    })
+  }
+  return merged
 }
 
 export function loadSqlDatabase() {
   try {
     const raw = localStorage.getItem(DB_STORAGE_KEY)
-    if (!raw) {
-      localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(INITIAL_SQL_TABLES))
-      return INITIAL_SQL_TABLES
+    const legacyReqsRaw = localStorage.getItem("pluggy_requests")
+    let legacyReqs = []
+    if (legacyReqsRaw) {
+      try {
+        const parsedLegacy = JSON.parse(legacyReqsRaw)
+        if (Array.isArray(parsedLegacy)) legacyReqs = parsedLegacy
+      } catch {
+        legacyReqs = []
+      }
     }
+
+    if (!raw) {
+      const seeded = {
+        ...INITIAL_SQL_TABLES,
+        service_requests: mergeTableRows(
+          INITIAL_SQL_TABLES.service_requests,
+          legacyReqs,
+          "service_requests"
+        ),
+      }
+      safeWriteLocalStorage(DB_STORAGE_KEY, seeded)
+      return seeded
+    }
+
     const parsed = JSON.parse(raw)
+    const deletedEngIds = parsed.deletedEngineerIds || []
     return {
+      resetAt: parsed.resetAt || 0,
+      deletedEngineerIds: deletedEngIds,
       users: parsed.users || INITIAL_SQL_TABLES.users,
-      engineers: parsed.engineers || INITIAL_SQL_TABLES.engineers,
+      engineers: (parsed.engineers || INITIAL_SQL_TABLES.engineers).filter(
+        (e) => !deletedEngIds.includes(String(e.id))
+      ),
       admins: parsed.admins || INITIAL_SQL_TABLES.admins,
-      service_requests: parsed.service_requests || INITIAL_SQL_TABLES.service_requests,
+      service_requests: mergeTableRows(
+        parsed.service_requests || INITIAL_SQL_TABLES.service_requests,
+        legacyReqs,
+        "service_requests"
+      ),
       payment_transactions:
         parsed.payment_transactions || INITIAL_SQL_TABLES.payment_transactions,
       order_history_logs: parsed.order_history_logs || INITIAL_SQL_TABLES.order_history_logs,
+      telemetry_logs: parsed.telemetry_logs || [],
+      security_alerts: parsed.security_alerts || [],
     }
-  } catch (e) {
+  } catch {
     return INITIAL_SQL_TABLES
   }
 }
 
-export function saveSqlDatabase(nextDb) {
+function safeWriteLocalStorage(key, dbObj) {
   try {
-    localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(nextDb))
+    localStorage.setItem(key, JSON.stringify(dbObj))
+    // Keep pluggy_requests in sync without duplicating heavy base64 images
+    const lightRequests = (dbObj.service_requests || []).map((r) => ({
+      ...r,
+      faultPhotos: (r.faultPhotos || []).slice(0, 2),
+      workProofPhotos: (r.workProofPhotos || []).slice(0, 2),
+    }))
+    localStorage.setItem("pluggy_requests", JSON.stringify(lightRequests))
+    return true
+  } catch (err) {
+    // QuotaExceededError fallback: strip heavy base64 images from older records so bookings NEVER fail
+    try {
+      const compactDb = {
+        ...dbObj,
+        service_requests: (dbObj.service_requests || []).slice(0, 50).map((r, idx) =>
+          idx < 5
+            ? r
+            : {
+                ...r,
+                faultPhotos: [],
+                workProofPhotos: [],
+              }
+        ),
+        order_history_logs: (dbObj.order_history_logs || []).slice(0, 80),
+        telemetry_logs: (dbObj.telemetry_logs || []).slice(0, 60),
+      }
+      localStorage.removeItem("pluggy_bookings")
+      localStorage.setItem(key, JSON.stringify(compactDb))
+      localStorage.setItem("pluggy_requests", JSON.stringify(compactDb.service_requests))
+      return true
+    } catch (innerErr) {
+      console.error("SQL storage fallback error", innerErr)
+      return false
+    }
+  }
+}
+
+let isSyncingCloud = false
+
+export async function syncWithCloudServer(options = { forceReset: false }) {
+  if (typeof window === "undefined") return null
+  if (isSyncingCloud && !options.forceReset) return null
+  isSyncingCloud = true
+
+  try {
+    const localDb = loadSqlDatabase()
+    const res = await fetch("/api/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        db: localDb,
+        forceReset: Boolean(options.forceReset),
+      }),
+    })
+
+    if (!res.ok) {
+      isSyncingCloud = false
+      return null
+    }
+
+    const data = await res.json()
+    if (!data?.ok || !data?.db) {
+      isSyncingCloud = false
+      return null
+    }
+
+    const cloudDb = data.db
+    const mergedDeletedEngIds = Array.from(
+      new Set([
+        ...(localDb.deletedEngineerIds || []),
+        ...(cloudDb.deletedEngineerIds || []),
+      ])
+    )
+
+    // If cloud had a newer resetAt, adopt cloud state
+    const isCloudResetNewer = (cloudDb.resetAt || 0) > (localDb.resetAt || 0)
+    const nextDb = isCloudResetNewer
+      ? {
+          ...INITIAL_SQL_TABLES,
+          ...cloudDb,
+        }
+      : {
+          resetAt: Math.max(localDb.resetAt || 0, cloudDb.resetAt || 0),
+          deletedEngineerIds: mergedDeletedEngIds,
+          users: mergeTableRows(localDb.users, cloudDb.users, "users"),
+          engineers: mergeTableRows(
+            localDb.engineers,
+            cloudDb.engineers,
+            "engineers",
+            mergedDeletedEngIds
+          ),
+          admins: mergeTableRows(localDb.admins, cloudDb.admins, "admins"),
+          service_requests: mergeTableRows(
+            localDb.service_requests,
+            cloudDb.service_requests,
+            "service_requests"
+          ),
+          payment_transactions: mergeTableRows(
+            localDb.payment_transactions,
+            cloudDb.payment_transactions,
+            "payment_transactions"
+          ),
+          order_history_logs: mergeTableRows(
+            localDb.order_history_logs,
+            cloudDb.order_history_logs,
+            "order_history_logs"
+          ),
+          telemetry_logs: mergeTableRows(
+            localDb.telemetry_logs,
+            cloudDb.telemetry_logs,
+            "telemetry_logs"
+          ),
+          security_alerts: mergeTableRows(
+            localDb.security_alerts,
+            cloudDb.security_alerts,
+            "security_alerts"
+          ),
+        }
+
+    // Check if request count or timestamps changed before firing UI update event
+    const prevJson = JSON.stringify({
+      r: (localDb.service_requests || []).map((x) => [x.id, x.status, x.updatedAt, x.assignedEngineerId, x.pinLocked]),
+      e: (localDb.engineers || []).map((x) => [x.id, x.isOnline, x.walletBalance, x.completedCount, x.lastSeenAt]),
+      p: (localDb.payment_transactions || []).length,
+      l: (localDb.order_history_logs || []).length,
+      t: (localDb.telemetry_logs || []).length,
+      a: (localDb.security_alerts || []).map((x) => [x.id, x.status]),
+    })
+    const nextJson = JSON.stringify({
+      r: (nextDb.service_requests || []).map((x) => [x.id, x.status, x.updatedAt, x.assignedEngineerId, x.pinLocked]),
+      e: (nextDb.engineers || []).map((x) => [x.id, x.isOnline, x.walletBalance, x.completedCount, x.lastSeenAt]),
+      p: (nextDb.payment_transactions || []).length,
+      l: (nextDb.order_history_logs || []).length,
+      t: (nextDb.telemetry_logs || []).length,
+      a: (nextDb.security_alerts || []).map((x) => [x.id, x.status]),
+    })
+
+    safeWriteLocalStorage(DB_STORAGE_KEY, nextDb)
+    if (prevJson !== nextJson) {
+      window.dispatchEvent(new CustomEvent("pluggy:sql-updated"))
+    }
+    isSyncingCloud = false
+    return nextDb
+  } catch {
+    isSyncingCloud = false
+    return null
+  }
+}
+
+export function saveSqlDatabase(nextDb, options = { syncCloud: true, forceReset: false }) {
+  try {
+    safeWriteLocalStorage(DB_STORAGE_KEY, nextDb)
     if (syncChannel) {
       syncChannel.postMessage({ type: "SQL_DB_UPDATED", timestamp: Date.now() })
     }
     window.dispatchEvent(new CustomEvent("pluggy:sql-updated"))
+    if (options.syncCloud !== false) {
+      syncWithCloudServer({ forceReset: Boolean(options.forceReset) })
+    }
   } catch (e) {
     console.error("SQL save error", e)
   }
@@ -236,7 +528,7 @@ export function saveSqlDatabase(nextDb) {
 
 export function subscribeToSqlChanges(callback) {
   const handleStorage = (e) => {
-    if (e.key === DB_STORAGE_KEY) {
+    if (e.key === DB_STORAGE_KEY || e.key === "pluggy_requests") {
       callback(loadSqlDatabase())
     }
   }
@@ -248,16 +540,32 @@ export function subscribeToSqlChanges(callback) {
       callback(loadSqlDatabase())
     }
   }
+  const handleVisibility = () => {
+    if (document.visibilityState === "visible") {
+      syncWithCloudServer()
+    }
+  }
 
   window.addEventListener("storage", handleStorage)
   window.addEventListener("pluggy:sql-updated", handleCustom)
+  window.addEventListener("focus", handleVisibility)
+  document.addEventListener("visibilitychange", handleVisibility)
   if (syncChannel) {
     syncChannel.addEventListener("message", handleBroadcast)
   }
 
+  // Initial Cloud Pull/Push on mount + continuous 3-second Cross-Device Heartbeat
+  syncWithCloudServer()
+  const pollInterval = setInterval(() => {
+    syncWithCloudServer()
+  }, 3000)
+
   return () => {
+    clearInterval(pollInterval)
     window.removeEventListener("storage", handleStorage)
     window.removeEventListener("pluggy:sql-updated", handleCustom)
+    window.removeEventListener("focus", handleVisibility)
+    document.removeEventListener("visibilitychange", handleVisibility)
     if (syncChannel) {
       syncChannel.removeEventListener("message", handleBroadcast)
     }
@@ -296,6 +604,10 @@ export function executeSqlQuery(queryString = "SELECT * FROM service_requests") 
 }
 
 export function resetSqlDatabaseToSeed() {
-  saveSqlDatabase(INITIAL_SQL_TABLES)
-  return INITIAL_SQL_TABLES
+  const seeded = {
+    ...INITIAL_SQL_TABLES,
+    resetAt: Date.now(),
+  }
+  saveSqlDatabase(seeded, { syncCloud: true, forceReset: true })
+  return seeded
 }

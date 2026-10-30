@@ -46,11 +46,6 @@ export default function CartPage() {
   }
 
   const handleCheckout = () => {
-    if (!user) {
-      toast.error("Please login first")
-      navigate("/login", { state: { from: "/account/cart" } })
-      return
-    }
     if (!address || address.trim() === "") {
       setShowForm(true)
       toast.error("Please add your delivery address")
@@ -208,10 +203,16 @@ export default function CartPage() {
         open={showPayment}
         onClose={() => setShowPayment(false)}
         amount={finalTotal}
-        onSuccess={(transactionId) => {
+        onSuccess={(transactionId, paymentMeta = {}) => {
           const newRequest = {
             id: Date.now(),
-            transactionId: transactionId || `PLG${Date.now().toString().slice(-8)}`,
+            transactionId: transactionId || paymentMeta?.transactionId || `PLG${Date.now().toString().slice(-8)}`,
+            paymentMethod: paymentMeta?.paymentMethod || "UPI",
+            paymentChannel: paymentMeta?.paymentChannel || "Pluggy Instant UPI",
+            paymentStatus:
+              paymentMeta?.paymentMethod === "PAY_AFTER_SERVICE"
+                ? "PAY_ON_COMPLETION"
+                : "ESCROW_HELD",
             items: cart,
             issue: cart.map((c) => c.issue).join(", "),
             service: [...new Set(cart.map((c) => c.service || c.subcategory || "Service"))].join(", "),
@@ -220,16 +221,16 @@ export default function CartPage() {
             amount: finalTotal,
             status: "PENDING_EXECUTIVE",
             createdAt: new Date().toISOString(),
-            userName: user?.name || "Guest",
-            userPhone: user?.phone || "",
-            userEmail: user?.email || "",
+            userName: user?.name || "Pluggy Customer",
+            userPhone: user?.phone || "+91 9876543210",
+            userEmail: user?.email || "customer@pluggy.in",
           }
 
           addRequest(newRequest)
           clearCart()
           setShowPayment(false)
           toast.success("Booking confirmed!")
-          navigate("/account/track")
+          navigate("/track")
         }}
       />
     </div>
