@@ -127,6 +127,13 @@ export default function PaymentPopup({
   const [transactionId, setTransactionId] = useState("");
   const [copied, setCopied] = useState(false);
   const committedRef = useRef(false);
+  const onSuccessRef = useRef(onSuccess);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onSuccessRef.current = onSuccess;
+    onCloseRef.current = onClose;
+  }, [onSuccess, onClose]);
 
   const [cardForm, setCardForm] = useState({
     number: "4242 4242 4242 8890",
@@ -179,14 +186,14 @@ export default function PaymentPopup({
             const txId = generateTransactionId();
             setTransactionId(txId);
             setStep("success");
-          }, 500);
+          }, 300);
         }
-      }, 650);
+      }, 380);
       return () => clearInterval(interval);
     }
   }, [step]);
 
-  // Auto-commit booking once payment reaches "success" so closing early never drops the booking
+  // Auto-commit booking once payment reaches "success" (stable dependency array so 1s timer never cancels it)
   useEffect(() => {
     if (step === "success" && transactionId && !committedRef.current) {
       const timer = setTimeout(() => {
@@ -200,15 +207,17 @@ export default function PaymentPopup({
             paidAt: new Date().toISOString(),
           };
           setStep("method");
-          onClose();
-          if (onSuccess) {
-            onSuccess(transactionId, meta);
+          if (onSuccessRef.current) {
+            onSuccessRef.current(transactionId, meta);
+          }
+          if (onCloseRef.current) {
+            onCloseRef.current();
           }
         }
-      }, 1400);
+      }, 800);
       return () => clearTimeout(timer);
     }
-  }, [step, transactionId, selectedMethod, selectedChannel, amount, onClose, onSuccess]);
+  }, [step, transactionId, selectedMethod, selectedChannel, amount]);
 
   if (!open) return null;
 
@@ -235,9 +244,11 @@ export default function PaymentPopup({
       paidAt: new Date().toISOString(),
     };
     setStep("method");
-    onClose();
-    if (onSuccess) {
-      onSuccess(transactionId, meta);
+    if (onSuccessRef.current) {
+      onSuccessRef.current(transactionId, meta);
+    }
+    if (onCloseRef.current) {
+      onCloseRef.current();
     }
   };
 

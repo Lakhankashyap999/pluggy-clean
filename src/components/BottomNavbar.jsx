@@ -15,11 +15,12 @@ import { useNavigate, useLocation } from "react-router-dom"
 import { useApp } from "../AppContext"
 import { CATEGORIES_CATALOG } from "../data/servicesCatalog"
 import { motion, AnimatePresence } from "framer-motion"
+import toast from "react-hot-toast"
 
 export default function BottomNavbar() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const { cart, requests } = useApp()
+  const { cart, clearCart, addRequest, user, address, city, requests } = useApp()
 
   const [servicesOpen, setServicesOpen] = useState(false)
   const [visible, setVisible] = useState(true)
@@ -28,6 +29,44 @@ export default function BottomNavbar() {
   const activeBookingsCount = (requests || []).filter(
     (r) => !["Completed", "COMPLETED", "Cancelled", "CANCELLED"].includes(r.status)
   ).length
+
+  const cartTotal = (cart || []).reduce((sum, item) => sum + Number(item.price || 0), 0)
+  const hideFloatingCartBar =
+    pathname.startsWith("/account/cart") ||
+    pathname.startsWith("/book-service") ||
+    pathname.startsWith("/request") ||
+    pathname.startsWith("/services/")
+
+  const handleOneTapInstantBook = () => {
+    if (!cart || cart.length === 0) return
+    const finalAddr = (address || "").trim() || city || "Indirapuram, Delhi NCR"
+    const newRequest = {
+      id: Date.now(),
+      transactionId: `PLG${Date.now().toString().slice(-8)}`,
+      paymentMethod: "PAY_AFTER_SERVICE",
+      paymentChannel: "Pay After Happy-PIN Satisfaction",
+      paymentStatus: "PAY_ON_COMPLETION",
+      items: cart,
+      issue: cart.map((i) => i.issue || i.name).join(", "),
+      service: [
+        ...new Set(
+          cart.map((i) => i.service || i.categoryName || i.subcategory || i.name || "Service")
+        ),
+      ].join(", "),
+      address: finalAddr,
+      userAddress: finalAddr,
+      amount: cartTotal + 50,
+      status: "PENDING_EXECUTIVE",
+      createdAt: new Date().toISOString(),
+      userName: user?.name || "Pluggy Customer",
+      userPhone: user?.phone || "+91 9876543210",
+      userEmail: user?.email || "customer@pluggy.in",
+    }
+    addRequest(newRequest)
+    clearCart()
+    toast.success("Booking Confirmed & Dispatched to Admin Control Desk! ✅")
+    navigate("/track")
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -64,6 +103,40 @@ export default function BottomNavbar() {
 
   return (
     <>
+      {/* Global Sticky Floating Cart & 1-Tap Instant Booking Bar (Whenever Cart has items) */}
+      {cart.length > 0 && !hideFloatingCartBar && (
+        <div
+          className={`fixed left-3 right-3 md:left-auto md:right-6 md:w-[440px] z-40 transition-all duration-300 ${
+            visible ? "bottom-[64px] md:bottom-5" : "bottom-3 md:bottom-5"
+          }`}
+        >
+          <div className="bg-[#1A2A49] text-white rounded-2xl p-3 shadow-2xl border border-[#F37021]/60 flex items-center justify-between gap-2">
+            <div onClick={openCartPopup} className="min-w-0 cursor-pointer">
+              <p className="text-xs font-extrabold text-white truncate">
+                🛒 {cart.length} Service{cart.length > 1 ? "s" : ""} Selected • ₹{cartTotal}
+              </p>
+              <p className="text-[10px] text-amber-300 truncate">
+                {cart.map((c) => c.name || c.issue).join(", ")}
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                onClick={openCartPopup}
+                className="px-2.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white text-[11px] font-bold transition"
+              >
+                Cart
+              </button>
+              <button
+                onClick={handleOneTapInstantBook}
+                className="px-3 py-2 rounded-xl bg-[#F37021] hover:bg-[#e05e15] text-white text-xs font-extrabold shadow transition flex items-center gap-1"
+              >
+                ⚡ Book Now <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Bottom App Bar (Auto-Hides on Downward Scroll so Screen Stays 100% Open) */}
       <div
         className={`md:hidden fixed bottom-0 left-0 right-0 bg-[#1A2A49] text-white border-t border-white/15 shadow-2xl z-50 transition-transform duration-300 ${

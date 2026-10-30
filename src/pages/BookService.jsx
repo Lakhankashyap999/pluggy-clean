@@ -185,26 +185,54 @@ export default function BookService() {
   // Submit Booking - Opens Payment Popup
   const handleSubmit = () => {
     if (!selectedService) {
-      toast.error("Please select a service!")
-      return
+      setSelectedService(services[0].id)
     }
-
     if (!selectedTimeSlot) {
-      toast.error("Please select a time slot!")
-      return
+      setSelectedTimeSlot("10:00 AM - 12:00 PM")
     }
-
     if (!formData.address.trim()) {
-      toast.error("Please enter your address!")
-      return
+      setFormData((prev) => ({ ...prev, address: savedAddress || "Indirapuram, Delhi NCR" }))
     }
 
     setShowPayment(true)
   }
 
+  const handleInstantBookPayLater = () => {
+    const chosenServiceId = selectedService || services[0].id
+    const serviceData = services.find((s) => s.id === chosenServiceId) || services[0]
+    const finalAddr = formData.address.trim() || savedAddress || "Indirapuram, Delhi NCR"
+    const bookingObj = {
+      id: Date.now(),
+      transactionId: `PLG${Date.now().toString().slice(-8)}`,
+      paymentMethod: "PAY_AFTER_SERVICE",
+      paymentChannel: "Pay After Happy-PIN Satisfaction",
+      paymentStatus: "PAY_ON_COMPLETION",
+      userId: user?.id || user?.email || `USR${Date.now().toString().slice(-5)}`,
+      userName: formData.name || user?.name || "Pluggy Customer",
+      userPhone: formData.phone || user?.phone || "+91 9876543210",
+      userAddress: finalAddr,
+      address: finalAddr,
+      service: serviceData.name,
+      issue: formData.issue || serviceData.name || "General Doorstep Service",
+      timeSlot: selectedTimeSlot || "Immediate (Within 60 Mins)",
+      date: new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
+      status: "PENDING_EXECUTIVE",
+      amount: price.total || serviceData.basePrice || 249,
+      createdAt: new Date().toISOString(),
+      selectedIssues: formData.issue ? [formData.issue] : [],
+      priority: "Medium",
+    }
+    addRequest(bookingObj)
+    toast.success("Booking Confirmed & Sent to Admin Control Desk! ✅")
+    setIsFormDirty(false)
+    navigate("/track")
+  }
+
   // Payment Success Handler
   const handlePaymentSuccess = (transactionId, paymentMeta = {}) => {
-    const serviceData = services.find((s) => s.id === selectedService)
+    const chosenServiceId = selectedService || services[0].id
+    const serviceData = services.find((s) => s.id === chosenServiceId) || services[0]
+    const finalAddr = formData.address.trim() || savedAddress || "Indirapuram, Delhi NCR"
 
     const bookingObj = {
       id: Date.now(),
@@ -218,14 +246,14 @@ export default function BookService() {
       userId: user?.id || user?.email || `USR${Date.now().toString().slice(-5)}`,
       userName: formData.name || user?.name || "Pluggy Customer",
       userPhone: formData.phone || user?.phone || "+91 9876543210",
-      userAddress: formData.address,
-      address: formData.address,
+      userAddress: finalAddr,
+      address: finalAddr,
       service: serviceData?.name || "Electrical & Appliance Service",
       issue: formData.issue || serviceData?.name || "General Doorstep Service",
-      timeSlot: selectedTimeSlot,
+      timeSlot: selectedTimeSlot || "Immediate (Within 60 Mins)",
       date: new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
       status: "PENDING_EXECUTIVE",
-      amount: price.total,
+      amount: price.total || serviceData.basePrice || 249,
       createdAt: new Date().toISOString(),
       selectedIssues: formData.issue ? [formData.issue] : [],
       priority: "Medium",
@@ -550,22 +578,20 @@ export default function BookService() {
       </div>
 
       {/* ====== Sticky Bottom CTA ====== */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4 z-30">
-        <div className="max-w-4xl mx-auto">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-3.5 z-30">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <button
+            onClick={handleInstantBookPayLater}
+            className="w-full py-3.5 rounded-xl font-extrabold text-white bg-[#F37021] hover:bg-[#e05e15] shadow-md transition-all text-sm"
+          >
+            ⚡ Instant Book Now (Pay After Service)
+          </button>
           <button
             onClick={handleSubmit}
-            disabled={!isFormValid}
-            className={`w-full py-4 rounded-xl font-semibold text-white transition-all ${
-              isFormValid
-                ? "bg-[#1A2A49] hover:bg-[#223a61] shadow-lg hover:shadow-xl"
-                : "bg-gray-300 cursor-not-allowed"
-            }`}
+            className="w-full py-3.5 rounded-xl font-extrabold text-white bg-[#1A2A49] hover:bg-[#223a61] shadow-md transition-all text-sm"
           >
-            {isFormValid ? `🚀 Confirm & Book (₹${price.total})` : "Fill all required fields"}
+            💳 Pay Online & Book (₹{price.total || 249})
           </button>
-          <p className="text-xs text-gray-500 text-center mt-2">
-            ✅ No hidden charges • Free cancellation
-          </p>
         </div>
       </div>
 

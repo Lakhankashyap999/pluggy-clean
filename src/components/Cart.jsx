@@ -16,13 +16,13 @@ export default function Cart({ open, onClose }) {
     clearCart,
     addRequest,
     user,
+    city,
     address,
     setAddress,
     appliedCoupon,
-    requireCustomerLogin,
   } = useApp()
-  const [tempAddress, setTempAddress] = useState("")
-  const [showAddressForm, setShowAddressForm] = useState(false)
+  const [tempAddress, setTempAddress] = useState(address || "")
+  const [showAddressForm, setShowAddressForm] = useState(!address)
   const [showPayment, setShowPayment] = useState(false)
 
   const subtotal = cart.reduce((sum, item) => sum + Number(item.price || 0), 0)
@@ -37,27 +37,43 @@ export default function Cart({ open, onClose }) {
   const discount = Math.max(bundleDiscount, couponDiscount)
   const finalTotal = Math.max(0, subtotal + labourCharge - discount)
 
+  const resolveEffectiveAddress = () => {
+    const candidate = (tempAddress || "").trim() || (address || "").trim() || city || "Delhi NCR"
+    if (candidate && candidate !== address) {
+      setAddress(candidate)
+      localStorage.setItem("pluggy_address", candidate)
+    }
+    return candidate
+  }
+
   const handleSaveAddress = () => {
-    if (!tempAddress.trim()) {
+    const candidate = (tempAddress || "").trim()
+    if (!candidate) {
       toast.error("Please enter address")
       return
     }
-    setAddress(tempAddress)
-    localStorage.setItem("pluggy_address", tempAddress)
-    setTempAddress("")
+    setAddress(candidate)
+    localStorage.setItem("pluggy_address", candidate)
     setShowAddressForm(false)
     toast.success("Address saved")
   }
 
   const handleCheckout = () => {
-    if (!address || address.trim() === "") {
-      setShowAddressForm(true)
-      return
-    }
+    resolveEffectiveAddress()
     setShowPayment(true)
   }
 
+  const handleInstantBookPayLater = () => {
+    const finalAddr = resolveEffectiveAddress()
+    handlePaymentSuccess(`PLG${Date.now().toString().slice(-8)}`, {
+      paymentMethod: "PAY_AFTER_SERVICE",
+      paymentChannel: "Pay After Happy-PIN Satisfaction",
+      addressOverride: finalAddr,
+    })
+  }
+
   const handlePaymentSuccess = (transactionId, paymentMeta = {}) => {
+    const finalAddr = paymentMeta?.addressOverride || resolveEffectiveAddress()
     const newRequest = {
       id: Date.now(),
       transactionId: transactionId || paymentMeta?.transactionId || `PLG${Date.now().toString().slice(-8)}`,
@@ -68,22 +84,22 @@ export default function Cart({ open, onClose }) {
           ? "PAY_ON_COMPLETION"
           : "ESCROW_HELD",
       items: cart,
-      issue: cart.map((i) => i.issue).join(", "),
-      service: [...new Set(cart.map((i) => i.service || i.subcategory || "Service"))].join(", "),
-      address: address,
-      userAddress: address,
+      issue: cart.map((i) => i.issue || i.name).join(", "),
+      service: [...new Set(cart.map((i) => i.service || i.categoryName || i.subcategory || i.name || "Service"))].join(", "),
+      address: finalAddr,
+      userAddress: finalAddr,
       amount: finalTotal,
       status: "PENDING_EXECUTIVE",
       createdAt: new Date().toISOString(),
-      userName: user?.name || "Lakhan Kashyap",
+      userName: user?.name || "Pluggy Customer",
       userPhone: user?.phone || "+91 9876543210",
-      userEmail: user?.email || "lakhan@pluggy.in",
+      userEmail: user?.email || "customer@pluggy.in",
     }
     addRequest(newRequest)
     clearCart()
     setShowPayment(false)
     onClose()
-    toast.success("Booking saved to SQL Database & dispatched!")
+    toast.success("Booking Confirmed & Sent to Admin Control Desk! ✅")
     navigate("/track")
   }
 
@@ -300,18 +316,21 @@ export default function Cart({ open, onClose }) {
                     </div>
                   </div>
 
-                  {/* Checkout Button */}
-                  <button
-                    onClick={handleCheckout}
-                    disabled={!address}
-                    className={`w-full py-3.5 rounded-full font-semibold text-white flex items-center justify-center gap-2 transition-all text-sm sm:text-base ${
-                      address
-                        ? "bg-gradient-to-r from-[#F37021] to-[#FF8C42] hover:shadow-lg active:scale-[0.98]"
-                        : "bg-gray-300 cursor-not-allowed"
-                    }`}
-                  >
-                    Proceed to Checkout <ArrowRight size={18} />
-                  </button>
+                  {/* Checkout Buttons (Never Disabled — Auto-saves typed address) */}
+                  <div className="grid grid-cols-1 gap-2">
+                    <button
+                      onClick={handleInstantBookPayLater}
+                      className="w-full py-3.5 rounded-full font-extrabold text-white bg-gradient-to-r from-[#F37021] to-[#FF8C42] hover:shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 transition-all text-sm"
+                    >
+                      ⚡ Instant Book Now (Pay After Service) <ArrowRight size={17} />
+                    </button>
+                    <button
+                      onClick={handleCheckout}
+                      className="w-full py-3 rounded-full font-bold text-[#1A2A49] bg-[#F4F6F9] hover:bg-gray-200 flex items-center justify-center gap-2 transition-all text-xs sm:text-sm"
+                    >
+                      💳 Pay Online via UPI / Card (₹{finalTotal})
+                    </button>
+                  </div>
 
                   {/* Trust Badges */}
                   <div className="flex items-center justify-center gap-3 text-[10px] sm:text-xs text-gray-500 flex-wrap">

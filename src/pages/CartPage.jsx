@@ -9,9 +9,9 @@ import FaultMediaUpload from "../components/FaultMediaUpload"
 import toast from "react-hot-toast"
 
 export default function CartPage() {
-  const { cart, address, setAddress, setCart, clearCart, addRequest, user, appliedCoupon } = useApp()
-  const [tempAddress, setTempAddress] = useState("")
-  const [showForm, setShowForm] = useState(false)
+  const { cart, address, setAddress, city, setCart, clearCart, addRequest, user, appliedCoupon } = useApp()
+  const [tempAddress, setTempAddress] = useState(address || "")
+  const [showForm, setShowForm] = useState(!address)
   const [showPayment, setShowPayment] = useState(false)
   const navigate = useNavigate()
 
@@ -26,14 +26,22 @@ export default function CartPage() {
   const discount = Math.max(baseDiscount, couponDiscount)
   const finalTotal = Math.max(0, subtotal + labourCharge - discount)
 
+  const resolveEffectiveAddress = () => {
+    const candidate = (tempAddress || "").trim() || (address || "").trim() || city || "Delhi NCR"
+    if (candidate && candidate !== address) {
+      setAddress(candidate)
+      localStorage.setItem("pluggy_address", candidate)
+    }
+    return candidate
+  }
+
   const handleSave = () => {
     if (!tempAddress.trim()) {
       toast.error("Please enter your address")
       return
     }
-    setAddress(tempAddress)
-    localStorage.setItem("pluggy_address", tempAddress)
-    setTempAddress("")
+    setAddress(tempAddress.trim())
+    localStorage.setItem("pluggy_address", tempAddress.trim())
     setShowForm(false)
     toast.success("Address saved")
   }
@@ -46,12 +54,34 @@ export default function CartPage() {
   }
 
   const handleCheckout = () => {
-    if (!address || address.trim() === "") {
-      setShowForm(true)
-      toast.error("Please add your delivery address")
-      return
-    }
+    resolveEffectiveAddress()
     setShowPayment(true)
+  }
+
+  const handleInstantBookPayLater = () => {
+    const finalAddr = resolveEffectiveAddress()
+    const newRequest = {
+      id: Date.now(),
+      transactionId: `PLG${Date.now().toString().slice(-8)}`,
+      paymentMethod: "PAY_AFTER_SERVICE",
+      paymentChannel: "Pay After Happy-PIN Satisfaction",
+      paymentStatus: "PAY_ON_COMPLETION",
+      items: cart,
+      issue: cart.map((c) => c.issue || c.name).join(", "),
+      service: [...new Set(cart.map((c) => c.service || c.categoryName || c.subcategory || c.name || "Service"))].join(", "),
+      address: finalAddr,
+      userAddress: finalAddr,
+      amount: finalTotal,
+      status: "PENDING_EXECUTIVE",
+      createdAt: new Date().toISOString(),
+      userName: user?.name || "Pluggy Customer",
+      userPhone: user?.phone || "+91 9876543210",
+      userEmail: user?.email || "customer@pluggy.in",
+    }
+    addRequest(newRequest)
+    clearCart()
+    toast.success("Booking Confirmed & Sent to Admin Control Desk! ✅")
+    navigate("/track")
   }
 
   return (
@@ -180,16 +210,22 @@ export default function CartPage() {
             </div>
 
             {/* Actions */}
-            <div className="mt-6 space-y-3">
+            <div className="mt-6 space-y-2.5">
+              <button
+                onClick={handleInstantBookPayLater}
+                className="w-full bg-[#F37021] text-white py-3 rounded-xl hover:bg-[#e05e15] font-extrabold text-sm shadow"
+              >
+                ⚡ Instant Book Now (Pay After Service)
+              </button>
               <button
                 onClick={handleCheckout}
-                className="w-full bg-[#1A2A49] text-white py-2.5 rounded-lg hover:bg-[#223a61] font-medium shadow"
+                className="w-full bg-[#1A2A49] text-white py-2.5 rounded-xl hover:bg-[#223a61] font-bold text-sm shadow"
               >
-                Proceed to Checkout
+                💳 Pay Online & Checkout (₹{finalTotal})
               </button>
               <Link
                 to="/"
-                className="w-full inline-block text-center border border-[#1A2A49] py-2 rounded-lg text-[#1A2A49] hover:bg-gray-50 text-sm font-medium"
+                className="w-full inline-block text-center border border-[#1A2A49] py-2 rounded-xl text-[#1A2A49] hover:bg-gray-50 text-sm font-medium"
               >
                 Continue Shopping
               </Link>

@@ -417,82 +417,86 @@ function safeWriteLocalStorage(key, dbObj) {
 }
 
 let isSyncingCloud = false
+let pendingCloudSync = false
 
 export async function syncWithCloudServer(options = { forceReset: false }) {
   if (typeof window === "undefined") return null
-  if (isSyncingCloud && !options.forceReset) return null
+  if (isSyncingCloud && !options.forceReset) {
+    pendingCloudSync = true
+    return null
+  }
   isSyncingCloud = true
 
   try {
-    const localDb = loadSqlDatabase()
+    const snapshotBeforeFetch = loadSqlDatabase()
     const res = await fetch("/api/sync", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        db: localDb,
+        db: snapshotBeforeFetch,
         forceReset: Boolean(options.forceReset),
       }),
     })
 
     if (!res.ok) {
-      isSyncingCloud = false
       return null
     }
 
     const data = await res.json()
     if (!data?.ok || !data?.db) {
-      isSyncingCloud = false
       return null
     }
 
+    // Re-read localStorage AFTER await fetch so any booking saved while fetch was in-flight is NEVER overwritten!
+    const latestLocalDb = loadSqlDatabase()
     const cloudDb = data.db
     const mergedDeletedEngIds = Array.from(
       new Set([
-        ...(localDb.deletedEngineerIds || []),
+        ...(latestLocalDb.deletedEngineerIds || []),
         ...(cloudDb.deletedEngineerIds || []),
       ])
     )
 
     // If cloud had a newer resetAt, adopt cloud state
-    const isCloudResetNewer = (cloudDb.resetAt || 0) > (localDb.resetAt || 0)
+    const isCloudResetNewer = (cloudDb.resetAt || 0) > (latestLocalDb.resetAt || 0)
     const nextDb = isCloudResetNewer
       ? {
           ...INITIAL_SQL_TABLES,
           ...cloudDb,
         }
       : {
-          resetAt: Math.max(localDb.resetAt || 0, cloudDb.resetAt || 0),
+          resetAt: Math.max(latestLocalDb.resetAt || 0, cloudDb.resetAt || 0),
           deletedEngineerIds: mergedDeletedEngIds,
-          users: mergeTableRows(localDb.users, cloudDb.users, "users"),
+          users: mergeTableRows(latestLocalDb.users, cloudDb.users, "users"),
           engineers: mergeTableRows(
-            localDb.engineers,
+            latestLocalDb.engineers,
             cloudDb.engineers,
             "engineers",
             mergedDeletedEngIds
           ),
-          admins: mergeTableRows(localDb.admins, cloudDb.admins, "admins"),
+          admins: mergeTableRows(latestLocalDb.admins, cloudDb.admins, "admins"),
           service_requests: mergeTableRows(
-            localDb.service_requests,
+            latestLocalDb.service_requests,
             cloudDb.service_requests,
             "service_requests"
           ),
           payment_transactions: mergeTableRows(
-            localDb.payment_transactions,
+            latestLocalDb.payment_transactions,
             cloudDb.payment_transactions,
             "payment_transactions"
           ),
           order_history_logs: mergeTableRows(
-            localDb.order_history_logs,
+            latestLocalDb.order_history_logs,
             cloudDb.order_history_logs,
             "order_history_logs"
           ),
           telemetry_logs: mergeTableRows(
-            localDb.telemetry_logs,
+            latestLocalDb.telemetry_logs,
             cloudDb.telemetry_logs,
             "telemetry_logs"
           ),
           security_alerts: mergeTableRows(
-            localDb.security_alerts,
+            latestLocalDb.security_alerts,
             cloudDb.security_alerts,
             "security_alerts"
           ),
@@ -500,12 +504,12 @@ export async function syncWithCloudServer(options = { forceReset: false }) {
 
     // Check if request count or timestamps changed before firing UI update event
     const prevJson = JSON.stringify({
-      r: (localDb.service_requests || []).map((x) => [x.id, x.status, x.updatedAt, x.assignedEngineerId, x.pinLocked]),
-      e: (localDb.engineers || []).map((x) => [x.id, x.isOnline, x.walletBalance, x.completedCount, x.lastSeenAt]),
-      p: (localDb.payment_transactions || []).length,
-      l: (localDb.order_history_logs || []).length,
-      t: (localDb.telemetry_logs || []).length,
-      a: (localDb.security_alerts || []).map((x) => [x.id, x.status]),
+      r: (latestLocalDb.service_requests || []).map((x) => [x.id, x.status, x.updatedAt, x.assignedEngineerId, x.pinLocked]),
+      e: (latestLocalDb.engineers || []).map((x) => [x.id, x.isOnline, x.walletBalance, x.completedCount, x.lastSeenAt]),
+      p: (latestLocalDb.payment_transactions || []).length,
+      l: (latestLocalDb.order_history_logs || []).length,
+      t: (latestLocalDb.telemetry_logs || []).length,
+      a: (latestLocalDb.security_alerts || []).map((x) => [x.id, x.status]),
     })
     const nextJson = JSON.stringify({
       r: (nextDb.service_requests || []).map((x) => [x.id, x.status, x.updatedAt, x.assignedEngineerId, x.pinLocked]),
@@ -520,17 +524,64 @@ export async function syncWithCloudServer(options = { forceReset: false }) {
     if (prevJson !== nextJson) {
       window.dispatchEvent(new CustomEvent("pluggy:sql-updated"))
     }
-    isSyncingCloud = false
     return nextDb
   } catch {
-    isSyncingCloud = false
     return null
+  } finally {
+    isSyncingCloud = false
+    if (pendingCloudSync) {
+      pendingCloudSync = false
+      syncWithCloudServer()
+    }
   }
 }
 
 export function saveSqlDatabase(nextDb, options = { syncCloud: true, forceReset: false }) {
   try {
-    safeWriteLocalStorage(DB_STORAGE_KEY, nextDb)
+    let dbToSave = nextDb
+    if (!options.forceReset) {
+      const existing = loadSqlDatabase()
+      const deletedIds = Array.from(
+        new Set([
+          ...(existing.deletedEngineerIds || []),
+          ...(nextDb.deletedEngineerIds || []),
+        ])
+      )
+      dbToSave = {
+        ...existing,
+        ...nextDb,
+        deletedEngineerIds: deletedIds,
+        users: mergeTableRows(existing.users, nextDb.users, "users"),
+        engineers: mergeTableRows(existing.engineers, nextDb.engineers, "engineers", deletedIds),
+        admins: mergeTableRows(existing.admins, nextDb.admins, "admins"),
+        service_requests: mergeTableRows(
+          existing.service_requests,
+          nextDb.service_requests,
+          "service_requests"
+        ),
+        payment_transactions: mergeTableRows(
+          existing.payment_transactions,
+          nextDb.payment_transactions,
+          "payment_transactions"
+        ),
+        order_history_logs: mergeTableRows(
+          existing.order_history_logs,
+          nextDb.order_history_logs,
+          "order_history_logs"
+        ),
+        telemetry_logs: mergeTableRows(
+          existing.telemetry_logs,
+          nextDb.telemetry_logs,
+          "telemetry_logs"
+        ),
+        security_alerts: mergeTableRows(
+          existing.security_alerts,
+          nextDb.security_alerts,
+          "security_alerts"
+        ),
+      }
+    }
+    safeWriteLocalStorage(DB_STORAGE_KEY, dbToSave)
     if (syncChannel) {
       syncChannel.postMessage({ type: "SQL_DB_UPDATED", timestamp: Date.now() })
     }

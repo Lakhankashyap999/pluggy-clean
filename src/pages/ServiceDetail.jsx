@@ -43,6 +43,10 @@ export default function ServiceDetail() {
     cart,
     addToCart,
     removeFromCart,
+    clearCart,
+    addRequest,
+    user,
+    city,
     address: savedAddress,
     setAddress: setGlobalAddress,
     addRecent,
@@ -124,6 +128,38 @@ export default function ServiceDetail() {
     } else {
       setSearchParams({ sub: subId })
     }
+  }
+
+  const handleInstantBookNow = () => {
+    if (cart.length === 0) {
+      toast.error("Please add at least one service to book!")
+      return
+    }
+    const finalAddr = address.trim() || savedAddress || city || "Indirapuram, Delhi NCR"
+    if (address.trim()) {
+      setGlobalAddress(address.trim())
+    }
+    addRequest({
+      id: Date.now(),
+      transactionId: `PLG${Date.now().toString().slice(-8)}`,
+      paymentMethod: "PAY_AFTER_SERVICE",
+      paymentChannel: "Pay After Happy-PIN Satisfaction",
+      paymentStatus: "PAY_ON_COMPLETION",
+      items: cart,
+      issue: cart.map((i) => i.name || i.issue).join(", "),
+      service: currentCat.name,
+      address: finalAddr,
+      userAddress: finalAddr,
+      amount: finalTotal,
+      status: "PENDING_EXECUTIVE",
+      createdAt: new Date().toISOString(),
+      userName: user?.name || "Pluggy Customer",
+      userPhone: user?.phone || "+91 9876543210",
+      userEmail: user?.email || "customer@pluggy.in",
+    })
+    clearCart()
+    toast.success("Booking Confirmed & Sent to Admin Control Desk! ✅")
+    navigate("/track")
   }
 
   const handleProceedToCheckout = () => {
@@ -628,12 +664,20 @@ export default function ServiceDetail() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={handleProceedToCheckout}
-                    className="w-full mt-4 py-3 bg-[#F37021] hover:bg-[#e05e15] text-white rounded-xl text-sm font-extrabold shadow-md transition"
-                  >
-                    Proceed to Slot & Booking (₹{finalTotal}) →
-                  </button>
+                  <div className="mt-4 space-y-2">
+                    <button
+                      onClick={handleInstantBookNow}
+                      className="w-full py-3 bg-[#F37021] hover:bg-[#e05e15] text-white rounded-xl text-sm font-extrabold shadow-md transition"
+                    >
+                      ⚡ Instant Book Now (Pay After Service)
+                    </button>
+                    <button
+                      onClick={handleProceedToCheckout}
+                      className="w-full py-2.5 bg-[#1A2A49] hover:bg-[#223a61] text-white rounded-xl text-xs font-bold shadow transition"
+                    >
+                      💳 Proceed to Online Pay (₹{finalTotal}) →
+                    </button>
+                  </div>
                 </>
               )}
             </div>
@@ -676,25 +720,33 @@ export default function ServiceDetail() {
         </div>
       </div>
 
-      {/* Mobile Sticky Bottom Checkout Bar */}
+      {/* Mobile Sticky Bottom Checkout Bar (Positioned above BottomNavbar) */}
       {cart.length > 0 && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-2xl p-3 z-40">
-          <div className="max-w-md mx-auto flex items-center justify-between gap-3">
-            <div>
-              <p className="text-[11px] font-bold text-gray-500">
-                {totalItemsCount} Service{totalItemsCount > 1 ? "s" : ""} Selected
+        <div className="lg:hidden fixed bottom-14 left-0 right-0 bg-[#1A2A49] text-white border-t border-[#F37021]/60 shadow-2xl p-3 z-40">
+          <div className="max-w-md mx-auto flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold text-amber-300 truncate">
+                🛒 {totalItemsCount} Service{totalItemsCount > 1 ? "s" : ""} Selected
               </p>
               <div className="flex items-baseline gap-1.5">
-                <span className="font-extrabold text-[#1A2A49] text-base">₹{finalTotal}</span>
-                <span className="text-xs text-gray-400 line-through">₹{originalSubtotal}</span>
+                <span className="font-extrabold text-white text-base">₹{finalTotal}</span>
+                <span className="text-xs text-gray-300 line-through">₹{originalSubtotal}</span>
               </div>
             </div>
-            <button
-              onClick={handleProceedToCheckout}
-              className="px-5 py-2.5 bg-[#F37021] text-white rounded-xl text-xs sm:text-sm font-extrabold shadow-md"
-            >
-              Proceed to Book →
-            </button>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                onClick={handleProceedToCheckout}
+                className="px-3 py-2.5 bg-white/15 hover:bg-white/25 text-white rounded-xl text-xs font-bold"
+              >
+                Pay Online
+              </button>
+              <button
+                onClick={handleInstantBookNow}
+                className="px-4 py-2.5 bg-[#F37021] text-white rounded-xl text-xs font-extrabold shadow-md"
+              >
+                ⚡ Book Now →
+              </button>
+            </div>
           </div>
         </div>
       )}

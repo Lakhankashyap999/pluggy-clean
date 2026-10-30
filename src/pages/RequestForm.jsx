@@ -107,14 +107,22 @@ export default function RequestForm() {
       return
     }
     if (!form.address.trim()) {
-      toast.error("Please enter service address ❌")
-      return
+      setForm((prev) => ({ ...prev, address: savedAddress || "Indirapuram, Delhi NCR" }))
     }
     setLoading(true)
     setTimeout(() => {
       setLoading(false)
       setPaymentOpen(true)
-    }, 300)
+    }, 250)
+  }
+
+  const handleInstantBookPayLater = () => {
+    const finalAddr = form.address.trim() || savedAddress || "Indirapuram, Delhi NCR"
+    setForm((prev) => ({ ...prev, address: finalAddr }))
+    saveRequest(`PLG${String(Date.now()).slice(-8)}`, {
+      paymentMethod: "PAY_AFTER_SERVICE",
+      paymentChannel: "Pay After Happy-PIN Satisfaction",
+    })
   }
 
   if (submitted) {
@@ -271,7 +279,7 @@ export default function RequestForm() {
 
             <FaultMediaUpload />
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+            <div className="flex flex-col sm:flex-row justify-end gap-2.5 pt-4 border-t border-gray-100">
               <button
                 type="button"
                 onClick={() => navigate("/")}
@@ -280,11 +288,18 @@ export default function RequestForm() {
                 Cancel
               </button>
               <button
+                type="button"
+                onClick={handleInstantBookPayLater}
+                className="px-5 py-2.5 rounded-xl bg-[#1A2A49] text-white hover:bg-[#223a61] font-extrabold text-xs sm:text-sm shadow-md"
+              >
+                ⚡ Instant Book (Pay After Service)
+              </button>
+              <button
                 type="submit"
                 disabled={loading}
                 className="px-6 py-2.5 rounded-xl bg-[#F37021] text-white hover:bg-[#e05e15] disabled:opacity-60 font-extrabold text-xs sm:text-sm shadow-md"
               >
-                {loading ? "Processing..." : `Confirm & Pay ₹${resolvedAmount} →`}
+                {loading ? "Processing..." : `💳 Pay Online ₹${resolvedAmount} →`}
               </button>
             </div>
           </form>

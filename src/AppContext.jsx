@@ -166,19 +166,33 @@ export function AppProvider({ children }) {
   })
 
   // Persist SQL Relational Tables whenever core entities change
+  // Always falls back to currentDb (localStorage source of truth) rather than stale React closure state
   const syncTablesToSql = (nextOverrides = {}) => {
     const currentDb = loadSqlDatabase()
     const mergedDb = {
       ...currentDb,
       deletedEngineerIds:
         nextOverrides.deletedEngineerIds ?? currentDb.deletedEngineerIds ?? [],
-      users: nextOverrides.users ?? usersList,
-      engineers: nextOverrides.engineers ?? engineersList,
-      service_requests: nextOverrides.service_requests ?? requests,
-      payment_transactions: nextOverrides.payment_transactions ?? paymentTransactions,
-      order_history_logs: nextOverrides.order_history_logs ?? orderHistoryLogs,
-      telemetry_logs: nextOverrides.telemetry_logs ?? engineerTelemetryLogs,
-      security_alerts: nextOverrides.security_alerts ?? engineerSecurityAlerts,
+      users: nextOverrides.users ?? currentDb.users ?? usersList,
+      engineers: nextOverrides.engineers ?? currentDb.engineers ?? engineersList,
+      service_requests:
+        nextOverrides.service_requests ?? currentDb.service_requests ?? requests,
+      payment_transactions:
+        nextOverrides.payment_transactions ??
+        currentDb.payment_transactions ??
+        paymentTransactions,
+      order_history_logs:
+        nextOverrides.order_history_logs ??
+        currentDb.order_history_logs ??
+        orderHistoryLogs,
+      telemetry_logs:
+        nextOverrides.telemetry_logs ??
+        currentDb.telemetry_logs ??
+        engineerTelemetryLogs,
+      security_alerts:
+        nextOverrides.security_alerts ??
+        currentDb.security_alerts ??
+        engineerSecurityAlerts,
     }
     saveSqlDatabase(mergedDb)
   }
@@ -307,14 +321,6 @@ export function AppProvider({ children }) {
   useEffect(() => {
     localStorage.setItem("pluggy_preferences", JSON.stringify(userPreferences))
   }, [userPreferences])
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("pluggy_requests", JSON.stringify(requests))
-    } catch {
-      /* quota protected by sqlDatabase */
-    }
-  }, [requests])
 
   useEffect(() => {
     localStorage.setItem("pluggy_city", city)
@@ -887,23 +893,46 @@ export function AppProvider({ children }) {
   // Guaranteed to succeed from ANY booking flow (even if customer was not logged in!)
   // ===========================================================================
   const addRequest = (request) => {
+    const latestDb = loadSqlDatabase()
+    const baseRequests = latestDb.service_requests || requests || []
+    const baseUsers = latestDb.users || usersList || []
+    const basePayments = latestDb.payment_transactions || paymentTransactions || []
+    const baseLogs = latestDb.order_history_logs || orderHistoryLogs || []
+
     const resolvedName =
-      (request.userName || request.name || user?.name || "").trim() || "Guest Customer"
+      (request.userName || request.name || user?.name || "").trim() || "Pluggy Customer"
     const resolvedPhone =
       normalizePhone(request.userPhone || request.phone || user?.phone || "") || "9876543210"
     const resolvedEmail =
       (request.userEmail || request.email || user?.email || "").trim() ||
       `${resolvedPhone}@pluggy.in`
 
-    // Ensure an active customer session exists so /track shows the booking immediately
+    // Ensure an active customer session exists without triggering a separate premature sync
     let activeCustomer = user
+    let nextUsers = baseUsers
     if (!activeCustomer) {
-      activeCustomer = loginUser({
-        id: `USR-${Date.now().toString().slice(-5)}`,
-        name: resolvedName,
-        phone: resolvedPhone,
-        email: resolvedEmail,
-      })
+      const existingUser = baseUsers.find(
+        (u) =>
+          (resolvedPhone && normalizePhone(u.phone) === resolvedPhone) ||
+          (resolvedEmail && u.email?.toLowerCase() === resolvedEmail.toLowerCase())
+      )
+      if (existingUser) {
+        activeCustomer = { ...existingUser, name: resolvedName, phone: resolvedPhone }
+      } else {
+        activeCustomer = {
+          id: `USR-${Date.now().toString().slice(-5)}`,
+          name: resolvedName,
+          phone: resolvedPhone,
+          email: resolvedEmail,
+          password: "password123",
+          walletBalance: 250,
+          city: city || "Delhi NCR",
+          joinedAt: new Date().toISOString(),
+        }
+        nextUsers = [activeCustomer, ...baseUsers]
+      }
+      setUsersList(nextUsers)
+      setUser(activeCustomer)
     } else if (!activeCustomer.id || (!activeCustomer.phone && resolvedPhone)) {
       const patchedUser = {
         ...activeCustomer,
@@ -947,6 +976,8 @@ export function AppProvider({ children }) {
       userName: resolvedName,
       userPhone: resolvedPhone,
       userEmail: resolvedEmail,
+      service: request.service || request.issue || "Home Electrical & Appliance Service",
+      issue: request.issue || request.service || "Doorstep Inspection & Repair",
       baseAmount: Number(request.baseAmount ?? request.amount ?? request.finalAmount ?? 249),
       partsAmount: Number(request.partsAmount ?? 0),
       amount: Number(request.amount ?? request.finalAmount ?? 249),
@@ -986,7 +1017,7 @@ export function AppProvider({ children }) {
       return nextIds
     })
 
-    const nextRequests = [normalized, ...requests.filter((r) => r.id !== normalized.id)]
+    const nextRequests = [normalized, ...baseRequests.filter((r) => String(r.id) !== String(normalized.id))]
     setRequests(nextRequests)
     setBookings(nextRequests)
 
@@ -1012,7 +1043,7 @@ export function AppProvider({ children }) {
     }
     const nextPayments = [
       newPayRow,
-      ...paymentTransactions.filter((p) => p.txnId !== transactionId),
+      ...basePayments.filter((p) => p.txnId !== transactionId),
     ]
     setPaymentTransactions(nextPayments)
 
@@ -1023,10 +1054,12 @@ export function AppProvider({ children }) {
       "USER",
       normalized.userName,
       "BOOKING_RAISED",
-      `Raised ${normalized.service} (₹${normalized.amount}) via ${normalized.paymentMethod}. Start PIN: ${startOtp}`
+      `Raised ${normalized.service} (₹${normalized.amount}) via ${normalized.paymentMethod}. Start PIN: ${startOtp}`,
+      baseLogs
     )
 
     syncTablesToSql({
+      users: nextUsers,
       service_requests: nextRequests,
       payment_transactions: nextPayments,
       order_history_logs: nextLogs,
