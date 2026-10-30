@@ -101,7 +101,7 @@ export default function AdminDashboard() {
     id: "",
     name: "",
     phone: "",
-    password: "eng123",
+    password: "Pluggy@1005",
     specialization: "AC & Electrical Master Tech",
     area: "Indirapuram / Noida / Ghaziabad",
   });

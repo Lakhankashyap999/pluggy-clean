@@ -13,6 +13,9 @@ import {
   PhoneCall,
   Users,
   Receipt,
+  Eye,
+  EyeOff,
+  KeyRound,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -21,12 +24,17 @@ export default function AdminLogin() {
     useApp();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("admin@pluggy.in");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!email.trim() || !password) {
+      toast.error("Please enter Admin ID/Email and Master Passcode");
+      return;
+    }
     setLoading(true);
     setTimeout(() => {
       const res = loginAdmin({ email, password });
@@ -36,18 +44,11 @@ export default function AdminLogin() {
         navigate("/admin", { replace: true });
       } else {
         toast.error(
-          res?.error || "Invalid credentials. Use admin@pluggy.in / admin123"
+          res?.error ||
+            "Access Denied: Invalid Admin ID/Email or Master Passcode!"
         );
       }
-    }, 350);
-  };
-
-  const handleInstantAdminLogin = () => {
-    const res = loginAdmin({ email: "admin@pluggy.in", password: "admin123" });
-    if (res?.ok) {
-      toast.success("Welcome to Pluggy 24/7 Executive & SQL Command Center!");
-      navigate("/admin", { replace: true });
-    }
+    }, 300);
   };
 
   return (
@@ -59,10 +60,10 @@ export default function AdminLogin() {
             to="/"
             className="inline-flex items-center gap-1 text-xs font-semibold text-blue-100 bg-white/10 px-2.5 py-1.5 rounded-lg border border-white/10"
           >
-            <ChevronLeft size={14} /> Home
+            <ChevronLeft size={14} /> Storefront
           </Link>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[10px] font-bold">
-            <Database size={11} /> SQL Master HQ
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/20 border border-red-400/30 text-red-200 text-[10px] font-bold">
+            <Lock size={11} /> Restricted Admin HQ
           </span>
         </div>
 
@@ -83,7 +84,7 @@ export default function AdminLogin() {
               </span>
             </div>
             <p className="text-[11px] text-blue-100/85 mt-1">
-              Central Dispatch, Engineer ID Access & SQL Control
+              Private Chief Dispatch & SQL Command Terminal
             </p>
           </div>
         </div>
@@ -108,8 +109,8 @@ export default function AdminLogin() {
 
         {/* Center Pluggy Admin Logo & Live Metrics */}
         <div className="relative z-10 my-auto max-w-lg">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F37021]/20 border border-[#F37021]/40 text-[#FF8C42] text-[11px] font-bold uppercase tracking-wider mb-3">
-            <ShieldAlert size={12} /> 24/7 Executive & Dispatch Command
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/20 border border-red-400/40 text-red-200 text-[11px] font-bold uppercase tracking-wider mb-3">
+            <ShieldAlert size={12} /> Restricted Executive Command Desk
           </div>
 
           {/* Pluggy Logo Lockup */}
@@ -146,8 +147,9 @@ export default function AdminLogin() {
             <span className="text-[#F37021]">Dispatch Jobs Live.</span>
           </h1>
           <p className="text-xs xl:text-sm text-blue-100/80 leading-relaxed mb-4">
-            Create & edit Engineer IDs (`ENG001`–`ENG005+`), reset passwords,
-            verify customer faults, lock toolkits, and inspect live SQL tables.
+            Private Owner & Chief Dispatch portal. Create & edit Engineer IDs,
+            reset passwords, track live engineer GPS & Anti-Bypass alerts, and
+            manage live customer bookings.
           </p>
 
           <div className="grid grid-cols-3 gap-2.5">
@@ -175,77 +177,36 @@ export default function AdminLogin() {
           </div>
         </div>
 
-        {/* Bottom Role Switcher */}
-        <div className="relative z-10 pt-3 border-t border-white/10 flex items-center justify-between gap-2 text-xs">
-          <span className="text-blue-200/80 font-medium">Switch Portal:</span>
-          <div className="flex items-center gap-1.5">
-            <Link
-              to="/login"
-              className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold transition"
-            >
-              👤 Customer
-            </Link>
-            <Link
-              to="/engineer-login"
-              className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold transition"
-            >
-              👨‍🔧 Engineer
-            </Link>
-            <Link
-              to="/admin-login"
-              className="px-2.5 py-1 rounded-lg bg-[#F37021] text-white font-bold shadow-sm"
-            >
-              🛡️ Admin
-            </Link>
-          </div>
+        <div className="relative z-10 pt-3 border-t border-white/10 flex items-center justify-between gap-2 text-xs text-blue-200/80">
+          <span>🔒 Master Access Protected</span>
+          <span>Authorized Personnel Only</span>
         </div>
       </div>
 
-      {/* ================= RIGHT SIDE: ADMIN LOGIN FORM (Fits 100% in Viewport) ================= */}
+      {/* ================= RIGHT SIDE: PRIVATE ADMIN LOGIN FORM ================= */}
       <div className="flex-1 lg:w-7/12 xl:w-1/2 lg:h-full flex items-center justify-center p-4 sm:p-6">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-200/80 p-5 sm:p-6"
+          className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-200/80 p-6 sm:p-7"
         >
-          {/* Role Switcher Tabs */}
-          <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100 rounded-xl mb-4 text-xs font-bold">
-            <Link
-              to="/login"
-              className="py-2 text-center rounded-lg text-slate-600 hover:text-[#1A2A49] hover:bg-white/60 transition"
-            >
-              👤 Customer
-            </Link>
-            <Link
-              to="/engineer-login"
-              className="py-2 text-center rounded-lg text-slate-600 hover:text-[#1A2A49] hover:bg-white/60 transition"
-            >
-              👨‍🔧 Engineer
-            </Link>
-            <Link
-              to="/admin-login"
-              className="py-2 text-center rounded-lg bg-[#1A2A49] text-white shadow-sm"
-            >
-              🛡️ Admin
-            </Link>
-          </div>
-
-          <div className="mb-4">
-            <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-[#F37021] bg-orange-50 px-2 py-0.5 rounded mb-1">
-              Executive Control Desk
+          <div className="mb-5">
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-red-700 bg-red-50 border border-red-200 px-2.5 py-1 rounded-full mb-2">
+              <KeyRound size={11} /> Private Owner & Admin Access
             </span>
             <h2 className="text-xl sm:text-2xl font-extrabold text-[#1A2A49] leading-tight">
               Admin HQ Sign In
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Sign in to manage Engineer IDs, dispatch jobs, and view SQL tables.
+            <p className="text-xs text-slate-500 mt-1">
+              Enter your Master Admin ID or Email and Secret Passcode to unlock
+              the Control Desk.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
             <div>
-              <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1 block">
-                Admin Email or ID
+              <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5 block">
+                Admin ID or Email
               </label>
               <div className="relative flex items-center">
                 <Mail size={16} className="absolute left-3.5 text-slate-400" />
@@ -253,66 +214,52 @@ export default function AdminLogin() {
                   type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@pluggy.in"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#1A2A49] focus:outline-none focus:ring-2 focus:ring-[#F37021] focus:bg-white transition"
+                  placeholder="Enter Admin ID or Email"
+                  autoComplete="off"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#1A2A49] focus:outline-none focus:ring-2 focus:ring-[#F37021] focus:bg-white transition"
+                  required
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1 block">
-                Executive Passcode
+              <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5 block">
+                Master Executive Passcode
               </label>
               <div className="relative flex items-center">
                 <Lock size={16} className="absolute left-3.5 text-slate-400" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#1A2A49] focus:outline-none focus:ring-2 focus:ring-[#F37021] focus:bg-white transition"
+                  placeholder="Enter Master Passcode"
+                  autoComplete="new-password"
+                  className="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#1A2A49] focus:outline-none focus:ring-2 focus:ring-[#F37021] focus:bg-white transition"
+                  required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 text-slate-400 hover:text-slate-600"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-[#1A2A49] hover:bg-[#223a61] text-white rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition"
+              className="w-full py-3.5 bg-[#1A2A49] hover:bg-[#223a61] text-white rounded-xl font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition"
             >
-              {loading ? "Authenticating..." : "Open Admin Control Desk"}{" "}
+              {loading ? "Authenticating..." : "Unlock Admin Control Desk"}{" "}
               <ArrowRight size={15} />
             </button>
           </form>
 
-          {/* 1-Click Instant Admin Login */}
-          <div className="mt-4 pt-3.5 border-t border-slate-100">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center justify-between">
-              <span>⚡ 1-Click Executive Access</span>
-              <span className="text-emerald-600">SQL Superuser</span>
-            </p>
-            <button
-              type="button"
-              onClick={handleInstantAdminLogin}
-              className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-[#F37021] hover:bg-orange-50/40 transition text-left group"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-[#1A2A49] text-white flex items-center justify-center font-bold text-xs">
-                  HQ
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-[#1A2A49] group-hover:text-[#F37021]">
-                    Chief Dispatch Officer (ADM001)
-                  </p>
-                  <p className="text-[10px] text-slate-500">
-                    admin@pluggy.in • Pass: admin123
-                  </p>
-                </div>
-              </div>
-              <span className="text-xs font-bold text-[#F37021] flex items-center gap-1">
-                Enter <ArrowRight size={13} />
-              </span>
-            </button>
+          <div className="mt-5 pt-4 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
+            <span>🛡️ Protected by SQL Master Auth</span>
+            <span>Unauthorized login prohibited</span>
           </div>
         </motion.div>
       </div>

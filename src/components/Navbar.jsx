@@ -380,26 +380,26 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {/* Portals Footer */}
+              {/* Customer Drawer Footer */}
               <div className="p-3 bg-[#F4F6F9] border-t border-gray-200 space-y-1.5">
                 <div className="grid grid-cols-2 gap-1.5">
                   <button
                     onClick={() => {
                       setMobileDrawerOpen(false)
-                      navigate("/engineer")
+                      navigate("/track")
                     }}
                     className="px-2.5 py-2 rounded-xl bg-[#1A2A49] text-white text-[11px] font-bold flex items-center justify-center gap-1.5"
                   >
-                    <Wrench size={13} className="text-[#F37021]" /> Engineer App
+                    <ShieldCheck size={13} className="text-[#F37021]" /> Track Booking
                   </button>
                   <button
                     onClick={() => {
                       setMobileDrawerOpen(false)
-                      navigate("/admin")
+                      navigate(user ? "/account" : "/login")
                     }}
                     className="px-2.5 py-2 rounded-xl bg-[#1A2A49] text-white text-[11px] font-bold flex items-center justify-center gap-1.5"
                   >
-                    <LayoutDashboard size={13} className="text-amber-400" /> Admin Desk
+                    <User size={13} className="text-amber-400" /> {user ? "My Account" : "Sign In"}
                   </button>
                 </div>
               </div>
@@ -657,19 +657,6 @@ export default function Navbar() {
                               {unreadCount}
                             </span>
                           )}
-                        </button>
-                        <div className="border-t border-gray-100 my-1" />
-                        <button
-                          onClick={() => navigate("/engineer")}
-                          className="w-full text-left px-4 py-2 hover:bg-[#F4F6F9] flex items-center gap-2.5 text-gray-600"
-                        >
-                          <Wrench size={14} /> Engineer Terminal
-                        </button>
-                        <button
-                          onClick={() => navigate("/admin")}
-                          className="w-full text-left px-4 py-2 hover:bg-[#F4F6F9] flex items-center gap-2.5 text-gray-600"
-                        >
-                          <LayoutDashboard size={14} /> Admin Control Desk
                         </button>
                         <div className="border-t border-gray-100 my-1" />
                         <button

@@ -266,29 +266,10 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Bottom Role Switcher Bar */}
-        <div className="relative z-10 pt-3 border-t border-white/10 flex items-center justify-between gap-2 text-xs">
-          <span className="text-blue-200/80 font-medium">Switch Portal:</span>
-          <div className="flex items-center gap-1.5">
-            <Link
-              to="/login"
-              className="px-2.5 py-1 rounded-lg bg-[#F37021] text-white font-bold shadow-sm"
-            >
-              👤 Customer
-            </Link>
-            <Link
-              to="/engineer-login"
-              className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold transition"
-            >
-              👨‍🔧 Engineer
-            </Link>
-            <Link
-              to="/admin-login"
-              className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold transition"
-            >
-              🛡️ Admin
-            </Link>
-          </div>
+        {/* Bottom Trust Strip */}
+        <div className="relative z-10 pt-3 border-t border-white/10 flex items-center justify-between gap-2 text-xs text-blue-200/80">
+          <span>🔒 100% Verified Doorstep Service</span>
+          <span>Dual-PIN Escrow Protected</span>
         </div>
       </div>
 
@@ -299,28 +280,6 @@ export default function Login() {
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-200/80 p-5 sm:p-6"
         >
-          {/* Role Tabs at Top of Form */}
-          <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100 rounded-xl mb-4 text-xs font-bold">
-            <Link
-              to="/login"
-              className="py-2 text-center rounded-lg bg-[#1A2A49] text-white shadow-sm"
-            >
-              👤 Customer
-            </Link>
-            <Link
-              to="/engineer-login"
-              className="py-2 text-center rounded-lg text-slate-600 hover:text-[#1A2A49] hover:bg-white/60 transition"
-            >
-              👨‍🔧 Engineer
-            </Link>
-            <Link
-              to="/admin-login"
-              className="py-2 text-center rounded-lg text-slate-600 hover:text-[#1A2A49] hover:bg-white/60 transition"
-            >
-              🛡️ Admin
-            </Link>
-          </div>
-
           <div className="mb-4">
             <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-[#F37021] bg-orange-50 px-2 py-0.5 rounded mb-1">
               Step into Pluggy

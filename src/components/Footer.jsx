@@ -256,20 +256,12 @@ export default function Footer() {
                   Offers & Coupon Codes
                 </Link>
               </li>
-              <li className="pt-2 border-t border-white/10">
-                <Link
-                  to="/engineer"
-                  className="inline-flex items-center gap-1.5 text-orange-300 hover:text-[#F37021] font-bold transition"
-                >
-                  <Wrench size={13} /> Engineer Field Terminal
-                </Link>
-              </li>
               <li>
                 <Link
-                  to="/admin"
-                  className="inline-flex items-center gap-1.5 text-emerald-300 hover:text-emerald-400 font-bold transition"
+                  to="/account"
+                  className="text-gray-300 hover:text-[#F37021] transition"
                 >
-                  <LayoutDashboard size={13} /> Executive Control Desk
+                  My Account & Wallet
                 </Link>
               </li>
             </ul>

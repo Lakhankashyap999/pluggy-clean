@@ -45,7 +45,7 @@ export const INITIAL_SQL_TABLES = {
       name: "Rajesh Sharma",
       phone: "9876543210",
       email: "rajesh.eng@pluggy.in",
-      password: "eng123",
+      password: "Pluggy@1001",
       specialization: "AC & Cooling, Refrigerator Master",
       rating: 4.9,
       completedCount: 342,
@@ -59,7 +59,7 @@ export const INITIAL_SQL_TABLES = {
       name: "Amit Verma",
       phone: "9876543211",
       email: "amit.eng@pluggy.in",
-      password: "eng123",
+      password: "Pluggy@1002",
       specialization: "Electrical, Wiring & 15-Min MCB SOS",
       rating: 4.8,
       completedCount: 518,
@@ -73,7 +73,7 @@ export const INITIAL_SQL_TABLES = {
       name: "Suresh Kumar",
       phone: "9876543212",
       email: "suresh.eng@pluggy.in",
-      password: "eng123",
+      password: "Pluggy@1003",
       specialization: "Fan, Geyser, Motor & Standby Units",
       rating: 4.9,
       completedCount: 289,
@@ -87,7 +87,7 @@ export const INITIAL_SQL_TABLES = {
       name: "Vikram Singh",
       phone: "9876543213",
       email: "vikram.eng@pluggy.in",
-      password: "eng123",
+      password: "Pluggy@1004",
       specialization: "Shaadi Standby & 3-Phase Load Guard",
       rating: 4.9,
       completedCount: 195,
@@ -104,7 +104,7 @@ export const INITIAL_SQL_TABLES = {
       name: "Chief Dispatch Officer",
       email: "admin@pluggy.in",
       phone: "9999888877",
-      password: "admin123",
+      password: "Lakhan@Admin999",
       role: "SUPER_ADMIN",
     },
   ],
@@ -336,14 +336,31 @@ export function loadSqlDatabase() {
 
     const parsed = JSON.parse(raw)
     const deletedEngIds = parsed.deletedEngineerIds || []
+    const defaultEngPassMap = {
+      ENG001: "Pluggy@1001",
+      ENG002: "Pluggy@1002",
+      ENG003: "Pluggy@1003",
+      ENG004: "Pluggy@1004",
+    }
+    const migratedEngineers = (parsed.engineers || INITIAL_SQL_TABLES.engineers)
+      .filter((e) => !deletedEngIds.includes(String(e.id)))
+      .map((e) => ({
+        ...e,
+        password:
+          !e.password || e.password === "eng123"
+            ? defaultEngPassMap[e.id] || `Pluggy@${String(e.id).replace(/\D/g, "") || "1005"}`
+            : e.password,
+      }))
+    const migratedAdmins = (parsed.admins || INITIAL_SQL_TABLES.admins).map((a) => ({
+      ...a,
+      password: !a.password || a.password === "admin123" ? "Lakhan@Admin999" : a.password,
+    }))
     return {
       resetAt: parsed.resetAt || 0,
       deletedEngineerIds: deletedEngIds,
       users: parsed.users || INITIAL_SQL_TABLES.users,
-      engineers: (parsed.engineers || INITIAL_SQL_TABLES.engineers).filter(
-        (e) => !deletedEngIds.includes(String(e.id))
-      ),
-      admins: parsed.admins || INITIAL_SQL_TABLES.admins,
+      engineers: migratedEngineers,
+      admins: migratedAdmins,
       service_requests: mergeTableRows(
         parsed.service_requests || INITIAL_SQL_TABLES.service_requests,
         legacyReqs,
