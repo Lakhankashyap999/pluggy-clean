@@ -28,26 +28,29 @@ export default function EngineerLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     if (!identifier.trim() || !password) {
-      toast.error("Please enter your Admin-issued Engineer ID and Password");
+      toast.error("Please enter your Partner ID and Password");
       return;
     }
 
     setLoading(true);
-    setTimeout(() => {
-      const res = authenticateEngineer(identifier, password);
+    try {
+      const res = await authenticateEngineer(identifier, password);
       setLoading(false);
-      if (!res.ok) {
-        toast.error(res.error);
+      if (!res?.ok) {
+        toast.error(res?.error || "Invalid Partner ID or Password");
         return;
       }
       toast.success(
-        `Welcome to Field Terminal, ${res.engineer.name} (${res.engineer.id})!`
+        `Welcome to Field Partner App, ${res.engineer.name} (${res.engineer.id})!`
       );
       navigate("/engineer", { replace: true });
-    }, 350);
+    } catch {
+      setLoading(false);
+      toast.error("Could not sign in. Please try again.");
+    }
   };
 
   const fillEngineerCredentials = (eng) => {
@@ -108,7 +111,7 @@ export default function EngineerLogin() {
             <ChevronLeft size={15} /> Back to Storefront
           </Link>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold">
-            <Database size={12} /> SQL Dispatch Connected
+            <ShieldCheck size={12} /> Verified Partner Portal
           </span>
         </div>
 
@@ -300,15 +303,15 @@ export default function EngineerLogin() {
             </button>
           </form>
 
-          {/* Compact 2-Column Admin-Registered SQL Engineers Grid */}
+          {/* Compact 2-Column Registered Field Partners Grid */}
           <div className="mt-4 pt-3.5 border-t border-slate-100">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
                 <KeyRound size={11} className="text-[#F37021]" />{" "}
-                Admin-Registered SQL Engineers
+                Registered Field Partner IDs
               </span>
               <span className="text-[10px] font-semibold text-slate-400">
-                Click to Fill ID
+                Tap ID to Select
               </span>
             </div>
 
@@ -334,7 +337,7 @@ export default function EngineerLogin() {
                       </span>
                     </div>
                     <p className="text-[10px] text-slate-500 truncate mt-0.5">
-                      Pass: <code>{eng.password || "eng123"}</code>
+                      {eng.area || "Delhi NCR"}
                     </p>
                   </div>
                 </button>

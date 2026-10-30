@@ -20,12 +20,19 @@ import {
   LogOut,
   Edit3,
   Trash2,
-  KeyRound,
   ShieldAlert,
   X,
   Eye,
   EyeOff,
   Ban,
+  Navigation,
+  Clock,
+  Lock,
+  Unlock,
+  Camera,
+  Activity,
+  Radio,
+  AlertTriangle,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -37,6 +44,21 @@ const TOOLKIT_PRESETS = [
   "Geyser Thermostat + Heating Element Kit",
   "Plumbing Pressure Wrench + Leak Sealant Kit",
 ];
+
+function formatDateTime(iso) {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  } catch {
+    return iso;
+  }
+}
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -55,12 +77,20 @@ export default function AdminDashboard() {
     getNextEngineerId,
     executeSql,
     resetDemoSqlDatabase,
+    // New Engineer Surveillance & Anti-Bypass Controls
+    engineerTelemetryLogs,
+    engineerSecurityAlerts,
+    unlockEngineerJobPin,
+    resolveEngineerAlert,
+    pingEngineerLiveLocation,
+    raiseEngineerSecurityAlert,
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState("dispatch"); // dispatch | fleet | payments | history | sql
+  const [activeTab, setActiveTab] = useState("dispatch"); // dispatch | fleet | surveillance | payments | history | sql
   const [selectedKits, setSelectedKits] = useState({});
   const [selectedEngIds, setSelectedEngIds] = useState({});
   const [showPasswords, setShowPasswords] = useState({});
+  const [telemetryFilterEng, setTelemetryFilterEng] = useState("ALL");
 
   // Edit Engineer Modal State
   const [editingEng, setEditingEng] = useState(null);
@@ -91,6 +121,13 @@ export default function AdminDashboard() {
     0
   );
   const platformCommission = Math.round(totalRevenue * 0.2);
+
+  const openSecurityAlerts = (engineerSecurityAlerts || []).filter(
+    (a) => a.status !== "RESOLVED"
+  );
+  const onDutyEngineersCount = (engineersList || []).filter(
+    (e) => e.isOnline || e.onDuty
+  ).length;
 
   const handleVerify = (req) => {
     const kit = selectedKits[req.id] || TOOLKIT_PRESETS[0];
@@ -171,6 +208,30 @@ export default function AdminDashboard() {
     setEditingEng(null);
   };
 
+  const handleSimulateAntiBypassAlert = async (eng) => {
+    const targetEng = eng || engineersList?.[0];
+    if (!targetEng) return;
+    raiseEngineerSecurityAlert({
+      engineerId: targetEng.id,
+      engineerName: targetEng.name,
+      severity: "CRITICAL",
+      type: "ANTI_BYPASS_PROXIMITY",
+      title: `Repeat Unbooked Visit Near Past Customer Home (${targetEng.name})`,
+      description: `GPS Radar detected ${targetEng.name} (${targetEng.id}) stationary within 95m of past customer house (${targetEng.area || "Indirapuram"}) for 14 mins without any active Pluggy booking. Possible off-app poaching attempt!`,
+      lat: targetEng.lastLat || 28.6415,
+      lng: targetEng.lastLng || 77.3714,
+      locationLabel: targetEng.lastLocationLabel || targetEng.area || "Delhi NCR",
+    });
+    toast.error(
+      `Anti-Bypass Alert triggered for ${targetEng.name} (${targetEng.id})!`,
+      { id: "anti-bypass-sim" }
+    );
+  };
+
+  const filteredTelemetryLogs = (engineerTelemetryLogs || []).filter((log) =>
+    telemetryFilterEng === "ALL" ? true : log.engineerId === telemetryFilterEng
+  );
+
   return (
     <div className="min-h-screen bg-[#F4F6F9] pb-20 font-inter">
       {/* ================= DEDICATED ADMIN COMMAND TOP HEADER ================= */}
@@ -193,25 +254,48 @@ export default function AdminDashboard() {
                   <span className="px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[10px] font-bold flex items-center gap-1">
                     <Database size={11} /> SQL Master Access ({admin.id})
                   </span>
+                  {openSecurityAlerts.length > 0 && (
+                    <button
+                      onClick={() => setActiveTab("surveillance")}
+                      className="px-2.5 py-0.5 rounded bg-red-500 text-white text-[10px] font-extrabold flex items-center gap-1 animate-pulse"
+                    >
+                      <ShieldAlert size={11} /> {openSecurityAlerts.length}{" "}
+                      Security / Anti-Bypass Alert(s)
+                    </button>
+                  )}
                 </div>
                 <h1 className="text-lg sm:text-xl font-extrabold mt-0.5">
                   {admin.name}
                 </h1>
                 <p className="text-blue-200 text-[11px] sm:text-xs leading-snug">
-                  <span className="hidden sm:inline">Central Dispatch • Engineer ID & Access Management • Escrow Payment Ledger</span>
-                  <span className="sm:hidden">Dispatch • Engineers • Escrow Ledger</span>
+                  <span className="hidden sm:inline">
+                    Central Dispatch • Live Engineer GPS & Shift Tracking •
+                    Anti-Bypass Radar • Escrow Ledger
+                  </span>
+                  <span className="sm:hidden">
+                    Dispatch • Live Engineer GPS • Anti-Bypass Radar
+                  </span>
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 lg:flex items-center gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex items-center gap-2">
+              <button
+                onClick={() => setActiveTab("surveillance")}
+                className="px-3 py-2.5 rounded-xl bg-red-500/25 hover:bg-red-500/35 border border-red-400/40 text-red-100 text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95"
+              >
+                <Radio size={14} className="shrink-0 text-red-300" />
+                <span className="truncate">
+                  GPS & Radar ({openSecurityAlerts.length})
+                </span>
+              </button>
               <button
                 onClick={() => setActiveTab("fleet")}
                 className="px-3 py-2.5 rounded-xl bg-[#F37021] hover:bg-[#e05e15] text-white text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95"
               >
                 <Users size={14} className="shrink-0" />
                 <span className="truncate">
-                  Engineers & IDs ({engineersList?.length || 0})
+                  Engineers ({engineersList?.length || 0})
                 </span>
               </button>
               <button
@@ -220,7 +304,7 @@ export default function AdminDashboard() {
                   toast.success("Logged out of Admin Control Desk");
                   navigate("/admin-login", { replace: true });
                 }}
-                className="px-3 py-2.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-400/30 text-red-200 text-xs font-bold flex items-center justify-center gap-1.5 transition"
+                className="col-span-2 sm:col-span-1 px-3 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition"
               >
                 <LogOut size={14} /> Sign Out
               </button>
@@ -228,7 +312,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Admin KPI Strip */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mt-3 pt-3 sm:mt-4 sm:pt-4 border-t border-white/10 [&>div]:!p-2.5 [&_p.text-xs]:!text-[11px] [&_p.text-2xl]:!text-xl sm:[&_p.text-2xl]:!text-2xl">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-3 mt-3 pt-3 sm:mt-4 sm:pt-4 border-t border-white/10 [&>div]:!p-2.5 [&_p.text-xs]:!text-[11px] [&_p.text-2xl]:!text-xl sm:[&_p.text-2xl]:!text-2xl">
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/15">
               <p className="text-2xl font-extrabold text-amber-300">
                 {pendingVerificationCount}
@@ -239,10 +323,27 @@ export default function AdminDashboard() {
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/15">
               <p className="text-2xl font-extrabold text-emerald-300">
-                {(engineersList || []).length}
+                {onDutyEngineersCount} / {(engineersList || []).length}
               </p>
               <p className="text-xs text-white/80">
-                Registered SQL Engineers (IDs)
+                Engineers On Duty (Live GPS)
+              </p>
+            </div>
+            <div
+              onClick={() => setActiveTab("surveillance")}
+              className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/15 cursor-pointer hover:bg-white/15 transition"
+            >
+              <p
+                className={`text-2xl font-extrabold ${
+                  openSecurityAlerts.length > 0
+                    ? "text-red-400"
+                    : "text-emerald-300"
+                }`}
+              >
+                {openSecurityAlerts.length}
+              </p>
+              <p className="text-xs text-white/80">
+                Anti-Bypass / Tamper Alerts
               </p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/15">
@@ -253,7 +354,7 @@ export default function AdminDashboard() {
                 Payment Gateway Transactions
               </p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/15">
+            <div className="col-span-2 lg:col-span-1 bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/15">
               <p className="text-2xl font-extrabold text-white">
                 ₹{totalRevenue}{" "}
                 <span className="text-xs font-normal text-amber-300">
@@ -277,8 +378,7 @@ export default function AdminDashboard() {
                 : "bg-white text-gray-600 border border-gray-200 hover:border-[#F37021]"
             }`}
           >
-            <ClipboardCheck size={16} /> Dispatch (
-            {requests?.length || 0})
+            <ClipboardCheck size={16} /> 1. Dispatch ({requests?.length || 0})
           </button>
 
           <button
@@ -289,8 +389,20 @@ export default function AdminDashboard() {
                 : "bg-white text-gray-600 border border-gray-200 hover:border-[#F37021]"
             }`}
           >
-            <Users size={16} /> Engineers (
+            <Users size={16} /> 2. Engineers & Shift Logs (
             {engineersList?.length || 0})
+          </button>
+
+          <button
+            onClick={() => setActiveTab("surveillance")}
+            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-2 whitespace-nowrap transition ${
+              activeTab === "surveillance"
+                ? "bg-red-600 text-white shadow-md"
+                : "bg-white text-gray-600 border border-gray-200 hover:border-red-500"
+            }`}
+          >
+            <ShieldAlert size={16} /> 3. Live GPS & Anti-Bypass Radar (
+            {openSecurityAlerts.length})
           </button>
 
           <button
@@ -301,7 +413,7 @@ export default function AdminDashboard() {
                 : "bg-white text-gray-600 border border-gray-200 hover:border-[#F37021]"
             }`}
           >
-            <CreditCard size={16} /> Payments (
+            <CreditCard size={16} /> 4. Payments (
             {paymentTransactions?.length || 0})
           </button>
 
@@ -313,8 +425,7 @@ export default function AdminDashboard() {
                 : "bg-white text-gray-600 border border-gray-200 hover:border-[#F37021]"
             }`}
           >
-            <History size={16} /> History (
-            {orderHistoryLogs?.length || 0})
+            <History size={16} /> 5. History ({orderHistoryLogs?.length || 0})
           </button>
 
           <button
@@ -328,7 +439,7 @@ export default function AdminDashboard() {
                 : "bg-white text-gray-600 border border-gray-200 hover:border-[#F37021]"
             }`}
           >
-            <Database size={16} /> SQL DB
+            <Database size={16} /> 6. SQL DB
           </button>
         </div>
 
@@ -365,9 +476,23 @@ export default function AdminDashboard() {
                         Start PIN: <strong>{req.startOtp || "4821"}</strong> •
                         Happy PIN: <strong>{req.happyOtp || "9134"}</strong>
                       </span>
+                      {req.pinLocked && (
+                        <span className="px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-extrabold flex items-center gap-1 border border-red-300">
+                          <Lock size={12} /> PIN Terminal Locked (
+                          {req.wrongPinAttempts || 3} wrong attempts)
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-3">
+                      {req.pinLocked && (
+                        <button
+                          onClick={() => unlockEngineerJobPin(req.id)}
+                          className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-sm"
+                        >
+                          <Unlock size={13} /> Unlock PIN Terminal
+                        </button>
+                      )}
                       <span className="text-lg font-extrabold text-[#1A2A49]">
                         ₹{req.amount || 0}
                       </span>
@@ -392,7 +517,96 @@ export default function AdminDashboard() {
                         <strong>Fault Note:</strong>{" "}
                         {req.issue || "Standard Inspection"}
                       </p>
+
+                      {/* Customer Before Photo */}
                       <FaultMediaView request={req} compact />
+
+                      {/* Engineer Live Field Timestamps & Uploaded Work Proof */}
+                      {(req.travelStartedAt ||
+                        req.enRouteAt ||
+                        req.arrivedAt ||
+                        req.reachedDoorstepAt ||
+                        req.startedAt ||
+                        req.jobStartedAt ||
+                        req.completedAt ||
+                        (req.workProofPhotos &&
+                          req.workProofPhotos.length > 0)) && (
+                        <div className="mt-2 pt-2 border-t border-gray-100 space-y-2">
+                          <div className="flex flex-wrap gap-1.5 text-[11px]">
+                            {(req.travelStartedAt || req.enRouteAt) && (
+                              <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold">
+                                🛵 En Route:{" "}
+                                {formatDateTime(
+                                  req.travelStartedAt || req.enRouteAt
+                                )}
+                              </span>
+                            )}
+                            {(req.arrivedAt || req.reachedDoorstepAt) && (
+                              <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-semibold">
+                                📍 Doorstep:{" "}
+                                {formatDateTime(
+                                  req.arrivedAt || req.reachedDoorstepAt
+                                )}
+                              </span>
+                            )}
+                            {(req.startedAt || req.jobStartedAt) && (
+                              <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-800 font-semibold">
+                                🔧 Started:{" "}
+                                {formatDateTime(
+                                  req.startedAt || req.jobStartedAt
+                                )}
+                              </span>
+                            )}
+                            {req.completedAt && (
+                              <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 font-semibold">
+                                ✅ Done: {formatDateTime(req.completedAt)} (
+                                {req.jobDurationMinutes ||
+                                  req.workDurationMinutes ||
+                                  1}{" "}
+                                min)
+                              </span>
+                            )}
+                          </div>
+
+                          {Array.isArray(req.workProofPhotos) &&
+                            req.workProofPhotos.length > 0 && (
+                              <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-2.5">
+                                <p className="text-[11px] font-extrabold text-emerald-900 flex items-center gap-1 mb-1.5">
+                                  <Camera size={12} /> Engineer After-Repair
+                                  Work Proof ({req.workProofPhotos.length})
+                                </p>
+                                <div className="flex gap-2 overflow-x-auto">
+                                  {req.workProofPhotos.map((photo, idx) => {
+                                    const imgSrc =
+                                      typeof photo === "string"
+                                        ? photo
+                                        : photo?.dataUrl;
+                                    if (!imgSrc) return null;
+                                    return (
+                                      <a
+                                        key={photo?.id || idx}
+                                        href={imgSrc}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="block w-16 h-16 rounded-lg overflow-hidden border border-emerald-300 shrink-0"
+                                        title={
+                                          req.workProofNote ||
+                                          "Engineer Repair Work Proof"
+                                        }
+                                      >
+                                        <img
+                                          src={imgSrc}
+                                          alt="Engineer Work Proof"
+                                          className="w-full h-full object-cover"
+                                        />
+                                      </a>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Executive Verification & Toolkit Assignment */}
@@ -452,7 +666,10 @@ export default function AdminDashboard() {
                           .filter((e) => e.status !== "SUSPENDED")
                           .map((eng) => (
                             <option key={eng.id} value={eng.id}>
-                              {eng.id}: {eng.name}
+                              {eng.id}: {eng.name}{" "}
+                              {eng.isOnline || eng.onDuty
+                                ? "(🟢 On Duty)"
+                                : "(⚪ Off Duty)"}
                             </option>
                           ))}
                       </select>
@@ -474,20 +691,27 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* ================= TAB 2: ENGINEER FLEET, EDIT & CREATE NEW ID ================= */}
+        {/* ================= TAB 2: ENGINEER FLEET, SHIFT LOGS, GPS & CREATE NEW ID ================= */}
         {activeTab === "fleet" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left 7 Cols: All Engineers List with Edit, Password View, Suspend & Delete */}
+            {/* Left 7 Cols: All Engineers List with Shift Login/Logout, GPS, Work Done & Controls */}
             <div className="lg:col-span-7 space-y-3.5">
-              <div className="bg-white rounded-2xl p-4 border border-gray-200 flex items-center justify-between">
+              <div className="bg-white rounded-2xl p-4 border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <h2 className="text-base font-extrabold text-[#1A2A49]">
                     Registered SQL Engineers ({engineersList?.length || 0})
                   </h2>
                   <p className="text-xs text-gray-500">
-                    Admin has full control to view credentials, edit details, reset passwords, or suspend any Engineer ID.
+                    View live login/logout times, completed jobs, wallet
+                    payouts, live GPS coordinates, and credentials.
                   </p>
                 </div>
+                <button
+                  onClick={() => setActiveTab("surveillance")}
+                  className="px-3 py-2 rounded-xl bg-red-50 text-red-700 border border-red-200 text-xs font-extrabold flex items-center gap-1.5 shrink-0"
+                >
+                  <Radio size={14} /> Open Full GPS Radar
+                </button>
               </div>
 
               {(engineersList || []).map((eng) => {
@@ -496,13 +720,17 @@ export default function AdminDashboard() {
                     r.assignedEngineerId === eng.id &&
                     !["COMPLETED", "CANCELLED"].includes(r.status)
                 );
+                const completedJobsForEng = (requests || []).filter(
+                  (r) =>
+                    r.assignedEngineerId === eng.id && r.status === "COMPLETED"
+                );
                 const isPassVisible = showPasswords[eng.id];
 
                 return (
                   <motion.div
                     key={eng.id}
                     layout
-                    className="bg-white rounded-3xl p-5 shadow-sm border border-gray-200 space-y-3"
+                    className="bg-white rounded-3xl p-5 shadow-sm border border-gray-200 space-y-3.5"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-center gap-3.5">
@@ -525,6 +753,17 @@ export default function AdminDashboard() {
                                 ? "SUSPENDED"
                                 : "ACTIVE"}
                             </span>
+                            <span
+                              className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                                eng.isOnline || eng.onDuty
+                                  ? "bg-emerald-600 text-white"
+                                  : "bg-gray-100 text-gray-600"
+                              }`}
+                            >
+                              {eng.isOnline || eng.onDuty
+                                ? "🟢 ON DUTY"
+                                : "⚪ OFF DUTY"}
+                            </span>
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-50 text-[#F37021]">
                               {assignedJobs.length} Active Job(s)
                             </span>
@@ -536,12 +775,20 @@ export default function AdminDashboard() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          onClick={() => pingEngineerLiveLocation(eng.id)}
+                          className="px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#1A2A49] border border-blue-200 text-xs font-extrabold flex items-center gap-1"
+                          title="Ping Engineer Live GPS Location"
+                        >
+                          <Navigation size={12} className="text-[#F37021]" />{" "}
+                          Ping GPS
+                        </button>
                         <button
                           onClick={() => setEditingEng({ ...eng })}
                           className="px-3 py-1.5 rounded-xl bg-[#1A2A49] hover:bg-[#223a61] text-white text-xs font-bold flex items-center gap-1"
                         >
-                          <Edit3 size={13} /> Edit / Reset Pass
+                          <Edit3 size={13} /> Edit
                         </button>
                         <button
                           onClick={() =>
@@ -571,7 +818,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
 
-                    {/* Credentials & Wallet Info Bar */}
+                    {/* Credentials & Work Done Summary Bar */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 border-t border-gray-100 text-xs">
                       <div className="bg-[#F4F6F9] p-2.5 rounded-xl">
                         <span className="text-[10px] text-gray-400 font-bold block">
@@ -619,11 +866,68 @@ export default function AdminDashboard() {
                       </div>
                       <div className="bg-[#F4F6F9] p-2.5 rounded-xl">
                         <span className="text-[10px] text-gray-400 font-bold block">
-                          WALLET / JOBS
+                          WORK DONE & WALLET
                         </span>
                         <span className="font-extrabold text-emerald-700">
-                          ₹{eng.walletBalance || 0} ({eng.completedCount || 0})
+                          {Math.max(
+                            Number(eng.completedCount || 0),
+                            completedJobsForEng.length
+                          )}{" "}
+                          Jobs • ₹{eng.walletBalance || 0}
                         </span>
+                      </div>
+                    </div>
+
+                    {/* Shift Login / Logout Timestamps & Live GPS Coordinates Box */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-slate-900 text-white p-3 rounded-2xl text-xs">
+                      <div className="flex items-start gap-2">
+                        <Clock
+                          size={14}
+                          className="text-emerald-400 shrink-0 mt-0.5"
+                        />
+                        <div>
+                          <span className="text-[10px] text-slate-400 font-bold uppercase block">
+                            Last Login Time
+                          </span>
+                          <span className="font-mono font-bold text-emerald-300">
+                            {formatDateTime(eng.lastLoginAt)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2">
+                        <LogOut
+                          size={14}
+                          className="text-amber-400 shrink-0 mt-0.5"
+                        />
+                        <div>
+                          <span className="text-[10px] text-slate-400 font-bold uppercase block">
+                            Last Logout Time
+                          </span>
+                          <span className="font-mono font-bold text-amber-300">
+                            {formatDateTime(eng.lastLogoutAt)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2">
+                        <MapPin
+                          size={14}
+                          className="text-[#F37021] shrink-0 mt-0.5"
+                        />
+                        <div className="min-w-0">
+                          <span className="text-[10px] text-slate-400 font-bold uppercase block">
+                            Live Captured GPS Location
+                          </span>
+                          <span className="font-mono font-bold text-white block truncate">
+                            {eng.lastLat && eng.lastLng
+                              ? `${eng.lastLat}, ${eng.lastLng}`
+                              : "28.6415, 77.3714 (NCR Zone)"}
+                          </span>
+                          <span className="text-[10px] text-blue-200 block truncate">
+                            {eng.lastLocationLabel || eng.area || "Delhi NCR"}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </motion.div>
@@ -646,7 +950,9 @@ export default function AdminDashboard() {
                     Engineer ID & Password
                   </h3>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    Create a new Engineer account in the SQL database. The engineer can immediately log in on <code>/engineer-login</code> using these credentials.
+                    Create a new Engineer account in the SQL database. The
+                    engineer can immediately log in on{" "}
+                    <code>/engineer-login</code> using these credentials.
                   </p>
                 </div>
 
@@ -757,7 +1063,340 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* ================= TAB 3: PAYMENT GATEWAY LEDGER ================= */}
+        {/* ================= TAB 3: LIVE GPS & ANTI-BYPASS SURVEILLANCE RADAR ================= */}
+        {activeTab === "surveillance" && (
+          <div className="space-y-6">
+            {/* Top Anti-Bypass Radar Banner */}
+            <div className="bg-gradient-to-r from-[#0F172A] via-[#1A2A49] to-[#223a61] text-white rounded-3xl p-5 sm:p-6 shadow-md border border-white/10">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/20 border border-red-400/30 text-red-300 text-[11px] font-extrabold uppercase tracking-wider">
+                    <Radio size={13} className="animate-pulse" /> Anti-Poaching
+                    & Customer Bypass Radar Active
+                  </div>
+                  <h2 className="text-lg sm:text-xl font-extrabold">
+                    Field Engineer GPS Surveillance, Shift Attendance & Tamper
+                    Logs
+                  </h2>
+                  <p className="text-xs text-blue-200 max-w-3xl leading-relaxed">
+                    Every engineer login, logout, duty toggle, travel step, PIN
+                    attempt, and 60-second GPS heartbeat is recorded here. If an
+                    engineer visits a past customer&apos;s location without an
+                    active booking (to offer direct off-app service), or tries
+                    to guess Customer PINs, a critical alert is raised
+                    immediately.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2 shrink-0">
+                  <button
+                    onClick={() =>
+                      handleSimulateAntiBypassAlert(engineersList?.[0])
+                    }
+                    className="px-3.5 py-2.5 rounded-xl bg-[#F37021] hover:bg-[#e05e15] text-white text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition active:scale-95"
+                  >
+                    <AlertTriangle size={14} /> Test Repeat Customer Visit Alert
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 1: Security & Anti-Bypass Alerts */}
+            <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-gray-200 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-gray-100">
+                <div>
+                  <h3 className="text-base sm:text-lg font-extrabold text-[#1A2A49] flex items-center gap-2">
+                    <ShieldAlert size={18} className="text-red-600" /> Active
+                    Anti-Bypass & System Tamper Alerts (
+                    {openSecurityAlerts.length} Open)
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Alerts for unbooked repeat visits near past customer homes,
+                    3x wrong PIN lockouts, GPS permission blocks, and speed-run
+                    completions.
+                  </p>
+                </div>
+              </div>
+
+              {(engineerSecurityAlerts || []).length === 0 ? (
+                <div className="p-8 rounded-2xl bg-emerald-50/60 border border-emerald-200 text-center space-y-1">
+                  <p className="text-sm font-extrabold text-emerald-900">
+                    ✅ Zero Bypass or Tamper Alerts Detected
+                  </p>
+                  <p className="text-xs text-emerald-700">
+                    All field engineers are following the locked 4-step workflow
+                    within authorized customer zones.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {(engineerSecurityAlerts || []).map((alert) => (
+                    <div
+                      key={alert.id}
+                      className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                        alert.status === "RESOLVED"
+                          ? "bg-gray-50 border-gray-200 opacity-65"
+                          : alert.severity === "CRITICAL"
+                          ? "bg-red-50/80 border-red-300"
+                          : "bg-amber-50/80 border-amber-300"
+                      }`}
+                    >
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span
+                            className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${
+                              alert.severity === "CRITICAL"
+                                ? "bg-red-600 text-white"
+                                : "bg-amber-600 text-white"
+                            }`}
+                          >
+                            {alert.severity} • {alert.type}
+                          </span>
+                          <span className="font-mono text-xs font-extrabold text-[#1A2A49]">
+                            {alert.engineerId} ({alert.engineerName})
+                          </span>
+                          <span className="text-[11px] text-gray-500 font-mono">
+                            📍 {alert.lat || "28.6415"},{" "}
+                            {alert.lng || "77.3714"} (
+                            {alert.locationLabel || "Delhi NCR"})
+                          </span>
+                        </div>
+                        <h4 className="text-sm font-extrabold text-[#1A2A49]">
+                          {alert.title}
+                        </h4>
+                        <p className="text-xs text-gray-700">
+                          {alert.description || alert.details}
+                        </p>
+                        <p className="text-[11px] font-mono text-gray-500">
+                          Triggered:{" "}
+                          {formatDateTime(alert.timestamp || alert.createdAt)}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        {alert.status !== "RESOLVED" ? (
+                          <button
+                            onClick={() => resolveEngineerAlert(alert.id)}
+                            className="px-3.5 py-2 rounded-xl bg-[#1A2A49] hover:bg-[#223a61] text-white text-xs font-extrabold"
+                          >
+                            Mark Resolved
+                          </button>
+                        ) : (
+                          <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 text-xs font-extrabold">
+                            Resolved
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Section 2: Engineer Shift Login/Logout, Work Done & Live GPS Table */}
+            <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-gray-200 space-y-4">
+              <div className="pb-3 border-b border-gray-100">
+                <h3 className="text-base sm:text-lg font-extrabold text-[#1A2A49] flex items-center gap-2">
+                  <Navigation size={18} className="text-[#F37021]" /> Engineer
+                  Shift Attendance, Work Output & Live Location Matrix
+                </h3>
+                <p className="text-xs text-gray-500">
+                  Real-time summary of when each engineer logged in, when they
+                  logged out, how many jobs they completed, and their last
+                  captured GPS coordinates.
+                </p>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-[#F4F6F9] text-[#1A2A49] uppercase font-extrabold border-b border-gray-200">
+                      <th className="p-3 rounded-tl-xl">Engineer</th>
+                      <th className="p-3">Duty Status</th>
+                      <th className="p-3">Last Login Time</th>
+                      <th className="p-3">Last Logout Time</th>
+                      <th className="p-3">Work Done / Wallet</th>
+                      <th className="p-3">Live Captured GPS</th>
+                      <th className="p-3 rounded-tr-xl">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {(engineersList || []).map((eng) => {
+                      const activeCount = (requests || []).filter(
+                        (r) =>
+                          r.assignedEngineerId === eng.id &&
+                          !["COMPLETED", "CANCELLED"].includes(r.status)
+                      ).length;
+
+                      return (
+                        <tr key={eng.id} className="hover:bg-slate-50">
+                          <td className="p-3">
+                            <div className="font-extrabold text-[#1A2A49]">
+                              {eng.name}
+                            </div>
+                            <div className="font-mono text-[11px] text-gray-500">
+                              {eng.id} • {eng.phone}
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <span
+                              className={`px-2.5 py-1 rounded-full text-[11px] font-extrabold ${
+                                eng.isOnline || eng.onDuty
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : "bg-gray-100 text-gray-600"
+                              }`}
+                            >
+                              {eng.isOnline || eng.onDuty
+                                ? "🟢 ON DUTY"
+                                : "⚪ OFF DUTY"}
+                            </span>
+                            {(eng.shiftChecklist ||
+                              eng.shiftChecklistVerified) && (
+                              <div className="text-[10px] text-emerald-700 font-semibold mt-1">
+                                ✓ Uniform & Kit Verified
+                              </div>
+                            )}
+                          </td>
+                          <td className="p-3 font-mono font-semibold text-emerald-700">
+                            {formatDateTime(eng.lastLoginAt)}
+                          </td>
+                          <td className="p-3 font-mono font-semibold text-amber-700">
+                            {formatDateTime(eng.lastLogoutAt)}
+                          </td>
+                          <td className="p-3">
+                            <div className="font-extrabold text-[#1A2A49]">
+                              {eng.completedCount || 0} Completed •{" "}
+                              {activeCount} Active
+                            </div>
+                            <div className="text-[11px] font-bold text-emerald-700">
+                              Wallet: ₹{eng.walletBalance || 0}
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <div className="font-mono font-bold text-[#1A2A49]">
+                              {eng.lastLat && eng.lastLng
+                                ? `${eng.lastLat}, ${eng.lastLng}`
+                                : "28.6415, 77.3714"}
+                            </div>
+                            <div className="text-[11px] text-gray-500">
+                              {eng.lastLocationLabel || eng.area}
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <div className="flex flex-wrap gap-1.5">
+                              <button
+                                onClick={() => pingEngineerLiveLocation(eng.id)}
+                                className="px-2.5 py-1.5 rounded-lg bg-[#1A2A49] hover:bg-[#223a61] text-white text-[11px] font-bold flex items-center gap-1"
+                              >
+                                <Navigation size={11} /> Ping GPS
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleSimulateAntiBypassAlert(eng)
+                                }
+                                className="px-2.5 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-[11px] font-bold"
+                                title="Simulate Unbooked Repeat Visit Alert"
+                              >
+                                Test Radar
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Section 3: Second-by-Second Blackbox Telemetry Stream */}
+            <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-gray-200 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                <div>
+                  <h3 className="text-base sm:text-lg font-extrabold text-[#1A2A49] flex items-center gap-2">
+                    <Activity size={18} className="text-[#F37021]" /> Engineer
+                    Blackbox Activity & GPS Telemetry Stream (
+                    {filteredTelemetryLogs.length})
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Immutable chronological log of every engineer operation with
+                    captured GPS coordinates.
+                  </p>
+                </div>
+
+                <select
+                  value={telemetryFilterEng}
+                  onChange={(e) => setTelemetryFilterEng(e.target.value)}
+                  className="px-3.5 py-2 rounded-xl bg-[#F4F6F9] border border-gray-200 text-xs font-extrabold text-[#1A2A49]"
+                >
+                  <option value="ALL">All Engineers</option>
+                  {(engineersList || []).map((eng) => (
+                    <option key={eng.id} value={eng.id}>
+                      {eng.id} — {eng.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {filteredTelemetryLogs.length === 0 ? (
+                <div className="p-8 text-center text-xs text-gray-500 bg-[#F4F6F9] rounded-2xl">
+                  No engineer telemetry events recorded yet. Log in as an
+                  engineer on <code>/engineer</code> or click &ldquo;Ping
+                  GPS&rdquo; above to capture live telemetry.
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                  {filteredTelemetryLogs.map((log) => (
+                    <div
+                      key={log.id}
+                      className="p-3.5 rounded-2xl bg-[#F4F6F9] border border-gray-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-mono font-extrabold px-2 py-0.5 rounded bg-[#1A2A49] text-white text-[10px]">
+                            {log.engineerId} • {log.engineerName}
+                          </span>
+                          <span
+                            className={`font-mono font-extrabold px-2 py-0.5 rounded text-[10px] ${
+                              String(log.eventType).includes("ALERT") ||
+                              String(log.eventType).includes("WRONG") ||
+                              String(log.eventType).includes("BLOCKED")
+                                ? "bg-red-100 text-red-700"
+                                : String(log.eventType).includes("LOGIN") ||
+                                  String(log.eventType).includes("COMPLETED")
+                                ? "bg-emerald-100 text-emerald-800"
+                                : "bg-orange-100 text-[#F37021]"
+                            }`}
+                          >
+                            {log.eventType}
+                          </span>
+                          {log.requestId && (
+                            <span className="font-mono text-[11px] font-bold text-[#1A2A49]">
+                              Booking #{log.requestId}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-gray-700 font-medium">
+                          {log.details}
+                        </p>
+                      </div>
+
+                      <div className="sm:text-right shrink-0 font-mono text-[11px] text-gray-500">
+                        <div className="font-bold text-[#1A2A49]">
+                          📍 {log.lat}, {log.lng}
+                        </div>
+                        <div>{log.locationLabel}</div>
+                        <div>{formatDateTime(log.timestamp)}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ================= TAB 4: PAYMENT GATEWAY LEDGER ================= */}
         {activeTab === "payments" && (
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-gray-100">
@@ -844,7 +1483,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* ================= TAB 4: ORDER HISTORY & AUDIT LOGS ================= */}
+        {/* ================= TAB 5: ORDER HISTORY & AUDIT LOGS ================= */}
         {activeTab === "history" && (
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 space-y-4">
             <div className="pb-3 border-b border-gray-100">
@@ -897,7 +1536,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* ================= TAB 5: SQL DATABASE EXPLORER ================= */}
+        {/* ================= TAB 6: SQL DATABASE EXPLORER ================= */}
         {activeTab === "sql" && (
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">

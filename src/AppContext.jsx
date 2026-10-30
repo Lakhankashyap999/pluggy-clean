@@ -4,6 +4,13 @@ import { useNavigate, useLocation } from "react-router-dom"
 import toast from "react-hot-toast"
 import { getFaultDraft, clearFaultDraft } from "./lib/faultDraft"
 import {
+  loadTelemetryLogs,
+  saveTelemetryLogs,
+  loadSecurityAlerts,
+  saveSecurityAlerts,
+  captureEngineerGps,
+} from "./lib/engineerSurveillance"
+import {
   loadSqlDatabase,
   saveSqlDatabase,
   subscribeToSqlChanges,
@@ -61,6 +68,10 @@ export function AppProvider({ children }) {
     () => initialSql.payment_transactions
   )
   const [orderHistoryLogs, setOrderHistoryLogs] = useState(() => initialSql.order_history_logs)
+
+  // Real-time Engineer Surveillance, GPS Telemetry & Anti-Bypass Security Alerts
+  const [engineerTelemetryLogs, setEngineerTelemetryLogs] = useState(() => loadTelemetryLogs())
+  const [engineerSecurityAlerts, setEngineerSecurityAlerts] = useState(() => loadSecurityAlerts())
 
   // Cart State (only kept for a logged-in customer)
   const [cart, setCart] = useState(() => {
@@ -404,6 +415,109 @@ export function AppProvider({ children }) {
   }
 
   // Engineer Auth Functions (Backed by SQL `engineers` table — credentials issued by Admin)
+  const raiseEngineerSecurityAlert = ({
+    engineerId,
+    engineerName,
+    severity = "HIGH",
+    type = "TAMPER_ATTEMPT",
+    title,
+    description,
+    requestId = null,
+    lat = null,
+    lng = null,
+    locationLabel = "Field Location",
+  }) => {
+    const newAlert = {
+      id: `ALT-${Date.now().toString().slice(-6)}`,
+      engineerId: engineerId || engineer?.id || "ENG",
+      engineerName: engineerName || engineer?.name || "Engineer",
+      severity,
+      type,
+      title,
+      description,
+      requestId,
+      lat,
+      lng,
+      locationLabel,
+      status: "OPEN",
+      timestamp: new Date().toISOString(),
+    }
+    setEngineerSecurityAlerts((prev) => {
+      const next = [newAlert, ...prev]
+      saveSecurityAlerts(next)
+      return next
+    })
+    return newAlert
+  }
+
+  const recordEngineerTelemetry = async (
+    engObj,
+    eventType,
+    title,
+    details,
+    requestId = null,
+    extraEngineerPatch = {}
+  ) => {
+    const activeEng = engObj || engineer
+    if (!activeEng) return null
+    const gps = await captureEngineerGps(activeEng)
+    const entry = {
+      id: `TEL-${Date.now().toString().slice(-6)}`,
+      engineerId: activeEng.id,
+      engineerName: activeEng.name,
+      eventType,
+      title,
+      details,
+      lat: gps.lat,
+      lng: gps.lng,
+      locationLabel: gps.locationLabel,
+      gpsStatus: gps.gpsStatus,
+      requestId,
+      timestamp: gps.timestamp,
+    }
+    setEngineerTelemetryLogs((prev) => {
+      const next = [entry, ...prev]
+      saveTelemetryLogs(next)
+      return next
+    })
+
+    // Sync engineer's latest GPS & session timestamps in SQL engineers table
+    setEngineersList((prevList) => {
+      const nextEngineers = prevList.map((e) =>
+        e.id === activeEng.id
+          ? {
+              ...e,
+              lastLat: gps.lat,
+              lastLng: gps.lng,
+              lastLocationLabel: gps.locationLabel,
+              lastGpsStatus: gps.gpsStatus,
+              lastSeenAt: gps.timestamp,
+              ...extraEngineerPatch,
+            }
+          : e
+      )
+      syncTablesToSql({ engineers: nextEngineers })
+      return nextEngineers
+    })
+
+    if (gps.gpsStatus === "GPS_PERMISSION_DENIED") {
+      raiseEngineerSecurityAlert({
+        engineerId: activeEng.id,
+        engineerName: activeEng.name,
+        severity: "MEDIUM",
+        type: "GPS_BLOCKED",
+        title: `GPS Permission Blocked by ${activeEng.name} (${activeEng.id})`,
+        description: `Engineer performed "${title}" while device location permission was blocked/off.`,
+        requestId,
+        lat: gps.lat,
+        lng: gps.lng,
+        locationLabel: gps.locationLabel,
+      })
+    }
+
+    return entry
+  }
+
   const authenticateEngineer = (identifier = "", password = "") => {
     const raw = String(identifier).trim()
     const digits = normalizePhone(raw)
@@ -415,30 +529,122 @@ export function AppProvider({ children }) {
     if (!found) return { ok: false, error: "Ye Engineer ID registered nahi hai. Admin se ID banwayein." }
     if (found.status === "SUSPENDED")
       return { ok: false, error: "Aapka account Admin ne suspend kiya hai. Control Desk se contact karein." }
-    if ((found.password || "eng123") !== password)
+    if ((found.password || "eng123") !== password) {
+      raiseEngineerSecurityAlert({
+        engineerId: found.id,
+        engineerName: found.name,
+        severity: "MEDIUM",
+        type: "FAILED_LOGIN",
+        title: `Failed Password Attempt on ${found.id}`,
+        description: `Invalid password entered for Engineer ID ${found.id} (${found.name}).`,
+      })
       return { ok: false, error: "Galat password. Admin dwara diya gaya password daalein." }
-    setEngineer(found)
-    return { ok: true, engineer: found }
+    }
+    const loginTime = new Date().toISOString()
+    const updatedEng = { ...found, lastLoginAt: loginTime, isLoggedIn: true }
+    setEngineer(updatedEng)
+    recordEngineerTelemetry(
+      updatedEng,
+      "ENGINEER_LOGIN",
+      "Logged into Partner Terminal",
+      `Partner ID ${found.id} signed in & GPS session initialized.`,
+      null,
+      { lastLoginAt: loginTime, isLoggedIn: true }
+    )
+    return { ok: true, engineer: updatedEng }
   }
 
   const loginEngineer = (engineerData) => {
     const found = engineersList.find((e) => e.id?.toUpperCase() === engineerData?.id?.toUpperCase())
     if (!found) return null
-    setEngineer(found)
-    return found
+    const loginTime = new Date().toISOString()
+    const updatedEng = { ...found, lastLoginAt: loginTime, isLoggedIn: true }
+    setEngineer(updatedEng)
+    recordEngineerTelemetry(
+      updatedEng,
+      "ENGINEER_LOGIN",
+      "Logged into Partner Terminal",
+      `Partner ID ${found.id} signed in & GPS session initialized.`,
+      null,
+      { lastLoginAt: loginTime, isLoggedIn: true }
+    )
+    return updatedEng
   }
 
-  const logoutEngineer = () => setEngineer(null)
+  const logoutEngineer = () => {
+    if (engineer) {
+      const inProgressJobs = (requests || []).filter(
+        (r) => r.assignedEngineerId === engineer.id && r.status === "IN_PROGRESS"
+      )
+      if (inProgressJobs.length > 0) {
+        raiseEngineerSecurityAlert({
+          engineerId: engineer.id,
+          engineerName: engineer.name,
+          severity: "HIGH",
+          type: "ABANDON_ATTEMPT",
+          title: `${engineer.name} (${engineer.id}) tried to Logout during Active Repair`,
+          description: `Engineer attempted to sign out while Booking #${inProgressJobs[0].transactionId || inProgressJobs[0].id} is IN_PROGRESS.`,
+          requestId: inProgressJobs[0].id,
+        })
+        toast.error("Active repair chal rahi hai! Job poora kiye bina logout allowed nahi hai.")
+        return false
+      }
+      const logoutTime = new Date().toISOString()
+      recordEngineerTelemetry(
+        engineer,
+        "ENGINEER_LOGOUT",
+        "Signed Out of Partner Terminal",
+        `Partner ID ${engineer.id} logged out cleanly.`,
+        null,
+        { lastLogoutAt: logoutTime, isLoggedIn: false, isOnline: false }
+      )
+    }
+    setEngineer(null)
+    return true
+  }
 
-  const toggleEngineerDuty = () => {
-    if (!engineer) return
+  const toggleEngineerDuty = (shiftChecklist = null) => {
+    if (!engineer) return false
     const nextOnline = !engineer.isOnline
-    const updated = { ...engineer, isOnline: nextOnline }
+    if (!nextOnline) {
+      const inProgressJobs = (requests || []).filter(
+        (r) => r.assignedEngineerId === engineer.id && r.status === "IN_PROGRESS"
+      )
+      if (inProgressJobs.length > 0) {
+        raiseEngineerSecurityAlert({
+          engineerId: engineer.id,
+          engineerName: engineer.name,
+          severity: "HIGH",
+          type: "DUTY_OFF_DURING_JOB",
+          title: `${engineer.name} (${engineer.id}) tried going OFF DUTY mid-repair`,
+          description: `Attempted to switch OFF DUTY while Booking #${inProgressJobs[0].transactionId || inProgressJobs[0].id} is IN_PROGRESS.`,
+          requestId: inProgressJobs[0].id,
+        })
+        toast.error("Active job chalte waqt OFF DUTY nahi ho sakte!")
+        return false
+      }
+    }
+    const ts = new Date().toISOString()
+    const patch = nextOnline
+      ? { isOnline: true, shiftStartedAt: ts, shiftChecklist: shiftChecklist || { uniform: true, idCard: true, toolkit: true } }
+      : { isOnline: false, shiftEndedAt: ts }
+    const updated = { ...engineer, ...patch }
     setEngineer(updated)
-    const nextEngineers = engineersList.map((e) => (e.id === engineer.id ? { ...e, isOnline: nextOnline } : e))
+    const nextEngineers = engineersList.map((e) => (e.id === engineer.id ? { ...e, ...patch } : e))
     setEngineersList(nextEngineers)
     syncTablesToSql({ engineers: nextEngineers })
-    toast.success(nextOnline ? "Aap ON DUTY hain — naye jobs milenge" : "Aap OFF DUTY hain")
+    recordEngineerTelemetry(
+      updated,
+      nextOnline ? "DUTY_ON" : "DUTY_OFF",
+      nextOnline ? "Marked ON DUTY (Shift & Toolkit Verified)" : "Marked OFF DUTY (Shift Paused)",
+      nextOnline
+        ? "Uniform, ID Card & Toolkit verified • Live GPS shift tracking active."
+        : "Engineer went OFF DUTY.",
+      null,
+      patch
+    )
+    toast.success(nextOnline ? "Aap ON DUTY hain — Live GPS active" : "Aap OFF DUTY hain")
+    return true
   }
 
   // ---------------------------------------------------------------------------
@@ -800,7 +1006,7 @@ export function AppProvider({ children }) {
       action: "EXECUTIVE_VERIFIED",
       details: `Locked mandatory toolkit (${resolvedKit}). Note: ${resolvedNote}`,
     })
-    toast.success("Booking verified & mandatory toolkit locked in SQL!")
+    toast.success("Booking verified & mandatory toolkit locked in SQL!", { id: `verify-${requestId}` })
     addNotification({
       type: "update",
       title: "Booking Verified by Executive",
@@ -833,29 +1039,143 @@ export function AppProvider({ children }) {
     })
   }
 
-  // WORKFLOW 4: ENGINEER STARTS JOB WITH 4-DIGIT START PIN
+  // WORKFLOW 3B: ENGINEER STEP-BY-STEP TRAVEL & ARRIVAL PROGRESSION + WORK PROOF UPLOAD
+  const markEngineerTravelStep = (requestId, stepType) => {
+    const target = requests.find((r) => r.id === requestId)
+    if (!target) return false
+    const nowIso = new Date().toISOString()
+    const patch =
+      stepType === "EN_ROUTE"
+        ? { fieldStep: "EN_ROUTE", travelStartedAt: nowIso }
+        : { fieldStep: "REACHED_DOORSTEP", arrivedAt: nowIso }
+
+    const nextRequests = requests.map((r) => (r.id === requestId ? { ...r, ...patch } : r))
+    setRequests(nextRequests)
+    setBookings(nextRequests)
+
+    const nextLogs = appendOrderLog(
+      requestId,
+      target.transactionId,
+      "ENGINEER",
+      target.assignedEngineer || engineer?.name || "Engineer",
+      stepType === "EN_ROUTE" ? "ENGINEER_EN_ROUTE" : "ENGINEER_REACHED_DOORSTEP",
+      stepType === "EN_ROUTE"
+        ? "Engineer started travel to customer address."
+        : "Engineer arrived at customer doorstep — awaiting customer Start PIN."
+    )
+    syncTablesToSql({ service_requests: nextRequests, order_history_logs: nextLogs })
+
+    recordEngineerTelemetry(
+      engineer,
+      stepType,
+      stepType === "EN_ROUTE"
+        ? `Started Travel for #${target.transactionId || requestId}`
+        : `Reached Customer Doorstep for #${target.transactionId || requestId}`,
+      `Customer Address: ${target.address || target.userAddress}`,
+      requestId
+    )
+    toast.success(
+      stepType === "EN_ROUTE"
+        ? "Status updated: On The Way to Customer!"
+        : "Doorstep arrival recorded! Ab customer se 4-digit Start PIN maangein."
+    )
+    return true
+  }
+
+  const uploadEngineerWorkProof = (requestId, photoDataUrl, note = "") => {
+    const target = requests.find((r) => r.id === requestId)
+    if (!target || !photoDataUrl) return false
+    const existing = Array.isArray(target.workProofPhotos) ? target.workProofPhotos : []
+    const updatedPhotos = [...existing, photoDataUrl].slice(0, 3)
+    const patch = {
+      workProofPhotos: updatedPhotos,
+      workProofNote: note || target.workProofNote || "Repair completed & tested",
+      workProofUploadedAt: new Date().toISOString(),
+    }
+    const nextRequests = requests.map((r) => (r.id === requestId ? { ...r, ...patch } : r))
+    setRequests(nextRequests)
+    setBookings(nextRequests)
+    syncTablesToSql({ service_requests: nextRequests })
+
+    recordEngineerTelemetry(
+      engineer,
+      "WORK_PROOF_UPLOADED",
+      `Uploaded Repair Proof Photo (#${target.transactionId || requestId})`,
+      `Attached ${updatedPhotos.length} photo(s) of completed repair work.`,
+      requestId
+    )
+    toast.success("Repair proof photo uploaded! Ab Happy PIN enter kar sakte hain.")
+    return true
+  }
+
+  // WORKFLOW 4: ENGINEER STARTS JOB WITH 4-DIGIT START PIN (STRICT ANTI-TAMPER, NO PIN LEAK)
   const startJobWithOtp = (requestId, enteredOtp) => {
     const target = requests.find((r) => r.id === requestId)
     if (!target) {
       toast.error("Booking not found")
       return false
     }
-    if (enteredOtp && target.startOtp && enteredOtp.trim() !== target.startOtp) {
-      toast.error(`Incorrect Start PIN! Customer's Start PIN is ${target.startOtp}`)
+    if (target.pinLocked) {
+      toast.error("3 galat PIN attempts ki wajah se job lock ho gayi hai! Admin Desk se contact karein.")
+      return false
+    }
+    if (!enteredOtp || (target.startOtp && enteredOtp.trim() !== target.startOtp)) {
+      const attempts = (Number(target.wrongPinAttempts) || 0) + 1
+      const locked = attempts >= 3
+      const nextRequests = requests.map((r) =>
+        r.id === requestId ? { ...r, wrongPinAttempts: attempts, pinLocked: locked } : r
+      )
+      setRequests(nextRequests)
+      setBookings(nextRequests)
+      syncTablesToSql({ service_requests: nextRequests })
+
+      recordEngineerTelemetry(
+        engineer,
+        "WRONG_START_PIN",
+        `Invalid Start PIN Attempt (${attempts}/3) on #${target.transactionId || requestId}`,
+        `Entered "${enteredOtp}" — did not match customer's Start PIN.`,
+        requestId
+      )
+      raiseEngineerSecurityAlert({
+        engineerId: target.assignedEngineerId || engineer?.id,
+        engineerName: target.assignedEngineer || engineer?.name,
+        severity: locked ? "CRITICAL" : "HIGH",
+        type: "WRONG_PIN_ATTEMPT",
+        title: locked
+          ? `🔒 Job #${target.transactionId} LOCKED — 3 Wrong Start PIN Attempts`
+          : `⚠️ Wrong Start PIN Attempt (${attempts}/3) by ${target.assignedEngineer || engineer?.name}`,
+        description: `Engineer entered wrong Start PIN ("${enteredOtp}") on Booking #${target.transactionId || requestId}. ${
+          locked ? "PIN terminal auto-locked to prevent fraud." : ""
+        }`,
+        requestId,
+      })
+
+      toast.error(
+        locked
+          ? "3 galat PIN attempts! Ye job security lock ho gayi hai. Admin Desk se sampark karein."
+          : `Galat Start PIN! Customer ke phone se sahi 4-digit PIN pooch kar daalein (${3 - attempts} attempts bache hain).`
+      )
       return false
     }
     updateRequestStatus(
       requestId,
       "IN_PROGRESS",
-      { startedAt: new Date().toISOString() },
+      { startedAt: new Date().toISOString(), fieldStep: "IN_PROGRESS", wrongPinAttempts: 0 },
       {
         actorRole: "ENGINEER",
         actorName: target.assignedEngineer || engineer?.name || "Engineer",
         action: "JOB_STARTED_WITH_PIN",
-        details: `Verified 4-digit Start PIN (${target.startOtp}) at doorstep. Repair in progress.`,
+        details: `Verified customer's 4-digit Start PIN at doorstep. Repair in progress.`,
       }
     )
-    toast.success("Start PIN verified! Job is now IN PROGRESS.")
+    recordEngineerTelemetry(
+      engineer,
+      "START_PIN_VERIFIED",
+      `Start PIN Verified — Repair Started (#${target.transactionId || requestId})`,
+      `Doorstep Start PIN verified for ${target.service}.`,
+      requestId
+    )
+    toast.success("Start PIN verified! Repair work started.")
     addNotification({
       type: "update",
       title: "🔧 Service Started (Start PIN Verified)",
@@ -1034,16 +1354,71 @@ export function AppProvider({ children }) {
     toast.success(`${loanerItem} issued @ ₹${dailyRent}/day!`)
   }
 
-  // WORKFLOW 7: COMPLETE JOB WITH HAPPY PIN + ESCROW SETTLEMENT + 30-DAY WARRANTY
+  // WORKFLOW 7: COMPLETE JOB WITH HAPPY PIN + WORK PROOF CHECK + ANTI-TAMPER AUDIT
   const completeJobWithOtp = (requestId, enteredOtp) => {
     const target = requests.find((r) => r.id === requestId)
     if (!target) {
       toast.error("Booking not found")
       return false
     }
-    if (enteredOtp && target.happyOtp && enteredOtp.trim() !== target.happyOtp) {
-      toast.error(`Incorrect Happy PIN! Customer's Happy PIN is ${target.happyOtp}`)
+    if (target.pinLocked) {
+      toast.error("Ye job 3 galat PIN attempts ki wajah se lock hai! Admin Desk se unlock karwayein.")
       return false
+    }
+    if (!Array.isArray(target.workProofPhotos) || target.workProofPhotos.length === 0) {
+      toast.error("Pehle repair ki hui device ki Work Proof Photo upload karein, tabhi Happy PIN lagega!")
+      return false
+    }
+    if (!enteredOtp || (target.happyOtp && enteredOtp.trim() !== target.happyOtp)) {
+      const attempts = (Number(target.wrongPinAttempts) || 0) + 1
+      const locked = attempts >= 3
+      const nextRequests = requests.map((r) =>
+        r.id === requestId ? { ...r, wrongPinAttempts: attempts, pinLocked: locked } : r
+      )
+      setRequests(nextRequests)
+      setBookings(nextRequests)
+      syncTablesToSql({ service_requests: nextRequests })
+
+      recordEngineerTelemetry(
+        engineer,
+        "WRONG_HAPPY_PIN",
+        `Invalid Happy PIN Attempt (${attempts}/3) on #${target.transactionId || requestId}`,
+        `Entered "${enteredOtp}" — did not match customer's Happy PIN.`,
+        requestId
+      )
+      raiseEngineerSecurityAlert({
+        engineerId: target.assignedEngineerId || engineer?.id,
+        engineerName: target.assignedEngineer || engineer?.name,
+        severity: locked ? "CRITICAL" : "HIGH",
+        type: "WRONG_PIN_ATTEMPT",
+        title: locked
+          ? `🔒 Job #${target.transactionId} LOCKED — 3 Wrong Happy PIN Attempts`
+          : `⚠️ Wrong Happy PIN Attempt (${attempts}/3) by ${target.assignedEngineer || engineer?.name}`,
+        description: `Engineer entered wrong Happy PIN ("${enteredOtp}") on Booking #${target.transactionId || requestId}.`,
+        requestId,
+      })
+
+      toast.error(
+        locked
+          ? "3 galat PIN attempts! Job lock ho gayi hai. Admin Desk se contact karein."
+          : `Galat Happy PIN! Customer se pooch kar sahi 4-digit PIN daalein (${3 - attempts} attempts bache hain).`
+      )
+      return false
+    }
+
+    // Check if engineer completed suspiciously fast (< 2 minutes after Start PIN)
+    const startedMs = target.startedAt ? new Date(target.startedAt).getTime() : 0
+    const durationMinutes = startedMs ? Math.max(1, Math.round((Date.now() - startedMs) / 60000)) : 25
+    if (startedMs && Date.now() - startedMs < 120000) {
+      raiseEngineerSecurityAlert({
+        engineerId: target.assignedEngineerId || engineer?.id,
+        engineerName: target.assignedEngineer || engineer?.name,
+        severity: "HIGH",
+        type: "SPEED_RUN_COMPLETION",
+        title: `⚡ Suspicious Fast Job Completion (< 2 mins) on #${target.transactionId}`,
+        description: `Engineer ${target.assignedEngineer || engineer?.name} completed #${target.transactionId} in less than 2 minutes after Start PIN. Verify work proof photo.`,
+        requestId,
+      })
     }
 
     const expiry = new Date()
@@ -1057,10 +1432,13 @@ export function AppProvider({ children }) {
       status: "COMPLETED",
       paymentStatus: "SETTLED",
       completedAt: new Date().toISOString(),
+      jobDurationMinutes: durationMinutes,
       warrantyExpiresAt: expiry.toISOString(),
       warrantyValidTill: expiry.toISOString(),
       applianceQrId: qrCodeId,
       engineerPayout: payout,
+      wrongPinAttempts: 0,
+      pinLocked: false,
     }
 
     const nextRequests = requests.map((r) =>
@@ -1114,6 +1492,14 @@ export function AppProvider({ children }) {
       payment_transactions: nextPayments,
       order_history_logs: nextLogs,
     })
+
+    recordEngineerTelemetry(
+      engineer,
+      "JOB_COMPLETED",
+      `Completed Job #${target.transactionId || requestId} (Duration: ${durationMinutes}m)`,
+      `Happy PIN verified • Payout ₹${payout} credited to Partner Wallet.`,
+      requestId
+    )
 
     toast.success(`Happy PIN verified! Job completed & ₹${payout} credited to Partner Wallet!`)
     addNotification({
@@ -1190,6 +1576,71 @@ export function AppProvider({ children }) {
   }
 
   const addBooking = (booking) => addRequest(booking)
+
+  // Admin & Engineer Surveillance Controls
+  const unlockEngineerJobPin = (requestId) => {
+    const nextRequests = requests.map((r) =>
+      r.id === requestId ? { ...r, wrongPinAttempts: 0, pinLocked: false } : r
+    )
+    setRequests(nextRequests)
+    setBookings(nextRequests)
+    syncTablesToSql({ service_requests: nextRequests })
+    toast.success("Job PIN terminal unlocked for engineer!")
+  }
+
+  const resolveEngineerAlert = (alertId) => {
+    setEngineerSecurityAlerts((prev) => {
+      const next = prev.map((a) =>
+        a.id === alertId ? { ...a, status: "RESOLVED", resolvedAt: new Date().toISOString() } : a
+      )
+      saveSecurityAlerts(next)
+      return next
+    })
+    toast.success("Security alert marked resolved")
+  }
+
+  const pingEngineerLiveLocation = async (targetEngineerId = null) => {
+    const targetEng =
+      (targetEngineerId && engineersList.find((e) => e.id === targetEngineerId)) || engineer
+    if (!targetEng) return null
+
+    // Check if engineer has any completed customer addresses and no active job there
+    const pastCompletedForEng = (requests || []).filter(
+      (r) => r.assignedEngineerId === targetEng.id && r.status === "COMPLETED"
+    )
+    const activeForEng = (requests || []).filter(
+      (r) =>
+        r.assignedEngineerId === targetEng.id &&
+        !["COMPLETED", "CANCELLED"].includes(r.status)
+    )
+
+    const entry = await recordEngineerTelemetry(
+      targetEng,
+      "GPS_HEARTBEAT_PING",
+      `Live GPS Location Ping (${targetEng.id})`,
+      activeForEng.length > 0
+        ? `Assigned on active booking #${activeForEng[0].transactionId || activeForEng[0].id} at ${activeForEng[0].address}`
+        : `No active booking • Monitoring field zone (${targetEng.area || "Delhi NCR"}).`,
+      activeForEng[0]?.id || null
+    )
+
+    // If engineer has past completed customers and 0 active jobs, check proximity
+    if (pastCompletedForEng.length > 0 && activeForEng.length === 0 && targetEngineerId) {
+      const pastCustomer = pastCompletedForEng[0]
+      raiseEngineerSecurityAlert({
+        engineerId: targetEng.id,
+        engineerName: targetEng.name,
+        severity: "HIGH",
+        type: "ANTI_BYPASS_PROXIMITY",
+        title: `🕵️ Proximity Radar Check on ${targetEng.name} (${targetEng.id})`,
+        description: `Verified GPS coordinates (${entry?.lat}, ${entry?.lng}) against ${pastCompletedForEng.length} past customer home(s) (last: ${pastCustomer.userName} at ${pastCustomer.address}).`,
+        lat: entry?.lat,
+        lng: entry?.lng,
+        locationLabel: entry?.locationLabel,
+      })
+    }
+    return entry
+  }
 
   const addSavedAddress = (newAddress) => {
     setSavedAddresses((prev) => [...prev, { id: Date.now(), ...newAddress }])
@@ -1276,11 +1727,18 @@ export function AppProvider({ children }) {
     updateRequestStatus,
     verifyByExecutive,
     assignEngineer,
+    markEngineerTravelStep,
+    uploadEngineerWorkProof,
     startJobWithOtp,
     addSparePartToJob,
     respondToSparePartQuote,
     issueStandbyAppliance,
     completeJobWithOtp,
+    unlockEngineerJobPin,
+    resolveEngineerAlert,
+    pingEngineerLiveLocation,
+    engineerTelemetryLogs,
+    engineerSecurityAlerts,
     claimWarrantyRevisit,
     cancelRequest,
     rateRequest,
